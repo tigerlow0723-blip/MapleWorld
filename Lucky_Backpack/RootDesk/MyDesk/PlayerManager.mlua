@@ -1,0 +1,400 @@
+@Component
+script PlayerManager extends Component
+
+	property string classId = "War"
+
+	property integer level = 1
+
+	property number currentHP = 0
+
+	property number maxHP = 0
+
+	property number currentCost = 0
+
+	property number maxCost = 0
+
+	property number baseATK = 0
+
+	property number baseACC = 0
+
+	property number baseCritRate = 0
+
+	property number baseCritDmg = 0
+
+	property number atk = 0
+	property number acc = 0
+	property number critRate = 0
+	property number critDmg = 0
+
+	property table inventory = {}
+
+	property table buffList = {}
+
+	property boolean isDead = false
+
+	property string skillName = ""
+
+	property any dataManager = nil
+
+	-- @ExecSpace("ServerOnly") 제거: 클라이언트에서도 실행되도록 변경
+	method void OnBeginPlay()
+		log("[PlayerManager] 초기화 시작")
+	end
+
+	method void InitPlayer(string selectedClassId, any dataMgr)
+		self.classId = selectedClassId
+		self.dataManager = dataMgr
+		self.level = 1
+		self.isDead = false
+		self.inventory = {}
+		self.buffList = {}
+		
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		if baseStat == nil then
+			log_error("[PlayerManager] 기본 스탯 데이터 없음: " .. self.classId)
+			return
+		end
+		
+		self.baseATK = baseStat.atk
+		self.baseACC = baseStat.acc
+		self.baseCritRate = baseStat.critRate
+		self.baseCritDmg = baseStat.critDmg
+		self.currentCost = self.maxCost -- 처음에 코스트 가득
+		
+		-- 현재 스탯 초기화
+		self.atk = self.baseATK
+		self.acc = self.baseACC
+		self.critRate = self.baseCritRate
+		self.critDmg = self.baseCritDmg
+		
+		self:GenerateBasicItems()
+		
+		self.skillName = baseStat.skill
+		
+		-- 최종 스탯 계산
+		self:RecalcAllStats()
+		
+		self.currentHP = self.maxHP
+		
+		log("[PlayerManager] 플레이어 초기화 완료 (직업: " .. self.classId .. ")")
+	end
+
+	method void GenerateBasicItems()
+		-- 기본 아이템 지급: 낡은 검(1), 체력포션(8)
+		
+		-- 1. 낡은 검 (ID: 1)
+		local sword = self.dataManager:GetItemData(1)
+		if sword ~= nil then
+			self:AddItem(sword)
+		else
+			log_error("[PlayerManager] 시작 아이템(1: 낡은 검) 데이터가 없습니다.")
+		end
+		
+		-- 3. 체력포션 (ID: 8)
+		local potion = self.dataManager:GetItemData(8)
+		if potion ~= nil then
+			self:AddItem(potion)
+		else
+			log_error("[PlayerManager] 시작 아이템(8: 체력 포션) 데이터가 없습니다.")
+		end
+		
+		log("[PlayerManager] 기본 아이템 지급 로직 완료")
+	end
+
+	method void RecalcAllStats()
+		self.maxHP = self:CalcFinalHP()
+		self.maxCost = self:CalcMaxCost()
+	end
+
+	method number CalcFinalATK()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseAtk = baseStat.atk
+		local lvAtk = 0
+		if lvStat ~= nil then
+			lvAtk = lvStat.atkPerLv * (self.level - 1)
+		end
+		
+		local itemAtk = 0
+		local itemAtkPercent = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemAtk += item.atk or 0
+				itemAtkPercent += item.atkPercent or 0
+			end
+		end
+		
+		local corrAtkPercent = 0
+		if correction ~= nil then
+			corrAtkPercent = correction.atkPercent
+		end
+		
+		local buffAtkPercent = self:GetBuffValue("atkPercent")
+		
+		local finalAtk = (baseAtk + lvAtk + itemAtk) * (1 + (corrAtkPercent + itemAtkPercent + buffAtkPercent) / 100)
+		return finalAtk
+	end
+
+	method number CalcFinalHP()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		
+		local baseHp = baseStat.hp
+		local lvHp = 0
+		if lvStat ~= nil then
+			lvHp = lvStat.hpPerLv * (self.level - 1)
+		end
+		
+		local itemHp = 0
+		local itemHpPercent = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemHp += item.hp or 0
+				itemHpPercent += item.hpPercent or 0
+			end
+		end
+		
+		local buffHpPercent = self:GetBuffValue("hpPercent")
+		
+		local finalHp = (baseHp + lvHp + itemHp) * (1 + (itemHpPercent + buffHpPercent) / 100)
+		return finalHp
+	end
+
+	method number CalcFinalACC()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseAcc = baseStat.acc
+		local lvAcc = 0
+		if lvStat ~= nil then
+			lvAcc = lvStat.accPerLv * (self.level - 1)
+		end
+		
+		local itemAcc = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemAcc += item.accPercent or 0
+			end
+		end
+		
+		local corrAcc = 0
+		if correction ~= nil then
+			corrAcc = correction.accPercent
+		end
+		
+		return baseAcc + lvAcc + itemAcc + corrAcc
+	end
+
+	method number CalcFinalCritRate()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCrit = baseStat.critRate
+		local itemCrit = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemCrit += item.critRate or 0
+			end
+		end
+		
+		local corrCrit = 0
+		if correction ~= nil then
+			corrCrit = correction.critRate
+		end
+		
+		local buffCrit = self:GetBuffValue("critRate")
+		
+		return baseCrit + itemCrit + corrCrit + buffCrit
+	end
+
+	method number CalcFinalCritDMG()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCritDmg = baseStat.critDmg
+		local lvCritDmg = 0
+		if lvStat ~= nil then
+			lvCritDmg = lvStat.critDmgPerLv * (self.level - 1)
+		end
+		
+		local itemCritDmg = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemCritDmg += item.critDmg or 0
+			end
+		end
+		
+		local corrCritDmg = 0
+		if correction ~= nil then
+			corrCritDmg = correction.critDmg
+		end
+		
+		local buffCritDmg = self:GetBuffValue("critDmg")
+		
+		return baseCritDmg + lvCritDmg + itemCritDmg + corrCritDmg + buffCritDmg
+	end
+
+	method number CalcMaxCost()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCost = baseStat.cost or 10
+		
+		local corrCost = 0
+		if correction ~= nil then
+			corrCost = correction.maxCost
+		end
+		
+		local itemCost = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				itemCost += item.cost or 0
+			end
+		end
+		
+		return baseCost + corrCost + itemCost
+	end
+
+	method void RestoreCost()
+		self.maxCost = self:CalcMaxCost()
+		self.currentCost = self.maxCost
+		log("[PlayerManager] 코스트 회복: " .. tostring(self.currentCost))
+	end
+
+	method boolean UseCost(number amount)
+		if self.currentCost < amount then
+			log("[PlayerManager] 코스트 부족! 현재: " .. tostring(self.currentCost) .. " 필요: " .. tostring(amount))
+			return false
+		end
+		self.currentCost -= amount
+		log("[PlayerManager] 코스트 사용: " .. tostring(amount) .. " 남은: " .. tostring(self.currentCost))
+		return true
+	end
+
+	method void TakeDamage(number dmg)
+		-- 방어력 계산 (아이템 방어력)
+		local totalDef = 0
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				totalDef += item.def or 0
+			end
+		end
+		
+		local finalDmg = math.max(1, dmg - totalDef)
+		self.currentHP -= finalDmg
+		log("[PlayerManager] 피해 받음: " .. tostring(finalDmg) .. " (원래: " .. tostring(dmg) .. " 방어: " .. tostring(totalDef) .. ") 남은 HP: " .. tostring(self.currentHP))
+		
+		if self.currentHP <= 0 then
+			self.currentHP = 0
+			self.isDead = true
+			log("[PlayerManager] 플레이어 사망!")
+		end
+	end
+
+	method void Heal(number amount)
+		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
+		log("[PlayerManager] 체력 회복: " .. tostring(amount) .. " 현재 HP: " .. tostring(self.currentHP))
+	end
+
+	method void LevelUp()
+		self.level += 1
+		local prevMaxHP = self.maxHP
+		self:RecalcAllStats()
+		-- 레벨업 시 증가분만큼 현재체력도 증가
+		local hpGain = self.maxHP - prevMaxHP
+		self.currentHP += hpGain
+		self.currentHP = math.min(self.maxHP, self.currentHP)
+		log("[PlayerManager] 레벨업! Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+	end
+
+	method void AddBuff(string statName, number value, integer duration)
+		local buff = {}
+		buff.stat = statName
+		buff.value = value
+		buff.remainTurn = duration
+		self.buffList[#self.buffList + 1] = buff
+		log("[PlayerManager] 버프 추가: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. "턴)")
+	end
+
+	method number GetBuffValue(string statName)
+		local total = 0
+		for i = 1, #self.buffList do
+			if self.buffList[i] ~= nil and self.buffList[i].stat == statName then
+				total += self.buffList[i].value
+			end
+		end
+		return total
+	end
+
+	method void TickBuffs()
+		local newList = {}
+		for i = 1, #self.buffList do
+			local buff = self.buffList[i]
+			if buff ~= nil then
+				buff.remainTurn -= 1
+				if buff.remainTurn > 0 then
+					newList[#newList + 1] = buff
+				else
+					log("[PlayerManager] 버프 만료: " .. buff.stat)
+				end
+			end
+		end
+		self.buffList = newList
+	end
+
+	method void AddItem(table itemData)
+		self.inventory[#self.inventory + 1] = itemData
+		self:RecalcAllStats()
+		log("[PlayerManager] 아이템 추가: " .. (itemData.name or tostring(itemData.id)))
+	end
+
+	method void RemoveItem(integer index)
+		if index >= 1 and index <= #self.inventory then
+			local item = self.inventory[index]
+			log("[PlayerManager] 아이템 제거: " .. (item.name or tostring(item.id)))
+			table.remove(self.inventory, index)
+			self:RecalcAllStats()
+		end
+	end
+
+	method table UseSkill(any dataMgr)
+		local skillData = dataMgr:GetSkillData(self.skillName)
+		if skillData == nil then
+			log_error("[PlayerManager] 스킬 데이터 없음: " .. self.skillName)
+			return nil
+		end
+		
+		if self:UseCost(skillData.cost) == false then
+			return nil
+		end
+		
+		-- 스킬 효과 적용
+		if skillData.heal > 0 then
+			self:Heal(skillData.heal)
+		end
+		if skillData.critRate > 0 then
+			self:AddBuff("critRate", skillData.critRate, 3)
+		end
+		if skillData.critDmg > 0 then
+			self:AddBuff("critDmg", skillData.critDmg, 3)
+		end
+		if skillData.atk > 0 then
+			self:AddBuff("atkPercent", skillData.atk, 3)
+		end
+		
+		log("[PlayerManager] 스킬 사용: " .. self.skillName)
+		return skillData
+	end
+
+end
