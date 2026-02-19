@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://8621f0b4a352483ca0c3838fc2eab8fe",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://8621f0b4a352483ca0c3838fc2eab8fe",
+      "name": "MyDesk",
+      "lock": false,
+      "folding": false,
+      "nameEditable": false
+    }
+  }
+}
