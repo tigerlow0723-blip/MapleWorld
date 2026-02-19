@@ -42,13 +42,15 @@ script ItemManager extends Component
 		return total
 	end
 
-	method string GetItemTypeName(integer typeId)
-		if typeId == 1 then
+	method string GetItemTypeName(string typeId)
+		if typeId == "weapon" then
 			return "무기"
-		elseif typeId == 2 then
+		elseif typeId == "armor" then
 			return "방어구"
-		elseif typeId == 3 then
+		elseif typeId == "consumable" then
 			return "소모품"
+		elseif typeId == "expand" then
+			return "확장"
 		end
 		return "알 수 없음"
 	end
@@ -76,6 +78,8 @@ script ItemManager extends Component
 			drop.id = item.id
 			drop.type = item.type
 			drop.name = item.name
+			drop.width = item.width or 1
+			drop.height = item.height or 1
 			drop.cost = item.cost
 			drop.atk = item.atk
 			drop.atkPercent = item.atkPercent
@@ -85,6 +89,7 @@ script ItemManager extends Component
 			drop.hp = item.hp
 			drop.hpPercent = item.hpPercent
 			drop.def = item.def
+			drop.desc = item.desc or ""
 			drop.spawnGroup = item.spawnGroup
 			drop.imageRUID = item.imageRUID or ""
 			drops[#drops + 1] = drop

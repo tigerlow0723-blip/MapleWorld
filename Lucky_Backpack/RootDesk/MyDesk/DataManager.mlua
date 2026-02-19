@@ -152,8 +152,10 @@ script DataManager extends Component
 			if id > 0 then
 				local data = {}
 				data.id = id
-				data.type = tonumber(ds:GetCell(i, "type")) or 1
+				data.type = ds:GetCell(i, "type") or "weapon"
 				data.name = ds:GetCell(i, "name") or ""
+				data.width = tonumber(ds:GetCell(i, "width")) or 1
+				data.height = tonumber(ds:GetCell(i, "height")) or 1
 				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
 				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
 				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0
@@ -163,6 +165,7 @@ script DataManager extends Component
 				data.hp = tonumber(ds:GetCell(i, "hp")) or 0
 				data.hpPercent = tonumber(ds:GetCell(i, "hpPercent")) or 0
 				data.def = tonumber(ds:GetCell(i, "def")) or 0
+				data.desc = ds:GetCell(i, "desc") or ""
 				data.spawnGroup = tonumber(ds:GetCell(i, "Spawn_Group")) or 1
 				data.imageRUID = ds:GetCell(i, "imageRUID") or ""
 				self.ItemTable[id] = data

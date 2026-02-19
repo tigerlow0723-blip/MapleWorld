@@ -35,10 +35,30 @@ script PlayerManager extends Component
 	property string skillName = ""
 
 	property any dataManager = nil
+	property any inventoryComp = nil
 
 	-- @ExecSpace("ServerOnly") 제거: 클라이언트에서도 실행되도록 변경
 	method void OnBeginPlay()
+		self.inventoryComp = self.Entity.Inventory
+		if self.inventoryComp == nil then
+			log_warning("[PlayerManager] Inventory 컴포넌트를 찾을 수 없습니다.")
+		end
 		log("[PlayerManager] 초기화 시작")
+	end
+
+	method void SyncInventoryFromGrid()
+		if self.inventoryComp == nil then
+			return
+		end
+
+		self.inventory = {}
+		for itemId, _ in pairs(self.inventoryComp.placedItems) do
+			local itemData = self.dataManager:GetItemData(itemId)
+			if itemData ~= nil then
+				self.inventory[#self.inventory + 1] = itemData
+			end
+		end
+		self:RecalcAllStats()
 	end
 
 	method void InitPlayer(string selectedClassId, any dataMgr)
@@ -356,6 +376,28 @@ script PlayerManager extends Component
 	method void AddItem(table itemData)
 		self.inventory[#self.inventory + 1] = itemData
 		self:RecalcAllStats()
+
+		if self.inventoryComp ~= nil then
+			local width = itemData.width or 1
+			local height = itemData.height or 1
+			local placed = false
+			for r = 1, 6 do
+				for c = 1, 6 do
+					if self.inventoryComp:CanPlace(r, c, width, height) then
+						self.inventoryComp:PlaceItem(r, c, itemData.id, width, height)
+						placed = true
+						break
+					end
+				end
+				if placed then
+					break
+				end
+			end
+			if placed == false then
+				log_warning("[PlayerManager] 인벤토리에 아이템을 배치할 공간이 없습니다: " .. tostring(itemData.id))
+			end
+		end
+
 		log("[PlayerManager] 아이템 추가: " .. (itemData.name or tostring(itemData.id)))
 	end
 
@@ -363,7 +405,11 @@ script PlayerManager extends Component
 		if index >= 1 and index <= #self.inventory then
 			local item = self.inventory[index]
 			log("[PlayerManager] 아이템 제거: " .. (item.name or tostring(item.id)))
+			local itemId = item.id
 			table.remove(self.inventory, index)
+			if self.inventoryComp ~= nil then
+				self.inventoryComp:RemoveItem(itemId)
+			end
 			self:RecalcAllStats()
 		end
 	end

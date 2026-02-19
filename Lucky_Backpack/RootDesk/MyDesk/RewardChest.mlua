@@ -1,0 +1,33 @@
+@Component
+script RewardChest extends Component
+
+	property string displayAreaPath = ""
+
+	property integer itemCount = 5
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		    self.Entity:ConnectEvent(ButtonClickEvent, function(event)
+		        self:SpawnItems()
+		    end)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SpawnItems()
+		    local displayAreaEntity = _EntityService:GetEntityByPath(self.displayAreaPath)
+		    if displayAreaEntity == nil then
+		        log_warning("[RewardChest] ItemDisplayArea entity not found: " .. self.displayAreaPath)
+		        return
+		    end
+		
+		    local displayArea = displayAreaEntity.ItemDisplayArea
+		    if displayArea == nil then
+		        log_warning("[RewardChest] ItemDisplayArea component not found")
+		        return
+		    end
+		
+		    displayArea:GenerateRandomItems(self.itemCount)
+		    self.Entity:Destroy()
+	end
+
+end

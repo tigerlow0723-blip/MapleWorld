@@ -16,6 +16,7 @@ script GameManager extends Component
 	property any itemManager = nil
 
 	property any rewardManager = nil
+	property any itemDisplayArea = nil
 	
 	property BackgroundComponent backgroundRenderer = nil -- BackgroundComponent 연결
 	
@@ -75,6 +76,13 @@ script GameManager extends Component
 		self.battleManager = self.Entity.BattleManager
 		self.itemManager = self.Entity.ItemManager
 		self.rewardManager = self.Entity.RewardManager
+		local parentEntity = self.Entity.Parent
+		if parentEntity ~= nil then
+			local displayAreaEntity = parentEntity:GetChildByName("ItemDisplayArea", true)
+			if displayAreaEntity ~= nil then
+				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+			end
+		end
 		
 		-- BattleManager에 매니저 참조 전달		
 		self.battleManager:SetManagers(self.dataManager, self.playerManager, self.monsterManager, self.itemManager, self.rewardManager)
@@ -197,6 +205,10 @@ script GameManager extends Component
 		for i = 1, #self.pendingRewards do
 			local item = self.pendingRewards[i]
 			log("[GameManager]  [" .. tostring(i) .. "] " .. item.name .. " (대기 중)")
+		end
+		if self.itemDisplayArea ~= nil then
+			self.itemDisplayArea:DisplayItems(self.pendingRewards)
+			log("[GameManager] 보상 아이템 UI 표시")
 		end
 		
 		log("[GameManager] 인벤토리를 정리하고 원하는 아이템을 골라주세요!")

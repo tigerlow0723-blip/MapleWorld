@@ -1,0 +1,4 @@
+@Component
+script test extends Component
+
+end

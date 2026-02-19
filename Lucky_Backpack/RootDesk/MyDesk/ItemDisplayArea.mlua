@@ -1,0 +1,156 @@
+@Component
+script ItemDisplayArea extends Component
+
+	property string inventoryUIPath = ""
+
+	property integer slotSize = 80
+
+	property integer verticalSpacing = 100
+
+	property integer horizontalOffset = 40
+
+	property table spawnedItems = {}
+
+	property string itemTemplatePath = ""
+
+	@ExecSpace("ClientOnly")
+	method void GenerateRandomItems(integer count)
+		    for i = #self.spawnedItems, 1, -1 do
+		        local itemEntity = self.spawnedItems[i]
+		        if itemEntity ~= nil and isvalid(itemEntity) then
+		            itemEntity:Destroy()
+		        end
+		        table.remove(self.spawnedItems, i)
+		    end
+		
+		    local selectableItemIds = {}
+		    local dataSet = "Data_Table - 아이템리스트"
+		    local rowCount = _DataService:GetRowCount(dataSet)
+		
+		    for row = 1, rowCount do
+		        local itemType = _DataService:GetCell(dataSet, row, "type")
+		        if itemType ~= "expand" then
+		            local itemId = tonumber(_DataService:GetCell(dataSet, row, "id"))
+		            if itemId ~= nil then
+		                table.insert(selectableItemIds, itemId)
+		            end
+		        end
+		    end
+		
+		    if #selectableItemIds == 0 then
+		        log_warning("[ItemDisplayArea] No selectable item in " .. dataSet)
+		        return
+		    end
+
+		    local spawnCount = count
+		    if spawnCount > #selectableItemIds then
+		        spawnCount = #selectableItemIds
+		    end
+
+		    for i = 1, spawnCount do
+		        local randomIndex = math.random(1, #selectableItemIds)
+		        local itemId = selectableItemIds[randomIndex]
+		        self:CreateItemEntity(itemId, i - 1)
+		        table.remove(selectableItemIds, randomIndex)
+		    end
+		
+		    self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity CreateItemEntity(integer itemId, integer index)
+		    local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
+		    if templateEntity == nil then
+		        log_warning("[ItemDisplayArea] Item template not found: " .. self.itemTemplatePath)
+		        return nil
+		    end
+		
+		    local itemEntity = templateEntity:Clone("RewardItem_" .. index)
+		    if itemEntity == nil then
+		        return nil
+		    end
+		
+		    self.Entity:AttachChild(itemEntity)
+		    itemEntity:SetEnable(true)
+		    itemEntity:SetVisible(true)
+		
+		    local itemComp = itemEntity.Item
+		    if itemComp ~= nil then
+		        itemComp.itemId = itemId
+		        itemComp.inventoryUIPath = self.inventoryUIPath
+		        itemComp:InitFromTable(itemId)
+		
+		        local renderer = itemEntity.SpriteGUIRendererComponent
+		        if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+		            renderer.ImageRUID = itemComp.spriteRUID
+		        end
+		    end
+		
+		    table.insert(self.spawnedItems, itemEntity)
+		    return itemEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ArrangeItems()
+		    local itemCount = #self.spawnedItems
+		    if itemCount <= 0 then
+		        return
+		    end
+		
+		    local totalHeight = (itemCount - 1) * self.verticalSpacing
+		    local startY = totalHeight * 0.5
+		
+		    for i, itemEntity in ipairs(self.spawnedItems) do
+		        if itemEntity == nil or not isvalid(itemEntity) then
+		            continue
+		        end
+		
+		        local uiTransform = itemEntity.UITransformComponent
+		        if uiTransform == nil then
+		            continue
+		        end
+		
+		        local index = i - 1
+		        local posY = startY - (index * self.verticalSpacing)
+		        local posX = self.horizontalOffset
+		        if index % 2 == 0 then
+		            posX = -self.horizontalOffset
+		        end
+		
+		        uiTransform.anchoredPosition = Vector2(posX, posY)
+
+		        local itemComp = itemEntity.Item
+		        if itemComp ~= nil then
+		            itemComp.spawnPosition = {x = posX, y = posY}
+		        end
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void DisplayItems(table itemDataList)
+		    for i = #self.spawnedItems, 1, -1 do
+		        local itemEntity = self.spawnedItems[i]
+		        if itemEntity ~= nil and isvalid(itemEntity) then
+		            itemEntity:Destroy()
+		        end
+		        table.remove(self.spawnedItems, i)
+		    end
+
+		    for i = 1, #itemDataList do
+		        self:CreateItemEntity(itemDataList[i].id, i - 1)
+		    end
+
+		    self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RemoveItem(Entity itemEntity)
+		    for i = #self.spawnedItems, 1, -1 do
+		        if self.spawnedItems[i] == itemEntity then
+		            table.remove(self.spawnedItems, i)
+		            return
+		        end
+		    end
+	end
+
+end
