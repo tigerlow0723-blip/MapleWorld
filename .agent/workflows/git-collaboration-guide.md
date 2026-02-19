@@ -131,3 +131,15 @@ merge가 끝나면 main이 업데이트되었으므로, 내 브랜치도 다시 
 - **Maker에서 만든 스크립트**는 Maker에서 생성 후 VS Code에서 내용만 수정
 - **PowerShell로 직접 파일 덮어쓰기 금지** (인코딩 깨짐 위험)
 - 작업 시작 전에 항상 **main을 내 브랜치에 merge**하는 습관!
+
+### ⚠️ Maker와 Git 동시 사용 주의
+
+Maker는 로컬 폴더(`Lucky_Backpack/`)를 직접 읽고 쓰기 때문에, **Maker가 켜진 상태에서 Git 브랜치 전환/pull/merge를 하면 파일 충돌이나 데이터 손실 위험**이 있다.
+
+**안전한 순서:**
+1. Maker에서 **저장 후 종료**
+2. Git에서 **commit → push**
+3. **브랜치 전환** 또는 **pull/merge**
+4. Maker **다시 열기**
+
+> 💡 **한 줄 요약: Maker 끄고 → Git 작업 → Maker 켜기**
