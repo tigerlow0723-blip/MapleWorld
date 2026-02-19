@@ -1,4 +1,9 @@
 @Component
 script hello extends Component
 
+function hello:OnBeginPlay()
+    log("Hello MapleWorld! 협업 테스트 성공! 🎉")
 end
+
+end
+
