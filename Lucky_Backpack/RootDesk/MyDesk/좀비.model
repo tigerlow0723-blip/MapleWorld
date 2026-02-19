@@ -1,0 +1,89 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "model://maplestorymonster$af7a8cb915a24097968dba81aba67e54",
+  "ContentType": "x-mod/model",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "Type": "MODLazyModel",
+      "Name": "좀비",
+      "Id": "maplestorymonster$af7a8cb915a24097968dba81aba67e54",
+      "ModelId": "MoveMonster",
+      "DataSetId": "MonsterDataSet",
+      "DataId": "af7a8cb915a24097968dba81aba67e54",
+      "Target": {
+        "Version": 1,
+        "Name": "좀비",
+        "BaseModelId": "movemonster",
+        "Id": "maplestorymonster$af7a8cb915a24097968dba81aba67e54",
+        "Components": [],
+        "Properties": [],
+        "Values": [
+          {
+            "TargetType": null,
+            "Name": "speed",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+            },
+            "Value": 1.0
+          },
+          {
+            "TargetType": null,
+            "Name": "jumpForce",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+            },
+            "Value": 0.0
+          },
+          {
+            "TargetType": null,
+            "Name": "actionSheet",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], MOD.Core, Version=26.1.0.0, Culture=neutral, PublicKeyToken=null"
+            },
+            "Value": {
+              "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+              "move": "08a9323615c244c5a0065b223907c5a2",
+              "stand": "101ffcc7fac74855960461c1885c9c01",
+              "attack": "c79ebe9282744023ba08691398eef1b7",
+              "attack2": "e5ca825a8b9247968d3215dfb5df20fb",
+              "hit": "6862ddd049f24b25ac047123e0fcbee4",
+              "die": "cc792c46c20645e4aa16d0c9a7f68725"
+            }
+          },
+          {
+            "TargetType": null,
+            "Name": "renderguid",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+            },
+            "Value": "101ffcc7fac74855960461c1885c9c01"
+          },
+          {
+            "TargetType": null,
+            "Name": "renderSetting",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "MOD.Core.RenderSettingType, MOD.Core, Version=26.1.0.0, Culture=neutral, PublicKeyToken=null"
+            },
+            "Value": 1
+          }
+        ],
+        "EventLinks": [],
+        "Children": []
+      }
+    }
+  }
+}

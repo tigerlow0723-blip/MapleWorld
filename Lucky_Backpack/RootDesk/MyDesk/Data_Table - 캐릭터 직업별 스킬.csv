@@ -1,0 +1,6 @@
+﻿id,cost,activeTurn,heal,critRate,critDmg,atk,incomingDmgUp,skillDmg,alwaysHit,RUID
+하이퍼바디,2,0,30,0,0,0,0,0,1,4897500c533d4483a49cf32909eb3a4b
+샤프아이즈,2,0,0,20,30,0,0,0,0,d7c0b36cd06d4dc5ac835fd604c64881
+인피니티,4,0,0,0,0,25,0,50,0,762aa3461a7642c98fd332e68a157596
+암살,3,0,0,30,50,0,0,40,0,15332c6f8dc94dc5a16206cc2bc4fd1e
+전함노틸러스,7,0,0,0,0,0,0,100,1,4f99a4560f7f47ee8040328496cfd99e
