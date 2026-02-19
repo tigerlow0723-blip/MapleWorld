@@ -2,7 +2,7 @@
 script hello extends Component
 
 method void OnBeginPlay()
-    log("Hello MapleWorld Test")
+    log("Hi MapleWorld Test")
 end
 
 end
