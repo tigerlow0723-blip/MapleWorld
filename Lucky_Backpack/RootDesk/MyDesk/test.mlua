@@ -3,7 +3,7 @@ script test extends Component
 
 	@ExecSpace("ServerOnly")
 	method void OnUpdate(number delta)
-		log("a")
+		log("test")
 	end
 
 end
