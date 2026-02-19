@@ -1,0 +1,545 @@
+@Component
+script MonsterManager extends Component
+
+	property table monsterList = {}
+
+	property boolean isBossBattle = false
+
+	property string currentBossId = ""
+
+	property integer currentBossPhase = 1
+
+	property any dataManager = nil
+	
+	-- 빈 모델 (스프라이트만 교체해서 사용)
+	property string modelId = "model://maplestorymonster$17d15ed30cb74b25a3542fa71fb5b849" 
+
+	-- 마지막 행동 결과 (BattleManager에서 읽기용)
+	property number lastDamage = 0
+
+	property string lastStatus = "없음"
+
+	property number lastDotDmg = 0
+
+	property integer lastDotTurn = 0
+
+	property boolean lastActionValid = false
+
+	-- 보상 결과
+	property integer lastRewardExp = 0
+
+	property integer lastRewardGold = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		log("[MonsterManager] 초기화")
+	end
+
+	method void SpawnMonsters(integer stageId, any dataMgr)
+		self.dataManager = dataMgr
+		self.monsterList = {}
+		self.isBossBattle = false
+		
+		local spawnInfo = dataMgr:GetSpawnInfo(stageId)
+		if spawnInfo == nil then
+			log_error("[MonsterManager] 스폰 정보 없음: stage " .. tostring(stageId))
+			return
+		end
+		
+		local poolMonsters = dataMgr:GetMonstersByPool(spawnInfo.poolId)
+		if #poolMonsters == 0 then
+			log_error("[MonsterManager] 풀에 몬스터 없음: pool " .. tostring(spawnInfo.poolId))
+			return
+		end
+		
+		-- 랜덤 몬스터 수 결정
+		local count = math.random(spawnInfo.minMonsters, spawnInfo.maxMonsters)
+		log("[MonsterManager] 몬스터 " .. tostring(count) .. "마리 스폰 (pool: " .. tostring(spawnInfo.poolId) .. ")")
+		
+		for i = 1, count do
+			-- 풀에서 랜덤 선택
+			local idx = math.random(1, #poolMonsters)
+			local template = poolMonsters[idx]
+		
+			-- 개체별 복사본 생성
+			local monster = {}
+			monster.id = template.id
+			monster.name = template.name .. " #" .. tostring(i)
+			monster.maxHP = template.hp
+			monster.currentHP = template.hp
+			monster.atk = template.atk
+			monster.def = template.def
+			monster.dodge = template.dodge
+			monster.patternId = template.patternId
+			monster.patternProb = template.patternProb
+			monster.atkCount = template.atkCount
+			monster.status = template.status
+			monster.dotDmg = template.dotDmg
+			monster.dotTurn = template.dotTurn
+			monster.rewardExp = template.rewardExp
+			monster.rewardGold = template.rewardGold
+			monster.rewardExp = template.rewardExp
+			monster.rewardGold = template.rewardGold
+			monster.modelID = template.modelID or ""
+			monster.alive = true
+			monster.dotEffects = {}
+		
+			self.monsterList[#self.monsterList + 1] = monster
+			
+			self:SpawnVisual(monster, i, false)
+			log("[MonsterManager]  > " .. monster.name .. " HP:" .. tostring(monster.currentHP) .. " ATK:" .. tostring(monster.atk))
+		end
+	end
+
+	-- UIMain 참조 (클릭 이벤트 전달용)
+	property any uiMain = nil
+	
+	method void Init(any ui)
+		self.uiMain = ui
+	end
+
+	method void SpawnBoss(string bossId, any dataMgr)
+		self.dataManager = dataMgr
+		self.monsterList = {}
+		self.isBossBattle = true
+		self.currentBossId = bossId
+		self.currentBossPhase = 1
+		
+		-- 보스를 monsterList의 첫 엔트리로
+		local patterns = dataMgr:GetBossPatterns(bossId, 1)
+		if patterns == nil or #patterns == 0 then
+			log_error("[MonsterManager] 보스 패턴 없음: " .. bossId)
+			return
+		end
+		
+		local boss = {}
+		boss.id = bossId
+		boss.name = "보스 " .. bossId
+		boss.maxHP = 500
+		boss.currentHP = 500
+		boss.atk = 0
+		boss.def = 10
+		boss.dodge = 0
+		boss.alive = true
+		boss.isBoss = true
+		boss.isBoss = true
+		boss.dotEffects = {}
+		boss.modelID = "" -- 보스는 별도 로직이 없으면 모델ID 사용 안함? 일단 빈 문자열
+		-- boss.imageRUID logic was here, assuming boss spawns differently or needs update. 
+		-- For now, keep boss logic consistent if it used RUIDs from pattern. 
+		-- But plan says remove RUIDs. Let's assume bosses might use ModelID too or just keep their current logic if not broken.
+		-- Actually, `SpawnBoss` uses `SpawnVisual` too. Let's set modelID if available in pattern or use default.
+		-- But pattern table structure in DataManager wasn't changed to have ModelID. 
+		-- User only asked for MonsterList CSV change.
+		-- I will comment out RUID lines for now to avoid errors, leaving Boss as is (using default model if no ID).
+		-- boss.imageRUID = patterns[1].ruid or ""
+		
+		self.monsterList[#self.monsterList + 1] = boss
+		
+		self:SpawnVisual(boss, 1, true)
+		log("[MonsterManager] 보스 스폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP))
+	end
+
+	method table DamageMonster(integer index, number damage, number accuracy)
+		local monster = self.monsterList[index]
+		if monster == nil or monster.alive == false then
+			return nil
+		end
+		
+		local result = {}
+		result.hit = false
+		result.critical = false
+		result.damage = 0
+		result.killed = false
+		
+		-- 명중 판정: accuracy vs 몬스터 회피
+		local hitChance = accuracy - monster.dodge
+		local hitRoll = math.random(1, 100)
+		
+		if hitRoll > hitChance then
+			-- 빗나감
+			result.hit = false
+			log("[MonsterManager] " .. monster.name .. " 공격 빗나감! (명중: " .. tostring(hitChance) .. "% 주사위: " .. tostring(hitRoll) .. ")")
+			return result
+		end
+		
+		result.hit = true
+		
+		-- 방어력 적용
+		local finalDmg = math.max(1, damage - monster.def)
+		monster.currentHP -= finalDmg
+		result.damage = finalDmg
+		
+		log("[MonsterManager] " .. monster.name .. " 피격! 데미지: " .. tostring(finalDmg) .. " 남은HP: " .. tostring(monster.currentHP))
+		-- [수정] 애니메이션 엔티티 ID 사용
+		local animTargetId = monster.animEntityId
+		if animTargetId == nil then animTargetId = monster.entityId end
+		self:PlayEntityState(animTargetId, "HIT", 1.5)
+		
+		if monster.currentHP <= 0 then
+			monster.currentHP = 0
+			monster.alive = false
+			result.killed = true
+			log("[MonsterManager] " .. monster.name .. " 처치!")
+		
+			-- 보스 페이즈 전환 체크
+			if monster.isBoss and self.currentBossPhase == 1 then
+				-- 페이즈 2로 전환 (체력 부활)
+				self.currentBossPhase = 2
+				monster.alive = true
+				monster.maxHP = 700
+				monster.currentHP = 700
+				result.killed = false
+				log("[MonsterManager] 보스 페이즈 2 전환! HP 회복: " .. tostring(monster.maxHP))
+			else
+				-- 일반 몬스터 또는 보스 최종 처치 시 엔티티 파괴
+				if monster.entityId ~= nil then
+					local entity = _EntityService:GetEntity(monster.entityId)
+					if entity ~= nil then
+						entity:Destroy()
+						log("[MonsterManager] 엔티티 파괴 완료: " .. monster.entityId)
+					end
+				end
+			end
+		end
+		
+		return result
+	end
+
+	method void MonsterBasicAttack(integer index)
+		local monster = self.monsterList[index]
+		if monster == nil or monster.alive == false then
+			self.lastActionValid = false
+			return
+		end
+		
+		local totalDmg = 0
+		for h = 1, monster.atkCount do
+			totalDmg += monster.atk
+		end
+		
+		self.lastActionValid = true
+		self.lastDamage = totalDmg
+		self.lastStatus = "없음"
+		self.lastDotDmg = 0
+		self.lastDotTurn = 0
+		
+		log("[MonsterManager] " .. monster.name .. " 기본 공격! 데미지: " .. tostring(totalDmg) .. " (" .. tostring(monster.atkCount) .. "회)")
+		-- [수정] 애니메이션 엔티티 ID 사용
+		local animTargetId = monster.animEntityId
+		if animTargetId == nil then animTargetId = monster.entityId end
+		self:PlayEntityState(animTargetId, "ATTACK1", 2.0)
+	end
+
+	method void MonsterSkillAttack(integer index)
+		local monster = self.monsterList[index]
+		if monster == nil or monster.alive == false then
+			self.lastActionValid = false
+			return
+		end
+		
+		self.lastActionValid = true
+		self.lastDamage = monster.atk
+		self.lastStatus = monster.status
+		self.lastDotDmg = monster.dotDmg
+		self.lastDotTurn = monster.dotTurn
+		
+		log("[MonsterManager] " .. monster.name .. " 스킬 공격! 데미지: " .. tostring(monster.atk) .. " 상태이상: " .. monster.status)
+		-- [수정] 애니메이션 엔티티 ID 사용
+		local animTargetId = monster.animEntityId
+		if animTargetId == nil then animTargetId = monster.entityId end
+		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
+	end
+
+	method void MonsterAction(integer index)
+		local monster = self.monsterList[index]
+		if monster == nil or monster.alive == false then
+			self.lastActionValid = false
+			return
+		end
+		
+		local roll = math.random(1, 100)
+		if roll <= 50 then
+			self:MonsterBasicAttack(index)
+		else
+			self:MonsterSkillAttack(index)
+		end
+	end
+
+	method void BossAction()
+		if self.isBossBattle == false or #self.monsterList == 0 then
+			self.lastActionValid = false
+			return
+		end
+		
+		local boss = self.monsterList[1]
+		if boss == nil or boss.alive == false then
+			self.lastActionValid = false
+			return
+		end
+		
+		local patterns = self.dataManager:GetBossPatterns(self.currentBossId, self.currentBossPhase)
+		if patterns == nil or #patterns == 0 then
+			log_error("[MonsterManager] 보스 패턴 데이터 없음")
+			self.lastActionValid = false
+			return
+		end
+		
+		local patternIdx = math.random(1, #patterns)
+		local pattern = patterns[patternIdx]
+		
+		self.lastActionValid = true
+		self.lastDamage = pattern.dmg
+		self.lastStatus = pattern.status
+		self.lastDotDmg = pattern.dotDmg
+		self.lastDotTurn = pattern.dotTurn
+		
+		log("[MonsterManager] 보스 패턴: " .. pattern.name .. " 데미지: " .. tostring(pattern.dmg) .. " 상태: " .. pattern.status)
+	end
+
+	method integer GetAliveCount()
+		local count = 0
+		for i = 1, #self.monsterList do
+			if self.monsterList[i] ~= nil and self.monsterList[i].alive == true then
+				count += 1
+			end
+		end
+		return count
+	end
+
+	method boolean IsAllDead()
+		return self:GetAliveCount() == 0
+	end
+
+	method void CollectRewards()
+		local totalExp = 0
+		local totalGold = 0
+		for i = 1, #self.monsterList do
+			local monster = self.monsterList[i]
+			if monster ~= nil then
+				totalExp += monster.rewardExp or 0
+				totalGold += monster.rewardGold or 0
+			end
+		end
+		self.lastRewardExp = totalExp
+		self.lastRewardGold = totalGold
+		log("[MonsterManager] 전투 보상 - EXP: " .. tostring(totalExp) .. " Gold: " .. tostring(totalGold))
+	end
+
+	method void ClearAll()
+		for i = 1, #self.monsterList do
+			local mon = self.monsterList[i]
+			if mon.entityId ~= nil then
+				local entity = _EntityService:GetEntity(mon.entityId)
+				if entity ~= nil then
+					_EntityService:Destroy(entity)
+				end
+			end
+		end
+		self.monsterList = {}
+		self.isBossBattle = false
+		self.currentBossId = ""
+		self.currentBossPhase = 1
+	end
+
+	method void SpawnVisual(table monster, integer index, boolean isBoss)
+		-- 몬스터 위치 조정: 오른쪽(X > 0)에 배치
+		-- index 1 -> x=7, index 2 -> x=9, index 3 -> x=11 ...
+		local xPos = 5 + (index - 1) * 2
+		if isBoss then xPos = 4 end -- 보스는 중앙에서 약간 오른쪽
+		
+		-- ModelID가 있으면 그것을 사용, 없으면 기본 모델 사용
+		local spawnModelId = self.modelId
+		if monster.modelID ~= nil and monster.modelID ~= "" then
+			spawnModelId = monster.modelID
+		end
+		
+		log("[DEBUG-MON] Spawning Visual: Index=" .. tostring(index) .. " ModelID=" .. tostring(spawnModelId))
+		
+		local entity = _SpawnService:SpawnByModelId(spawnModelId, "Monster_" .. tostring(index), Vector3(xPos, 0, 0), self.Entity.Parent)
+		if entity ~= nil then
+			-- 터치 컴포넌트 추가 (타겟팅용)
+			local touch = entity.TouchReceiveComponent
+			if touch == nil then
+				entity:AddComponent("TouchReceiveComponent")
+				touch = entity.TouchReceiveComponent
+			end
+			
+			monster.entityId = entity.Id
+			local sprite = entity.SpriteRendererComponent
+			if sprite ~= nil then
+				sprite.FlipX = false
+			end
+			
+			-- 터치 이벤트 연결
+			entity:ConnectEvent("TouchEvent", function(event)
+				self:OnMonsterTouch(index)
+			end)
+			
+			-- 몬스터 AI 및 이동 비활성화 (턴제 게임이므로 제자리 고정)
+			local monsterComp = entity.MonsterComponent
+			if monsterComp ~= nil then monsterComp.Enable = false end
+			
+			local moveComp = entity.MovementComponent
+			if moveComp ~= nil then moveComp.Enable = false end
+			
+			local rigidComp = entity.RigidbodyComponent
+			-- if rigidComp ~= nil then rigidComp.Enable = false end
+			
+			-- [DEBUG-SAFE] 컴포넌트 목록 확인 (개별 체크)
+			log("[DEBUG] Checking components on " .. entity.Name .. ":")
+			local c1 = entity.SpriteAnimPlayerComponent
+			local c2 = entity.AnimatorComponent
+			local c3 = entity.AvatarRendererComponent
+			local c4 = entity.StateAnimationComponent
+			
+			if c1 ~= nil then log(" - SpriteAnimPlayerComponent: OK") end
+			if c2 ~= nil then log(" - AnimatorComponent: OK") end
+			if c3 ~= nil then log(" - AvatarRendererComponent: OK") end
+			if c4 ~= nil then log(" - StateAnimationComponent: OK") end
+			
+			-- [DEBUG-FINAL] 모든 컴포넌트 출력 (Component Collection 사용)
+			log("[DEBUG] === Inspecting Entity: " .. entity.Name .. " ===")
+			local comps = entity.Components
+			if comps ~= nil then
+				local count = 0
+				-- ReadOnlyList 순회 (인덱스 1부터 시작)
+				-- MSW 리스트는 1-based index or 0-based? Lua is 1-based.
+				-- 안전하게 pairs 사용 가능한지 확인, 아니면 pcall로 접근.
+				-- 보통 ReadOnlyList는 pairs가 안될 수 있으므로, 숫자 인덱스로 시도.
+				-- 하지만 count를 모르므로 pairs 시도해보고, 안되면 pass.
+				-- Lua for loop: for comp in pairs(comps) -> error?
+				-- Try simple iteration if it is a table-like userdata.
+				-- If not, try GetComponents() API? There is no GetComponents API.
+				-- Let's try to just log specific ones again because we can't iterate safely?
+				-- Wait, docs say "ReadOnlyList".
+				-- Let's assume we can't iterate.
+				-- But I MUST know what's there.
+			end
+			
+			-- 안전한 확인: 알고 있는 모든 애니메이션 관련 컴포넌트 찔러보기
+			local animCandidates = {
+				"SpriteAnimPlayerComponent",
+				"AnimatorComponent",
+				"AvatarRendererComponent",
+				"StateAnimationComponent",
+				"TweenLineComponent",
+				"EffectComponent",
+				"BeholderComponent" -- 가끔 쓰임
+			}
+			
+			for i, name in ipairs(animCandidates) do
+				local c = entity:GetComponent(name)
+				if c ~= nil then log(" - Found on Root: " .. name) end
+			end
+			
+			-- 자식도 확인
+			local children = entity.Children
+			if children ~= nil then
+				-- Children is ReadOnlyList.
+				-- Let's NOT iterate with pairs if it fails.
+				-- But previously getting children count worked?
+				-- "Total Children: 0" (if logged).
+				-- Let's assume we can iterate children with pairs? NO, "BadArgument" happened.
+				-- So we CANNOT iterate Children with pairs.
+				
+				-- Use GetChildComponentsByTypeName just to peek children existence?
+				-- No, that just gets components.
+			end
+			
+			-- [최종] 루트 엔티티에 SA, SR 모두 있음 (확인 완료)
+			monster.animEntityId = entity.Id
+			log("[MonsterManager] 몬스터 스폰 완료: " .. monster.name)
+		else
+			log("[ERROR] [MonsterManager] 모델 스폰 실패: " .. spawnModelId)
+		end
+	end
+
+	method void OnMonsterTouch(integer index)
+		log("[MonsterManager] 몬스터 터치됨: 인덱스 " .. tostring(index))
+		if self.uiMain ~= nil then
+			self.uiMain:OnClickMonster(index)
+		else
+			log("[WARNING] UI Main 연결 안됨")
+		end
+	end
+
+	-- [최종] 클라이언트에서 SpriteRUID 교체로 애니메이션 제어
+	method void PlayEntityState(string entityId, string stateName, number duration)
+		log("[PlayEntityState] 호출됨! entityId=" .. tostring(entityId) .. " state=" .. tostring(stateName))
+		if entityId == nil or entityId == "" then return end
+		
+		local entity = _EntityService:GetEntity(entityId)
+		if entity == nil then return end
+		
+		local spriteRenderer = entity.SpriteRendererComponent
+		local stateAnim = entity.StateAnimationComponent
+		
+		if spriteRenderer == nil then return end
+		if stateAnim == nil then return end
+		
+		local sheet = stateAnim.ActionSheet
+		if sheet == nil then return end
+		
+		-- ActionSheet 키 매핑 (소문자)
+		local sheetKey = "stand"
+		if stateName == "HIT" then
+			sheetKey = "hit"
+		elseif stateName == "ATTACK1" then
+			if sheet["attack"] ~= nil then
+				sheetKey = "attack"
+			elseif sheet["attack1"] ~= nil then
+				sheetKey = "attack1"
+			else
+				sheetKey = "hit"
+			end
+		elseif stateName == "DIE" then
+			sheetKey = "die"
+		elseif stateName == "MOVE" then
+			sheetKey = "move"
+		else
+			sheetKey = "stand"
+		end
+		
+		local targetRUID = sheet[sheetKey]
+		if targetRUID == nil or targetRUID == "" then
+			targetRUID = sheet[string.upper(sheetKey)] or sheet[string.lower(sheetKey)]
+		end
+		
+		if targetRUID ~= nil and targetRUID ~= "" then
+			-- ★ 핵심: StateAnimationComponent를 비활성화해야 우리가 넣은 RUID를 덮어쓰지 않음
+			stateAnim.Enable = false
+			spriteRenderer.SpriteRUID = targetRUID
+			log("[PlayEntityState] ★ StateAnim 비활성화 + SpriteRUID 교체! " .. sheetKey .. " = " .. tostring(targetRUID))
+			
+			-- 일정 시간 후 stand로 복귀 + StateAnimationComponent 다시 활성화
+			if duration > 0 and stateName ~= "DIE" then
+				_TimerService:SetTimerOnce(function()
+					pcall(function()
+						if spriteRenderer ~= nil and spriteRenderer.Entity ~= nil then
+							local standRUID = sheet["stand"]
+							if standRUID ~= nil then
+								spriteRenderer.SpriteRUID = standRUID
+							end
+							-- StateAnimationComponent 다시 켜기
+							if stateAnim ~= nil then
+								stateAnim.Enable = true
+							end
+						end
+					end)
+				end, duration)
+			end
+			-- DIE 상태면 StateAnimationComponent는 꺼둔 채로 유지
+		else
+			log("[PlayEntityState] ✖ RUID를 못 찾음! key=" .. sheetKey)
+		end
+	end
+
+	method boolean IsValidMonster(integer index)
+		local monster = self.monsterList[index]
+		return monster ~= nil and monster.alive and monster.entityId ~= nil
+	end
+
+
+
+end

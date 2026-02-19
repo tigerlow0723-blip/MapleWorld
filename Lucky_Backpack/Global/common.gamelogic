@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "gamelogic://47a5f4fcce4147c99441e6b5e79b06da",
+  "EntryKey": "gamelogic://93e1d62de7bf493186a44a7c820ceb5a",
   "ContentType": "x-mod/gamelogic",
   "Content": "",
   "Usage": 0,
@@ -14,7 +14,7 @@
     "Use": "Binary",
     "Entities": [
       {
-        "id": "ca73cc80-04f9-4e81-b18d-da8a56409f9c",
+        "id": "104b9cc7-1261-4cce-a45b-d2d10f669839",
         "path": "/common",
         "componentNames": "",
         "jsonString": {

@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "codeblock://c6ea2f4e-e73a-41a6-b1a3-584293717909",
+  "EntryKey": "codeblock://63fe07f0-2bcd-462c-8157-d6031e053b5e",
   "ContentType": "x-mod/codeblock",
   "Content": "",
   "Usage": 0,
@@ -22,10 +22,10 @@
         "Minor": 1
       },
       "Description": "",
-      "Id": "c6ea2f4e-e73a-41a6-b1a3-584293717909",
+      "Id": "63fe07f0-2bcd-462c-8157-d6031e053b5e",
       "Language": 1,
-      "Name": "hello",
-      "Type": 1,
+      "Name": "UIToast",
+      "Type": 5,
       "Source": 0,
       "Target": null
     }

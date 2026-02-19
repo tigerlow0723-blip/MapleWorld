@@ -1,0 +1,11 @@
+﻿stage_id,theme,is_fixed,fixed_map_type,choice_count,bgRUID
+1,엘나스,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+2,엘나스,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+3,얼음협곡,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+4,얼음협곡,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+5,상점,TRUE,Shop,1,0022a6927f0440218c70ceabe879ecba
+6,폐광,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+7,폐광,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+8,화산지대,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+9,화산지대,FALSE,None,2,0022a6927f0440218c70ceabe879ecba
+10,보스,TRUE,Boss,1,0022a6927f0440218c70ceabe879ecba

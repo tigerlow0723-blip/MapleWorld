@@ -1,8 +1,0 @@
-@Component
-script hello extends Component
-
-method void OnBeginPlay()
-    log("Merge Test")
-end
-
-end

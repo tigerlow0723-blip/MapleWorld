@@ -1,9 +1,0 @@
-@Component
-script test extends Component
-
-	@ExecSpace("ServerOnly")
-	method void OnUpdate(number delta)
-		log("test")
-	end
-
-end

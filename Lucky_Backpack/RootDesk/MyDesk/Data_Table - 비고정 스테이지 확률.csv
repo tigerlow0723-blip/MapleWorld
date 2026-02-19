@@ -1,0 +1,4 @@
+﻿node_type,weight,description
+Battle,70,일반전투맵
+Rest,20,정비맵
+Special,10,특별이벤트맵
