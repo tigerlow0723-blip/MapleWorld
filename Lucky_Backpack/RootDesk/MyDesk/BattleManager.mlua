@@ -374,7 +374,7 @@ script BattleManager extends Component
 		
 			-- 蹂댁긽 ?섏쭛
 			self.monsterManager:CollectRewards()
-			self.playerManager.gold = (self.playerManager.gold or 0) + (self.monsterManager.lastRewardGold or 0)
+			self.playerManager:AddGold(self.monsterManager.lastRewardGold or 0)
 			log("[BattleManager] Acquired EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
 		
 			-- ?덈꺼??泥댄겕 (媛꾨떒??EXP 湲곗?)

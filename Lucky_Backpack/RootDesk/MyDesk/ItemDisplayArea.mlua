@@ -73,7 +73,7 @@ script ItemDisplayArea extends Component
 
 		if dataManager ~= nil then
 			for itemId, itemData in pairs(dataManager.ItemTable) do
-				if itemData ~= nil then
+				if itemData ~= nil and itemData.type ~= "expand" then
 					selectableItemIds[#selectableItemIds + 1] = itemId
 				end
 			end

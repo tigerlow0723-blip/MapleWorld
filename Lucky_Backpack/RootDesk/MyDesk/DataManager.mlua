@@ -100,7 +100,7 @@ script DataManager extends Component
 			return headers
 		end
 
-		if tableName == "Data_Table - 장비 - 장비" or tableName == "Data_Table - 아이템 - 장비" then
+		if tableName == "Data_Table - 장비 - 장비" then
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
@@ -126,7 +126,31 @@ script DataManager extends Component
 			return headers
 		end
 
-		if tableName == "Data_Table - 방어구 - 방어구" or tableName == "Data_Table - 기타 - 기타" or tableName == "Data_Table - 아이템 - 방어구" or tableName == "Data_Table - 아이템 - 기타" then
+		if tableName == "Data_Table - 아이템 - 장비" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 방어구 - 방어구" or tableName == "Data_Table - 기타 - 기타" then
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
@@ -146,6 +170,30 @@ script DataManager extends Component
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 아이템 - 방어구" or tableName == "Data_Table - 아이템 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
 			return headers
 		end
 

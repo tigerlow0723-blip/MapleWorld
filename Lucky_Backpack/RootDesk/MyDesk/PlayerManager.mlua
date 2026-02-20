@@ -383,6 +383,28 @@ script PlayerManager extends Component
 		self.buffList = newList
 	end
 
+	method void AddGold(integer amount)
+		if amount == nil or amount <= 0 then
+			return
+		end
+		self.gold = (self.gold or 0) + amount
+		log("[PlayerManager] Gold +" .. tostring(amount) .. " => " .. tostring(self.gold))
+	end
+
+	method boolean SpendGold(integer amount)
+		if amount == nil or amount <= 0 then
+			return true
+		end
+		local current = self.gold or 0
+		if current < amount then
+			log("[PlayerManager] Not enough gold. Need=" .. tostring(amount) .. " Current=" .. tostring(current))
+			return false
+		end
+		self.gold = current - amount
+		log("[PlayerManager] Gold -" .. tostring(amount) .. " => " .. tostring(self.gold))
+		return true
+	end
+
 	method table BuildShapeCells(table itemData)
 		local shapeCells = {}
 		if itemData ~= nil and itemData.shapeMask ~= nil and itemData.shapeMask ~= "" then
