@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://af7535db9c944de0af5534343ccb014c",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/af7535db9c944de0af5534343ccb014c/639071869967237493",
+      "upload_hash": "BDED4704373942E2A0717765CAFF77043034B89CF671DF0F3F29E4FF3A63608D",
+      "name": "스팅어",
+      "resource_guid": "af7535db9c944de0af5534343ccb014c",
+      "resource_version": "69985234c20404cce164a682"
+    }
+  }
+}

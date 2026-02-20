@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://aceff03c494740d7ab488577666411ea",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/aceff03c494740d7ab488577666411ea/639071869958689801",
+      "upload_hash": "2AAE768AE27C6A06FD96398495C50FBA63F0196D9B26FB62B992DCD1BE95DEA0",
+      "name": "메이플 켈트 소드",
+      "resource_guid": "aceff03c494740d7ab488577666411ea",
+      "resource_version": "699852337e4aa1a64b5000f0"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://7d35ce6d6e1c493ca9a0784e6de1c0b7",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/7d35ce6d6e1c493ca9a0784e6de1c0b7/639071869958673934",
+      "upload_hash": "8183E74BC0CE07EA8A5C5F5623E877036B831A80E74A8A381CD630040ADE128D",
+      "name": "산양 석궁",
+      "resource_guid": "7d35ce6d6e1c493ca9a0784e6de1c0b7",
+      "resource_version": "69985233f92933a652cbaa18"
+    }
+  }
+}

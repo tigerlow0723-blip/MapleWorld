@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://48fa02e9bdcd443690305d9d54bc78d7",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/48fa02e9bdcd443690305d9d54bc78d7/639071869958890132",
+      "upload_hash": "255E82E909286106CE85EADC3C2D471EF86D1DAB1783867B7EF73A6261C26BBF",
+      "name": "블러드 대거",
+      "resource_guid": "48fa02e9bdcd443690305d9d54bc78d7",
+      "resource_version": "699852337e4aa1a64b5000f2"
+    }
+  }
+}

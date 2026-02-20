@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://1e884252f90d45c3b1fda06173d8b27d",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/1e884252f90d45c3b1fda06173d8b27d/639071869958806770",
+      "upload_hash": "04F7C10D3159CE63B21A5AF3069EEB5A240A7D916907736CD0DE9F00BEDF6129",
+      "name": "참화도",
+      "resource_guid": "1e884252f90d45c3b1fda06173d8b27d",
+      "resource_version": "699852331d7853c1f4cd921f"
+    }
+  }
+}

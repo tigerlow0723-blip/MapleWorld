@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://52992e0b0a2a4c3e98de347bb1cee4b7",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/52992e0b0a2a4c3e98de347bb1cee4b7/639071869969894979",
+      "upload_hash": "F8618F7DEECB4E1B533CF89890B1C63AA16D0F6FDBA63F23A3F9D154548EAEFF",
+      "name": "용천권",
+      "resource_guid": "52992e0b0a2a4c3e98de347bb1cee4b7",
+      "resource_version": "699852357e4aa1a64b5000f6"
+    }
+  }
+}

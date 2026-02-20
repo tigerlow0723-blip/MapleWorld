@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://012051c79ffa4caca478f47595718427",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/012051c79ffa4caca478f47595718427/639071869958914246",
+      "upload_hash": "6C5D064B0E3C30582A0C4BB19B3F1EAD2736AD932F56DC7381F65DFDCDFECEF0",
+      "name": "베인 롱보우",
+      "resource_guid": "012051c79ffa4caca478f47595718427",
+      "resource_version": "69985233094359a56fa23e4e"
+    }
+  }
+}

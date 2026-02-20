@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://62efea4a804d4fa9a7f53a3bb2652c73",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/62efea4a804d4fa9a7f53a3bb2652c73/639071869969862844",
+      "upload_hash": "877EEDDE658A92A0961F25C7399C23DE16E1F120E6C1E59CAEEAB5E011BC1FCD",
+      "name": "우드 완드",
+      "resource_guid": "62efea4a804d4fa9a7f53a3bb2652c73",
+      "resource_version": "699852351b381b5204e97d64"
+    }
+  }
+}

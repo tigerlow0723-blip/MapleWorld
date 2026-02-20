@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://619a5d24b11246569e4ffb7f30760fea",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/619a5d24b11246569e4ffb7f30760fea/639071869969979785",
+      "upload_hash": "87969C2E60477D4E410CCF7C7CB4E501D46D75CCE0EFBDC4E1F3C5EDA9E401F5",
+      "name": "이블테일러",
+      "resource_guid": "619a5d24b11246569e4ffb7f30760fea",
+      "resource_version": "69985235f97399ca117414fc"
+    }
+  }
+}

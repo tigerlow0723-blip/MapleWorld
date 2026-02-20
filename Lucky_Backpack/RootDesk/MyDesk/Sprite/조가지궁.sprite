@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://7e0858573c4645b4b47f6e567b2cbc71",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/7e0858573c4645b4b47f6e567b2cbc71/639071869969926964",
+      "upload_hash": "44A63EF2A23A7D48C6E2D6042426AD9F11B8E7BD580B15ADFEBFAAA968CD0AE4",
+      "name": "조가지궁",
+      "resource_guid": "7e0858573c4645b4b47f6e567b2cbc71",
+      "resource_version": "699852355e4a0a42e7573f47"
+    }
+  }
+}

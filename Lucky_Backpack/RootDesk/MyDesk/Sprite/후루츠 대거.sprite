@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://f4c7afd0dd5c4c0a8ba9a48e434c13da",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/f4c7afd0dd5c4c0a8ba9a48e434c13da/639071869972217507",
+      "upload_hash": "52C3370CFE216450AD8DDB563E67E03A8AC0A026679B150E69331C84D97FEDCE",
+      "name": "후루츠 대거",
+      "resource_guid": "f4c7afd0dd5c4c0a8ba9a48e434c13da",
+      "resource_version": "699852355e4a0a42e7573f48"
+    }
+  }
+}
