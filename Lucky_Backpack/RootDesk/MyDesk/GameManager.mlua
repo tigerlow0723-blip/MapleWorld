@@ -83,6 +83,12 @@ script GameManager extends Component
 				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
 			end
 		end
+		if self.itemDisplayArea == nil then
+			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
+			if displayAreaEntity ~= nil then
+				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+			end
+		end
 		
 		-- BattleManager에 매니저 참조 전달		
 		self.battleManager:SetManagers(self.dataManager, self.playerManager, self.monsterManager, self.itemManager, self.rewardManager)
@@ -192,6 +198,17 @@ script GameManager extends Component
 		
 		self.gamePhase = "Battle"
 		log("[GameManager] 전투 시작 버튼 눌림! 몬스터 스폰 및 전투 개시.")
+
+		if self.itemDisplayArea == nil then
+			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
+			if displayAreaEntity ~= nil then
+				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+			end
+		end
+		if self.itemDisplayArea ~= nil then
+			self.itemDisplayArea:ClearAllItems()
+		end
+		self.pendingRewards = {}
 		
 		if self.battleManager ~= nil then
 			self.battleManager:StartBattle(self.currentStage)
