@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://7fb276fba4de421a8b14cd70af3ac600",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/7fb276fba4de421a8b14cd70af3ac600/639071869958696781",
+      "upload_hash": "E54589EAD7BEA5185F5BAB2190843F79B00A73C1AF4A5A6C87BE156B694596D0",
+      "name": "태극부채",
+      "resource_guid": "7fb276fba4de421a8b14cd70af3ac600",
+      "resource_version": "69985233662b69f3b7787d46"
+    }
+  }
+}

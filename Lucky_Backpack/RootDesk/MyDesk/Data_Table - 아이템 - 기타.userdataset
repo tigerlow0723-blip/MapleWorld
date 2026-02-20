@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "userdataset://8fdd0e10-8973-4ff6-b0f5-8c70fb677ecc",
+  "EntryKey": "userdataset://e1bb58b8-524f-4de7-b474-a14a1dad1abb",
   "ContentType": "x-mod/userdataset",
   "Content": "",
   "Usage": 0,
@@ -13,8 +13,8 @@
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "name": "Data_Table - 아이템리스트",
-      "id": "8fdd0e10-8973-4ff6-b0f5-8c70fb677ecc",
+      "name": "Data_Table - 아이템 - 기타",
+      "id": "e1bb58b8-524f-4de7-b474-a14a1dad1abb",
       "serveronly": false,
       "syncDataSetWebUrl": "",
       "dynamicloading": 0

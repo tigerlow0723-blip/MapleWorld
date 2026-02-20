@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://9d919aa1513445d4bf2a8e9079b0736f",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/9d919aa1513445d4bf2a8e9079b0736f/639071869969880667",
+      "upload_hash": "15FD770346A6A32075148D6DEC24141063B7CE43486E8C031A45FF9F15A0F5DF",
+      "name": "위저드 완드",
+      "resource_guid": "9d919aa1513445d4bf2a8e9079b0736f",
+      "resource_version": "69985235c20404cce164a683"
+    }
+  }
+}

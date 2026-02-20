@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://437277d6ee8e4cfbb6c4d7aa77e791d3",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/437277d6ee8e4cfbb6c4d7aa77e791d3/639071869972388042",
+      "upload_hash": "01763FEB08207E2EB216AD0A9146C91C72A75EF2F85E7F3CFA292D6366D7D241",
+      "name": "가니어",
+      "resource_guid": "437277d6ee8e4cfbb6c4d7aa77e791d3",
+      "resource_version": "69985235f97399ca117414fd"
+    }
+  }
+}

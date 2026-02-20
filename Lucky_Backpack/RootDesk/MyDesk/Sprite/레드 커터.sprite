@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://7eedb955937148b5abb8c8f0cedef9ed",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/7eedb955937148b5abb8c8f0cedef9ed/639071869953987077",
+      "upload_hash": "E5FF64629CCFAB4EFF0CAD9D7A74E3C889F8A03B3398903A0BF4E91ACB843982",
+      "name": "레드 커터",
+      "resource_guid": "7eedb955937148b5abb8c8f0cedef9ed",
+      "resource_version": "699852332f2996a26f21a505"
+    }
+  }
+}

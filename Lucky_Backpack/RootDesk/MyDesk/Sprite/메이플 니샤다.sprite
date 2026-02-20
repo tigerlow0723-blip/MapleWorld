@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://a12020f404ad40049379684668719ea2",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/a12020f404ad40049379684668719ea2/639071869954554045",
+      "upload_hash": "1B587C9F5A7EFEA073A51431C16B5F49AA3F5BD24CBA2EFA5B631F7ABB9272CE",
+      "name": "메이플 니샤다",
+      "resource_guid": "a12020f404ad40049379684668719ea2",
+      "resource_version": "69985233094359a56fa23e4d"
+    }
+  }
+}

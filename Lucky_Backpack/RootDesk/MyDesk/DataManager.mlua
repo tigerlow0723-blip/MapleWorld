@@ -58,6 +58,294 @@ script DataManager extends Component
 		return ds
 	end
 
+	method string GetCellString(any ds, integer row, string colA, string colB)
+		if ds == nil then
+			return ""
+		end
+
+		local value = self:TryGetCell(ds, row, colA)
+		if value ~= nil and value ~= "" then
+			return tostring(value)
+		end
+
+		if colB ~= nil and colB ~= "" then
+			local valueB = self:TryGetCell(ds, row, colB)
+			if valueB ~= nil and valueB ~= "" then
+				return tostring(valueB)
+			end
+		end
+
+		return ""
+	end
+
+	method any TryGetCell(any ds, integer row, string colName)
+		if ds == nil or colName == nil or colName == "" then
+			return nil
+		end
+
+		local ok, value = pcall(function()
+			return ds:GetCell(row, colName)
+		end)
+
+		if ok then
+			return value
+		end
+
+		return nil
+	end
+
+	method table GetCsvHeaderSet(string tableName)
+		local headers = {}
+		if tableName == nil or tableName == "" then
+			return headers
+		end
+
+		if tableName == "Data_Table - 장비 - 장비" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["1"] = true
+			headers["2"] = true
+			headers["3"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 아이템 - 장비" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 방어구 - 방어구" or tableName == "Data_Table - 기타 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 아이템 - 방어구" or tableName == "Data_Table - 아이템 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+
+		return headers
+	end
+
+	method integer GetCellNumber(any ds, integer row, string colA, string colB, integer defaultValue)
+		local text = self:GetCellString(ds, row, colA, colB)
+		if text == "" then
+			return defaultValue
+		end
+		return tonumber(text) or defaultValue
+	end
+
+	method string NormalizeShapeMask(string shapeMask)
+		if shapeMask == nil or shapeMask == "" then
+			return ""
+		end
+
+		local normalized = ""
+		for i = 1, string.len(shapeMask) do
+			local ch = string.sub(shapeMask, i, i)
+			if ch == "," then
+				normalized = normalized .. "/"
+			elseif ch == "0" or ch == "1" or ch == "/" then
+				normalized = normalized .. ch
+			end
+		end
+
+		local rows = {}
+		local rowText = ""
+		for i = 1, string.len(normalized) do
+			local ch = string.sub(normalized, i, i)
+			if ch == "/" then
+				if rowText ~= "" then
+					rows[#rows + 1] = rowText
+				end
+				rowText = ""
+			else
+				rowText = rowText .. ch
+			end
+		end
+		if rowText ~= "" then
+			rows[#rows + 1] = rowText
+		end
+
+		if #rows == 0 then
+			return ""
+		end
+
+		local top = #rows + 1
+		local bottom = 0
+		local left = 9999
+		local right = 0
+		local hasOne = false
+
+		for r = 1, #rows do
+			local line = rows[r]
+			for c = 1, string.len(line) do
+				if string.sub(line, c, c) == "1" then
+					hasOne = true
+					if r < top then top = r end
+					if r > bottom then bottom = r end
+					if c < left then left = c end
+					if c > right then right = c end
+				end
+			end
+		end
+
+		if hasOne == false then
+			return ""
+		end
+
+		local compactRows = {}
+		for r = top, bottom do
+			local line = rows[r]
+			local outLine = ""
+			for c = left, right do
+				if c <= string.len(line) and string.sub(line, c, c) == "1" then
+					outLine = outLine .. "1"
+				else
+					outLine = outLine .. "0"
+				end
+			end
+			compactRows[#compactRows + 1] = outLine
+		end
+
+		local compactMask = compactRows[1]
+		for i = 2, #compactRows do
+			compactMask = compactMask .. "/" .. compactRows[i]
+		end
+		return compactMask
+	end
+
+	method string BuildShapeMaskFromLegacyColumns(any ds, integer row)
+		if ds == nil then
+			return ""
+		end
+
+		local rows = {}
+		for i = 1, 3 do
+			local key = tostring(i)
+			local rowText = self:TryGetCell(ds, row, key)
+			if rowText ~= nil and rowText ~= "" then
+				rows[#rows + 1] = tostring(rowText)
+			end
+		end
+
+		if #rows == 0 then
+			return ""
+		end
+
+		local shapeMask = rows[1]
+		for i = 2, #rows do
+			shapeMask = shapeMask .. "/" .. rows[i]
+		end
+		return self:NormalizeShapeMask(shapeMask)
+	end
+
+	method table GetShapeBounds(string shapeMask)
+		local result = {width = 0, height = 0}
+		local mask = self:NormalizeShapeMask(shapeMask)
+		if mask == "" then
+			return result
+		end
+
+		local rowText = ""
+		for i = 1, string.len(mask) do
+			local ch = string.sub(mask, i, i)
+			if ch == "/" then
+				if rowText ~= "" then
+					result.height += 1
+					if string.len(rowText) > result.width then
+						result.width = string.len(rowText)
+					end
+				end
+				rowText = ""
+			else
+				rowText = rowText .. ch
+			end
+		end
+
+		if rowText ~= "" then
+			result.height += 1
+			if string.len(rowText) > result.width then
+				result.width = string.len(rowText)
+			end
+		end
+
+		return result
+	end
+
 	method void LoadMonsterTable()
 		local ds = self:GetDataSet("Data_Table - 몬스터리스트")
 		if ds == nil then return end
@@ -81,8 +369,7 @@ script DataManager extends Component
 				data.dotTurn = tonumber(ds:GetCell(i, "dotTurn")) or 0
 				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
 				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
-				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
-				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
+				data.goldDrop = tonumber(ds:GetCell(i, "goldDrop")) or data.rewardGold
 				data.modelID = ds:GetCell(i, "ModelID") or ""
 				self.MonsterTable[id] = data
 			end
@@ -144,35 +431,124 @@ script DataManager extends Component
 	end
 
 	method void LoadItemTable()
-		local ds = self:GetDataSet("Data_Table - 아이템리스트")
-		if ds == nil then return end
-		local rowCount = ds:GetRowCount()
-		for i = 1, rowCount do
-			local id = tonumber(ds:GetCell(i, "id")) or 0
-			if id > 0 then
-				local data = {}
-				data.id = id
-				data.type = ds:GetCell(i, "type") or "weapon"
-				data.name = ds:GetCell(i, "name") or ""
-				data.width = math.max(1, tonumber(ds:GetCell(i, "width")) or 1)
-				data.height = math.max(1, tonumber(ds:GetCell(i, "height")) or 1)
-				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
-				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
-				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0
-				data.accPercent = tonumber(ds:GetCell(i, "accPercent")) or 0
-				data.critRate = tonumber(ds:GetCell(i, "critRate")) or 0
-				data.critDmg = tonumber(ds:GetCell(i, "critDmg")) or 0
-				data.hp = tonumber(ds:GetCell(i, "hp")) or 0
-				data.hpPercent = tonumber(ds:GetCell(i, "hpPercent")) or 0
-				data.def = tonumber(ds:GetCell(i, "def")) or 0
-				data.desc = ds:GetCell(i, "desc") or ""
-				data.spawnGroup = tonumber(ds:GetCell(i, "Spawn_Group")) or 1
-				data.imageRUID = ds:GetCell(i, "imageRUID") or ""
-				data.shapeMask = ds:GetCell(i, "shapeMask") or ""
-				self.ItemTable[id] = data
+		self.ItemTable = {}
+
+		local tableNames = {
+			"Data_Table - 아이템 - 장비",
+			"Data_Table - 아이템 - 방어구",
+			"Data_Table - 아이템 - 기타",
+			"Data_Table - 장비 - 장비",
+			"Data_Table - 방어구 - 방어구",
+			"Data_Table - 기타 - 기타",
+			"Data_Table - 소비 - 소비"
+		}
+
+		local loadedCount = 0
+
+		for t = 1, #tableNames do
+			local tableName = tableNames[t]
+			local ds = _DataService:GetTable(tableName)
+			if ds ~= nil then
+				local headerSet = self:GetCsvHeaderSet(tableName)
+				local rowCount = ds:GetRowCount()
+				for i = 1, rowCount do
+					local function hasCol(colName)
+						return headerSet[colName] == true
+					end
+
+					local function getCell(colName)
+						if hasCol(colName) == false then
+							return nil
+						end
+						return ds:GetCell(i, colName)
+					end
+
+					local function getString(colA, colB)
+						local v = getCell(colA)
+						if v ~= nil and v ~= "" then
+							return tostring(v)
+						end
+						if colB ~= nil and colB ~= "" then
+							local v2 = getCell(colB)
+							if v2 ~= nil and v2 ~= "" then
+								return tostring(v2)
+							end
+						end
+						return ""
+					end
+
+					local function getNumber(colA, colB, defaultValue)
+						local text = getString(colA, colB)
+						if text == "" then
+							return defaultValue
+						end
+						return tonumber(text) or defaultValue
+					end
+
+					local id = getNumber("id", "ID", 0)
+					if id > 0 and self.ItemTable[id] == nil then
+						local data = {}
+						data.id = id
+						data.type = getString("type", "")
+						if data.type == "" then
+							data.type = "weapon"
+						end
+
+						data.name = getString("name", "")
+						data.cost = getNumber("cost", "", 0)
+						if hasCol("price") then
+							data.price = getNumber("price", "", data.cost)
+						else
+							data.price = data.cost
+						end
+						data.atk = getNumber("atk", "", 0)
+						data.atkPercent = getNumber("atkPercent", "atkPercent (%)", 0)
+						data.accPercent = getNumber("accPercent", "accPercent (%)", 0)
+						data.critRate = getNumber("critRate", "critRate (%)", 0)
+						data.critDmg = getNumber("critDmg", "critDmg (%)", 0)
+						data.hp = getNumber("hp", "", 0)
+						data.hpPercent = getNumber("hpPercent", "hpPercent (%)", 0)
+						data.def = getNumber("def", "", 0)
+						data.desc = getString("desc", "")
+						data.spawnGroup = getNumber("Spawn_Group", "", 1)
+						data.imageRUID = getString("imageRUID", "")
+
+						local shapeMask = getString("shapeMask", "")
+						if shapeMask == "" then
+							if hasCol("1") or hasCol("2") or hasCol("3") then
+								shapeMask = self:BuildShapeMaskFromLegacyColumns(ds, i)
+							end
+						end
+						data.shapeMask = self:NormalizeShapeMask(shapeMask)
+
+						local rawWidth = getNumber("width", "", 0)
+						local rawHeight = getNumber("height", "", 0)
+						local bounds = self:GetShapeBounds(data.shapeMask)
+						if rawWidth > 0 then
+							data.width = rawWidth
+						else
+							data.width = bounds.width
+						end
+						if rawHeight > 0 then
+							data.height = rawHeight
+						else
+							data.height = bounds.height
+						end
+
+						if data.width <= 0 then data.width = 1 end
+						if data.height <= 0 then data.height = 1 end
+						if data.shapeMask == "" then
+							data.shapeMask = "1"
+						end
+
+						self.ItemTable[id] = data
+						loadedCount += 1
+					end
+				end
 			end
 		end
-		log("[DataManager] 아이템 " .. tostring(#self.ItemTable) .. " 개 로딩")
+
+		log("[DataManager] 아이템 " .. tostring(loadedCount) .. " 개 로딩")
 	end
 
 	method void LoadBaseStatTable()

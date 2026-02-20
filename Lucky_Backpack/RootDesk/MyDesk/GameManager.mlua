@@ -19,6 +19,7 @@ script GameManager extends Component
 	property any miniGameManager = nil
 	property any itemDisplayArea = nil
 	property Entity rewardChestEntity = nil
+	property string shopPanelPath = "/ui/UIGroup/ShopPanel"
 	
 	property BackgroundComponent backgroundRenderer = nil -- BackgroundComponent ?곌껐
 	
@@ -147,8 +148,19 @@ script GameManager extends Component
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		
-		-- 시작 아이템 지급(낡은 검) - 게임 시작 시 인벤토리에 즉시 배치
+		-- 시작 아이템 지급(무기 1개) - 데이터 분할 테이블 대응
 		local startWeapon = self.dataManager:GetItemData(1)
+		if startWeapon == nil or startWeapon.type ~= "weapon" then
+			startWeapon = self.dataManager:GetItemData(1001)
+		end
+		if startWeapon == nil then
+			for _, itemData in pairs(self.dataManager.ItemTable) do
+				if itemData ~= nil and itemData.type == "weapon" then
+					startWeapon = itemData
+					break
+				end
+			end
+		end
 		if startWeapon ~= nil then
 			self.playerManager:AddItem(startWeapon)
 		end
@@ -252,16 +264,17 @@ script GameManager extends Component
 	end
 
 	method void EnterShop()
-		log("[GameManager] === Enter Shop (Stage 5) ===")
-		-- ?곸젏 ?꾩씠???앹꽦 (?꾩옱 ?ㅽ뀒?댁???留욌뒫 ?꾩씠??4媛?
-		local shopItems = self.itemManager:GenerateDropItems(self.currentStage, 4, self.dataManager)
-		log("[GameManager] Shop items " .. tostring(#shopItems) .. " displayed")
-		for i = 1, #shopItems do
-			log("[GameManager]  [" .. tostring(i) .. "] " .. self.itemManager:GetItemDescription(shopItems[i]))
+		self.gamePhase = "Shop"
+		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
+		if shopPanel ~= nil and shopPanel.ShopUI ~= nil then
+			shopPanel.ShopUI:OpenShop()
+			log("[GameManager] Shop panel opened.")
+		else
+			log_warning("[GameManager] ShopPanel/ShopUI not found: " .. self.shopPanelPath)
 		end
-		-- TODO: ?곸젏 UI ?쒖떆 ??援щℓ/?먮ℓ ?湲?
-		-- ?붾쾭洹? ?먮룞?쇰줈 ?ㅼ쓬 ?ㅽ뀒?댁?
-		-- self:OnStageComplete()
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
 	end
 
 	method void EnterMiniGameShop()
@@ -343,13 +356,26 @@ script GameManager extends Component
 			self.rewardChestEntity:SetEnable(false)
 		end
 		
-		self.gamePhase = "Shop"
-		
-		-- ?곸젏 NPC ?깆옣 (?꾪닾 ??臾댁“嫄?
-		local npcFunc = function()
-			self:ShowRandomShopNPC()
+		self:EnterShop()
+	end
+
+	method void CloseShop()
+		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
+		if shopPanel ~= nil then
+			shopPanel:SetEnable(false)
+			shopPanel:SetVisible(false)
 		end
-		_TimerService:SetTimerOnce(npcFunc, 1.0)
+
+		self.currentStage += 1
+		if self.currentStage > 10 then
+			self:GameClear()
+			return
+		end
+
+		self:ProceedToStage()
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
 	end
 
 	method void ShowRandomShopNPC()

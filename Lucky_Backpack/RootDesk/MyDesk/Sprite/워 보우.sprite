@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://38dcaf784403439a9274a9a7c876e018",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/38dcaf784403439a9274a9a7c876e018/639071869969925295",
+      "upload_hash": "05B78A2E02F30D2DE3332AC8D53F4FA66DE0DE2B0D0C60D6AC26DBC4920CFD5B",
+      "name": "워 보우",
+      "resource_guid": "38dcaf784403439a9274a9a7c876e018",
+      "resource_version": "69985235f92933a652cbaa1c"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://3fbdc07a001a4c3da53c9e09bff50c91",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/3fbdc07a001a4c3da53c9e09bff50c91/639071869970005139",
+      "upload_hash": "46B07CDFB1AF0AB16112C8F8637C7049A86D6D4D21B34E80F06CF229212E0FFD",
+      "name": "카사 크로우",
+      "resource_guid": "3fbdc07a001a4c3da53c9e09bff50c91",
+      "resource_version": "69985235030c0823a5d855a3"
+    }
+  }
+}

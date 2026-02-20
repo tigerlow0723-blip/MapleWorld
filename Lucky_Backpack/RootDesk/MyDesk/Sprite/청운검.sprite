@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://f05e0b3788854c7e8391b934b31a1ec2",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/f05e0b3788854c7e8391b934b31a1ec2/639071869969892815",
+      "upload_hash": "1E1EE4F8ACA4E50A09DED387F88E9D5A96FC163B85AEB81E358A0D5CB8E4A8B0",
+      "name": "청운검",
+      "resource_guid": "f05e0b3788854c7e8391b934b31a1ec2",
+      "resource_version": "699852357e4aa1a64b5000f7"
+    }
+  }
+}

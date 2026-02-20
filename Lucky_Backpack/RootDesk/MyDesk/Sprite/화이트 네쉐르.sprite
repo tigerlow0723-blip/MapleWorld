@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://5460ca42feab47a88f5966447a287b92",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/5460ca42feab47a88f5966447a287b92/639071869962713224",
+      "upload_hash": "81072C8D4E0ED3CDCDA9972F054F80EC36DA9729F9205097C627F87052EC6B4C",
+      "name": "화이트 네쉐르",
+      "resource_guid": "5460ca42feab47a88f5966447a287b92",
+      "resource_version": "699852347e4aa1a64b5000f3"
+    }
+  }
+}

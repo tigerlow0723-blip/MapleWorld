@@ -1,0 +1,386 @@
+﻿@Component
+script ShopUI extends Component
+
+property string refreshButtonPath = "/ui/UIGroup/ShopPanel/BtnRefresh"
+property string closeButtonPath = "/ui/UIGroup/ShopPanel/BtnCloseShop"
+property string playerGoldTextPath = "/ui/UIGroup/ShopPanel/PlayerCoin/TxtPlayerCoin"
+property string sellAreaPath = "/ui/UIGroup/ShopPanel/SellArea"
+property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
+
+property string card1Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1"
+property string card2Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_2"
+property string card3Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_3"
+property string card4Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_4"
+property string card5Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_5"
+
+property integer refreshCost = 2
+property table shopItems = {}
+
+property any gameManager = nil
+property any dataManager = nil
+property any playerManager = nil
+property any itemDisplayArea = nil
+
+property table cardEntities = {}
+property any refreshButton = nil
+property any closeButton = nil
+property any playerGoldText = nil
+property any sellAreaEntity = nil
+
+@ExecSpace("ClientOnly")
+method void OnBeginPlay()
+    self.Entity:SetEnable(false)
+    self.Entity:SetVisible(false)
+
+    self:ResolveManagers()
+    self:ResolveUIReferences()
+    self:ConnectEvents()
+end
+
+@ExecSpace("ClientOnly")
+method void ResolveManagers()
+    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+    if gameSystem ~= nil then
+        self.gameManager = gameSystem.GameManager
+        self.dataManager = gameSystem.DataManager
+        self.playerManager = gameSystem.PlayerManager
+    end
+
+    local displayAreaEntity = _EntityService:GetEntityByPath(self.itemDisplayAreaPath)
+    if displayAreaEntity ~= nil then
+        self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void ResolveUIReferences()
+    self.refreshButton = _EntityService:GetEntityByPath(self.refreshButtonPath)
+    self.closeButton = _EntityService:GetEntityByPath(self.closeButtonPath)
+    self.playerGoldText = _EntityService:GetEntityByPath(self.playerGoldTextPath)
+    self.sellAreaEntity = _EntityService:GetEntityByPath(self.sellAreaPath)
+
+    self.cardEntities = {}
+    local cardPaths = {self.card1Path, self.card2Path, self.card3Path, self.card4Path, self.card5Path}
+    for i = 1, #cardPaths do
+        local cardEntity = _EntityService:GetEntityByPath(cardPaths[i])
+        self.cardEntities[i] = cardEntity
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void ConnectEvents()
+    if self.refreshButton ~= nil then
+        self.refreshButton:ConnectEvent(ButtonClickEvent, function(event)
+            self:OnClickRefresh()
+        end)
+    end
+
+    if self.closeButton ~= nil then
+        self.closeButton:ConnectEvent(ButtonClickEvent, function(event)
+            self:OnClickClose()
+        end)
+    end
+
+    for i = 1, #self.cardEntities do
+        local cardEntity = self.cardEntities[i]
+        if cardEntity ~= nil then
+            local idx = i
+            cardEntity:ConnectEvent(ButtonClickEvent, function(event)
+                self:OnClickCard(idx)
+            end)
+        end
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void OpenShop()
+    self:ResolveManagers()
+    self:ResolveUIReferences()
+
+    self.Entity:SetEnable(true)
+    self.Entity:SetVisible(true)
+
+    if self.gameManager ~= nil then
+        self.gameManager.gamePhase = "Shop"
+    end
+
+    self:GenerateShopItems()
+    self:UpdateGoldText()
+end
+
+@ExecSpace("ClientOnly")
+method void GenerateShopItems()
+    -- 배열 명시적 초기화: 기존 흔적 완전 삭제
+    if self.shopItems == nil then
+        self.shopItems = {}
+    end
+    for i = 1, 5 do
+        self.shopItems[i] = nil
+    end
+
+    if self.dataManager == nil then
+        self:RenderShopItems()
+        return
+    end
+
+    local pool = {}
+    for itemId, itemData in pairs(self.dataManager.ItemTable) do
+        if itemData ~= nil and itemData.type ~= "expand" then
+            pool[#pool + 1] = itemData
+        end
+    end
+
+    local maxCount = 5
+    if #pool < maxCount then
+        maxCount = #pool
+    end
+
+    for i = 1, maxCount do
+        local randomIdx = math.random(1, #pool)
+        self.shopItems[i] = pool[randomIdx]
+        table.remove(pool, randomIdx)
+    end
+
+    self:RenderShopItems()
+end
+
+@ExecSpace("ClientOnly")
+method void RenderShopItems()
+    for i = 1, 5 do
+        local cardEntity = self.cardEntities[i]
+        -- 새로운 아이템을 그리기 전에 UI 잔상 초기화 (빈 슬롯 렌더링)
+        self:RenderCard(cardEntity, nil)
+
+        local itemData = self.shopItems[i]
+        if itemData ~= nil then
+            self:RenderCard(cardEntity, itemData)
+        end
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void RenderCard(Entity cardEntity, table itemData)
+    if cardEntity == nil then
+        return
+    end
+
+    local imgEntity = cardEntity:GetChildByName("Img", true)
+    local txtNameEntity = cardEntity:GetChildByName("TxtName", true)
+    local txtPriceEntity = cardEntity:GetChildByName("TxtPrice", true)
+
+    local imageRenderer = nil
+    if imgEntity ~= nil then
+        imageRenderer = imgEntity.SpriteGUIRendererComponent
+    else
+        imageRenderer = cardEntity.SpriteGUIRendererComponent
+    end
+
+    local bgRenderer = cardEntity.SpriteGUIRendererComponent
+
+    if itemData == nil then
+        if bgRenderer ~= nil then
+            bgRenderer.Color = Color(0.85, 0.85, 0.85, 1) -- 품절 시 회색 배경
+        end
+        if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
+            txtNameEntity.TextComponent.Text = "Sold Out"
+            txtNameEntity.TextComponent.FontColor = Color(0.3, 0.3, 0.3, 1)
+        end
+        if txtPriceEntity ~= nil and txtPriceEntity.TextComponent ~= nil then
+            txtPriceEntity.TextComponent.Text = ""
+        end
+        if imageRenderer ~= nil then
+            imageRenderer.Color = Color(0.4, 0.4, 0.4, 1)
+        end
+        return
+    end
+
+    if bgRenderer ~= nil then
+        bgRenderer.Color = self:GetCardBackgroundColor(itemData)
+    end
+
+    if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
+        local displayName = itemData.name or ""
+        if displayName == "" then displayName = "Unknown" end
+        txtNameEntity.TextComponent.Text = displayName
+        txtNameEntity.TextComponent.FontColor = Color(0, 0, 0, 1)
+    end
+
+    local price = self:GetItemPrice(itemData)
+    if txtPriceEntity ~= nil and txtPriceEntity.TextComponent ~= nil then
+        txtPriceEntity.TextComponent.Text = "" .. tostring(price)
+        txtPriceEntity.TextComponent.FontColor = Color(0, 0, 0, 1)
+    end
+
+    if imageRenderer ~= nil then
+        if itemData.imageRUID ~= nil and itemData.imageRUID ~= "" and itemData.imageRUID ~= "NONE" then
+            imageRenderer.Color = Color(1, 1, 1, 1)
+            imageRenderer.ImageRUID = itemData.imageRUID
+        else
+            -- imageRUID가 없을 경우 이전 이미지가 남지 않도록 명시적으로 비우고 투명화
+            imageRenderer.ImageRUID = ""
+            imageRenderer.Color = Color(1, 1, 1, 0)
+        end
+    end
+end
+
+@ExecSpace("ClientOnly")
+method Color GetCardBackgroundColor(table itemData)
+    if itemData == nil then
+        return Color(1, 1, 1, 1)
+    end
+
+    local itemType = tostring(itemData.type or "")
+    if itemType == "weapon" then
+        return Color(0.62, 0.86, 1.0, 1) -- Sky Blue
+    elseif itemType == "armor" then
+        return Color(0.56, 0.93, 0.56, 1) -- Light Green
+    else
+        return Color(1.0, 0.93, 0.52, 1) -- Yellow (Consumables, Etc)
+    end
+end
+
+@ExecSpace("ClientOnly")
+method integer GetItemPrice(table itemData)
+    if itemData == nil then
+        return 1
+    end
+    local price = tonumber(itemData.price) or 0
+    if price <= 0 then
+        price = tonumber(itemData.cost) or 0
+    end
+    if price <= 0 then
+        price = 1
+    end
+    return price
+end
+
+@ExecSpace("ClientOnly")
+method integer GetSellPrice(integer itemId)
+    if self.dataManager == nil then
+        return 1
+    end
+
+    local itemData = self.dataManager:GetItemData(itemId)
+    if itemData == nil then
+        return 1
+    end
+
+    local price = self:GetItemPrice(itemData)
+    local sellPrice = math.floor(price * 0.5)
+    if sellPrice <= 0 then
+        sellPrice = 1
+    end
+    return sellPrice
+end
+
+@ExecSpace("ClientOnly")
+method void OnClickRefresh()
+    if self.playerManager == nil then
+        return
+    end
+
+    local ok = self.playerManager:SpendGold(self.refreshCost)
+    if ok == false then
+        return
+    end
+
+    self:GenerateShopItems()
+    self:UpdateGoldText()
+    self:NotifyMainUI()
+end
+
+@ExecSpace("ClientOnly")
+method void OnClickCard(integer index)
+    local itemData = self.shopItems[index]
+    if itemData == nil then
+        return
+    end
+
+    if self.playerManager == nil then
+        return
+    end
+
+    local price = self:GetItemPrice(itemData)
+    if self.playerManager:SpendGold(price) == false then
+        return
+    end
+
+    if self.itemDisplayArea ~= nil then
+        if self.itemDisplayArea.Entity ~= nil then
+            self.itemDisplayArea.Entity:SetEnable(true)
+            self.itemDisplayArea.Entity:SetVisible(true)
+        end
+        local nextIndex = #self.itemDisplayArea.spawnedItems
+        self.itemDisplayArea:CreateItemEntity(itemData.id, nextIndex)
+        self.itemDisplayArea:ArrangeItems()
+    end
+
+    self.shopItems[index] = nil
+    self:RenderShopItems()
+    self:UpdateGoldText()
+    self:NotifyMainUI()
+end
+
+@ExecSpace("ClientOnly")
+method void OnClickClose()
+    if self.gameManager ~= nil then
+        self.gameManager:CloseShop()
+    else
+        self.Entity:SetEnable(false)
+        self.Entity:SetVisible(false)
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void UpdateGoldText()
+    if self.playerGoldText ~= nil and self.playerGoldText.TextComponent ~= nil and self.playerManager ~= nil then
+        self.playerGoldText.TextComponent.Text = tostring(self.playerManager.gold or 0)
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void NotifyMainUI()
+    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+    if gameSystem ~= nil and gameSystem.UIMain ~= nil then
+        gameSystem.UIMain:UpdateUI()
+    end
+end
+
+@ExecSpace("ClientOnly")
+method boolean IsInSellArea(Vector2 screenPos)
+    if self.sellAreaEntity == nil then
+        self.sellAreaEntity = _EntityService:GetEntityByPath(self.sellAreaPath)
+    end
+    if self.sellAreaEntity == nil then
+        return false
+    end
+
+    local uiTransform = self.sellAreaEntity.UITransformComponent
+    if uiTransform == nil then
+        return false
+    end
+
+    local localPos = _UILogic:ScreenToLocalUIPosition(screenPos, uiTransform)
+    local halfW = uiTransform.sizeDelta.x * 0.5
+    local halfH = uiTransform.sizeDelta.y * 0.5
+
+    if math.abs(localPos.x) <= halfW and math.abs(localPos.y) <= halfH then
+        return true
+    end
+    return false
+end
+
+@ExecSpace("ClientOnly")
+method boolean SellItemById(integer itemId)
+    if self.playerManager == nil then
+        return false
+    end
+
+    local sellPrice = self:GetSellPrice(itemId)
+    self.playerManager:AddGold(sellPrice)
+    self:UpdateGoldText()
+    self:NotifyMainUI()
+    return true
+end
+
+end
