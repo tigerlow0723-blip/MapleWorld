@@ -1,6 +1,7 @@
 @Component
 script MiniGameManager extends Component
 
+	property any gameManager = nil
 	property any playerManager = nil
 	property any dataManager = nil
 	property any uiMain = nil
@@ -9,8 +10,12 @@ script MiniGameManager extends Component
 	property integer GOLD_BAR_PRICE = 1000
 	
 	property boolean isMiniGameActive = false
+	
+	-- "Main" (선택 화면), "Play" (홀짝), "Shop" (상점)
+	property string subState = "None"
 
-	method void Init(any pMgr, any dMgr, any ui)
+	method void Init(any gMgr, any pMgr, any dMgr, any ui)
+		self.gameManager = gMgr
 		self.playerManager = pMgr
 		self.dataManager = dMgr
 		self.uiMain = ui
@@ -18,6 +23,7 @@ script MiniGameManager extends Component
 	
 	method void StartMiniGamePhase()
 		self.isMiniGameActive = true
+		self.subState = "Main"
 		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 진입!")
 		-- UI 업데이트 등 처리 필요
 		if self.uiMain ~= nil then
@@ -27,7 +33,45 @@ script MiniGameManager extends Component
 
 	method void EndMiniGamePhase()
 		self.isMiniGameActive = false
+		self.subState = "None"
 		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 종료.")
+	end
+
+	method void ExitMiniGame()
+		self:EndMiniGamePhase()
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+		if self.gameManager ~= nil then
+			self.gameManager:OnStageComplete()
+		end
+	end
+	
+	-- 하위 메뉴(홀짝 게임) 들어가기
+	method void EnterSubPlay()
+		if not self.isMiniGameActive then return end
+		self.subState = "Play"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+	
+	-- 하위 메뉴(상점) 들어가기
+	method void EnterSubShop()
+		if not self.isMiniGameActive then return end
+		self.subState = "Shop"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+	
+	-- 메인 화면으로 돌아가기 (뒤로가기)
+	method void BackToMain()
+		if not self.isMiniGameActive then return end
+		self.subState = "Main"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
 	end
 
 	method integer GetOreCount()

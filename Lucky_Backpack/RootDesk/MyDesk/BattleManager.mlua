@@ -33,7 +33,7 @@ script BattleManager extends Component
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
-		log("[BattleManager] 珥덇린???꾨즺")
+		log("[BattleManager] Initialization complete")
 	end
 
 	method void SetManagers(any dataMgr, any playerMgr, any monsterMgr, any itemMgr, any rewardMgr)
@@ -44,7 +44,7 @@ script BattleManager extends Component
 		self.rewardManager = rewardMgr
 		-- GameManager??媛숈? ?뷀떚?곗뿉???먮룞 寃??
 		self.gameManager = self.Entity.GameManager
-		log("[BattleManager] 留ㅻ땲? 李몄“ ?ㅼ젙 ?꾨즺")
+		log("[BattleManager] Manager references set")
 	end
 
 	method void StartBattle(integer stageId)
@@ -53,7 +53,7 @@ script BattleManager extends Component
 		self.playerDotEffects = {}
 		
 		log("========================================")
-		log("[BattleManager] === ?꾪닾 ?쒖옉! ?ㅽ뀒?댁? " .. tostring(stageId) .. " ===")
+		log("[BattleManager] === Battle Start! Stage " .. tostring(stageId) .. " ===")
 		log("========================================")
 		
 		-- 蹂댁뒪 留??뺤씤 (Stage 10 = 蹂댁뒪)
@@ -70,14 +70,14 @@ script BattleManager extends Component
 		
 		-- ?뚮젅?댁뼱 ???쒖옉
 		self.currentTurn = "Player"
-		log("[BattleManager] >>> ?뚮젅?댁뼱 ???쒖옉 <<<")
+		log("[BattleManager] >>> Player Turn Start <<<")
 	end
 
 	-- ?쒓굅?? OnPlayerUseItem (援ы삎 ?щ’ 湲곕컲)
 
 	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
-			log("[BattleManager] ?뚮젅?댁뼱 ?댁씠 ?꾨떃?덈떎!")
+			log("[BattleManager] Not player turn!")
 			return
 		end
 		
@@ -90,7 +90,7 @@ script BattleManager extends Component
 			itemData = self.dataManager:GetItemData(itemId)
 		end
 		if itemData == nil then
-			log("[BattleManager] ?좏슚?섏? ?딆? ?꾩씠??ID: " .. tostring(itemId))
+			log("[BattleManager] Invalid item ID: " .. tostring(itemId))
 			return
 		end
 
@@ -126,9 +126,9 @@ script BattleManager extends Component
 
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		if result ~= nil then
-			log("[Battle] 怨듦꺽 ?덊듃! ???" .. tostring(targetMonsterIdx) .. " Dmg:" .. tostring(result.damage))
+			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage))
 		else
-			log("[Battle] 怨듦꺽 ?ㅽ뙣 (????놁쓬 or ?대? 二쎌쓬)")
+			log("[Battle] Attack missed or target dead.")
 		end
 
 		self:RefreshUI()
@@ -184,7 +184,7 @@ script BattleManager extends Component
 			self.playerManager:AddBuff("hpPercent", itemData.hpPercent, 3)
 		end
 
-		log("[BattleManager] ?뚮え???ъ슜: " .. tostring(itemData.name))
+		log("[BattleManager] Consumable used: " .. tostring(itemData.name))
 		self:RefreshUI()
 		return true
 	end
@@ -251,7 +251,7 @@ script BattleManager extends Component
 			return
 		end
 		
-		log("[BattleManager] >>> ?뚮젅?댁뼱 ??醫낅즺 ??紐ъ뒪?????쒖옉 <<<")
+		log("[BattleManager] >>> Player Turn End -> Monster Turn Start <<<")
 		self.currentTurn = "Monster"
 		
 		-- ?뚮젅?댁뼱 ?꾪듃 ?곕?吏 泥섎━
@@ -307,7 +307,7 @@ script BattleManager extends Component
 					dot.dmg = dotDmgVal
 					dot.remainTurn = dotTurnVal
 					self.playerDotEffects[#self.playerDotEffects + 1] = dot
-					log("[BattleManager] ?곹깭?댁긽 ?곸슜: " .. statusName .. " (?곕?吏: " .. tostring(dotDmgVal) .. " x " .. tostring(dotTurnVal) .. "??")
+					log("[BattleManager] Status effect applied: " .. statusName .. " (Dmg: " .. tostring(dotDmgVal) .. " x " .. tostring(dotTurnVal) .. " turns)")
 				end
 			end
 		
@@ -333,12 +333,12 @@ script BattleManager extends Component
 			local dot = self.playerDotEffects[i]
 			if dot ~= nil and dot.remainTurn > 0 then
 				self.playerManager:TakeDamage(dot.dmg)
-				log("[BattleManager] ?꾪듃 ?곕?吏: " .. dot.status .. " " .. tostring(dot.dmg))
+				log("[BattleManager] DoT damage: " .. dot.status .. " " .. tostring(dot.dmg))
 				dot.remainTurn -= 1
 				if dot.remainTurn > 0 then
 					newDots[#newDots + 1] = dot
 				else
-					log("[BattleManager] ?꾪듃 ?댁젣: " .. dot.status)
+					log("[BattleManager] DoT effect removed: " .. dot.status)
 				end
 			end
 		end
@@ -350,7 +350,7 @@ script BattleManager extends Component
 	end
 
 	method void OnMonsterTurnEnd()
-		log("[BattleManager] >>> 紐ъ뒪????醫낅즺 ???뚮젅?댁뼱 ???쒖옉 <<<")
+		log("[BattleManager] >>> Monster Turn End -> Player Turn Start <<<")
 		
 		-- ?뚮젅?댁뼱 ?댁쑝濡??꾪솚 + 肄붿뒪???뚮났
 		self.currentTurn = "Player"
@@ -375,7 +375,7 @@ script BattleManager extends Component
 			-- 蹂댁긽 ?섏쭛
 			self.monsterManager:CollectRewards()
 			self.playerManager.gold = (self.playerManager.gold or 0) + (self.monsterManager.lastRewardGold or 0)
-			log("[BattleManager] ?띾뱷 EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
+			log("[BattleManager] Acquired EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
 		
 			-- ?덈꺼??泥댄겕 (媛꾨떒??EXP 湲곗?)
 			if self.monsterManager.lastRewardExp >= 20 then
