@@ -47,7 +47,7 @@
       1. `이미지(Sprite)`: 아이템 사진.
       2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
       3. `이름(Text)`: 최하단 상품명.
-  - **`TxtPlayerGold`**: (`TextComponent`) 내 현재 남은 돈 표시.
+  - **`PlayerCoin` (기존 TxtPlayerGold 대체)**: 빈 객체 컨테이너. 내부에 코인 이미지(`ImgCoin` SpriteGUIRenderer)와 보유 골드 텍스트(`TxtPlayerCoin` TextComponent) 자식 개체를 포함합니다. (ShopUI 스크립트 연결 완료됨)
   - **`BtnCloseShop`**: (`ButtonComponent`) 상점 닫고 다음 스테이지(정비)로 넘어가는 닫기 버튼.
 
 ### 2-2. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)

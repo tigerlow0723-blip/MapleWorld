@@ -6799,12 +6799,12 @@
         }
       },
       {
-        "id": "fc182c98-a7d5-424a-8830-7edab33d8fe8",
-        "path": "/ui/UIGroup/ShopPanel/TxtPlayerGold",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "id": "4b85e62b-2635-4a72-9420-2ce1879481fb",
+        "path": "/ui/UIGroup/ShopPanel/PlayerCoin",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
         "jsonString": {
-          "name": "TxtPlayerGold",
-          "path": "/ui/UIGroup/ShopPanel/TxtPlayerGold",
+          "name": "PlayerCoin",
+          "path": "/ui/UIGroup/ShopPanel/PlayerCoin",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -6814,9 +6814,173 @@
           "revision": 1,
           "origin": {
             "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "4b85e62b-2635-4a72-9420-2ce1879481fb",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 830.0002,
+                "y": -66.1599
+              },
+              "OffsetMin": {
+                "x": 634.128235,
+                "y": -166.1599
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 195.8719,
+                "y": 100.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 732.0642,
+                "y": -116.1599
+              },
+              "Position": {
+                "x": 732.0642,
+                "y": -116.1599,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "836a3d7c-453f-416c-b90e-cfc20638e670",
+        "path": "/ui/UIGroup/ShopPanel/PlayerCoin/ImgCoin",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "ImgCoin",
+          "path": "/ui/UIGroup/ShopPanel/PlayerCoin/ImgCoin",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "836a3d7c-453f-416c-b90e-cfc20638e670",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -25.0,
+                "y": 25.0001
+              },
+              "OffsetMin": {
+                "x": -75.0,
+                "y": -24.9999
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -50.0,
+                "y": 0.0001
+              },
+              "Position": {
+                "x": -50.0,
+                "y": 0.0001,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "4cc5ffc272224edc809a792b8efa16e3"
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "45c1e07b-614c-4477-9bfd-77264261bd48",
+        "path": "/ui/UIGroup/ShopPanel/PlayerCoin/TxtPlayerCoin",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtPlayerCoin",
+          "path": "/ui/UIGroup/ShopPanel/PlayerCoin/TxtPlayerCoin",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
             "entry_id": "uitext",
             "sub_entity_id": null,
-            "root_entity_id": "fc182c98-a7d5-424a-8830-7edab33d8fe8",
+            "root_entity_id": "45c1e07b-614c-4477-9bfd-77264261bd48",
             "replaced_model_id": null
           },
           "modelId": "uitext",
@@ -6834,12 +6998,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 765.1338,
-                "y": -109.5327
+                "x": 70.0,
+                "y": 50.0
               },
               "OffsetMin": {
-                "x": 665.1338,
-                "y": -209.5327
+                "x": -30.0,
+                "y": -50.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -6852,12 +7016,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 715.1338,
-                "y": -159.5327
+                "x": 20.0,
+                "y": 0.0
               },
               "Position": {
-                "x": 715.1338,
-                "y": -159.5327,
+                "x": 20.0,
+                "y": 0.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6870,11 +7034,7 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "ImageRUID": {
-                "DataId": "3e9d52ed52d64794bbd6f72bab8ee3d9"
-              },
               "OverrideSorting": false,
-              "FlipX": true,
               "Enable": true
             },
             {

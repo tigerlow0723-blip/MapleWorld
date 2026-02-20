@@ -3,7 +3,7 @@ script ShopUI extends Component
 
 property string refreshButtonPath = "/ui/UIGroup/ShopPanel/BtnRefresh"
 property string closeButtonPath = "/ui/UIGroup/ShopPanel/BtnCloseShop"
-property string playerGoldTextPath = "/ui/UIGroup/ShopPanel/TxtPlayerGold"
+property string playerGoldTextPath = "/ui/UIGroup/ShopPanel/PlayerCoin/TxtPlayerCoin"
 property string sellAreaPath = "/ui/UIGroup/ShopPanel/SellArea"
 property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
 
