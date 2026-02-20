@@ -95,3 +95,29 @@
 2. **`ShopUI.mlua` 신규 컴포넌트**: 상품 리스트 렌더링, `OpenShop()` 로직(무작위 아이템 스폰) 구현.
 3. **`PlayerManager.mlua`**: 골드 증감 계산 함수 구현.
 4. **`InventoryUI.mlua`**: 상점 페이즈 시 드래그 & 드롭 판매(SellArea 타겟 오버랩 체크) 분기 추가.
+
+---
+
+## 6. 스크립트 구현 내용 및 Codex 참고 명세 (AS-IS)
+
+현재 시스템은 위 명세에 따라 다음과 같이 구현되어 있습니다. 향후 버그 수정 및 유지보수를 위해 Codex는 다음 구조를 반드시 참고해야 합니다.
+
+### 6-1. DataManager.mlua (데이터 로드 및 파싱 정규화)
+- **`LoadItemTable()`**: `Data_Table - 아이템 - 장비 / 방어구 / 기타` 3개의 CSV로 분할된 테이블을 순환하며 모든 아이템 목록을 로드합니다.
+- **`NormalizeShapeMask(shapeMask)` 메서드**: `1,1,1` 또는 `1/1/1` 등 비정형 텍스트를 읽어 여백을 최적화한 뒤 `/"표를 구분자로` 포맷팅하여 메모리(ItemTable)에 저장합니다.
+
+### 6-2. BattleManager.mlua & MonsterManager.mlua (상점용 골드 보상)
+- **`CollectRewards()`**: 죽은 몬스터 데이터 내부의 `rewardGold` 및 `goldDrop`을 합산합니다.
+- 승리 분기망에서 곧바로 `PlayerManager:AddGold(골드량)`를 호출하여 상점 구매재화 값을 즉각 연동합니다.
+
+### 6-3. ShopUI.mlua (UI 로직 및 아이템 비용 연동)
+- **`OpenShop()` & `GenerateShopItems()`**: 총 5개의 랜덤 카드를 표시합니다. 이때 `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
+- **`OnClickRefresh()`**: 유저가 수동 리롤 요청 시, 내 골드가 2 이상(`refreshCost`) 일 때 `SpendGold()`하고 진열 목록을 전체 갱신(Re-draw)합니다.
+- **`OnClickCard(index)`**: 골드가 충분하면 아이템을 구매하며, 성공하면 배열을 지우고 `ItemDisplayArea`에 카드 이미지를 스폰시킵니다.
+
+### 6-4. InventoryUI.mlua (판매 구역 드래그 드롭)
+- **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.
+- **`SellItemById(itemId)`**: 아이템의 `price` 대조 후 50%의 환율(`GetSellPrice()`)을 계산해 골드로 환원하고 엔티티와 슬롯 정보를 완전 삭제합니다.
+
+### 6-5. Item.mlua (도형의 회전 및 그리드 연동)
+- **`Rotate90Degrees()`**: 유저가 회전(R 키 또는 우클릭) 시, 배열로 저장된 `shapeMatrix`를 90도 회전(전치/역순)시킵니다. 인벤토리 `CanPlace` 함수 호출 시에도 새로 바뀐 크기(가로세로 `width/height` 변환)에 대응합니다.

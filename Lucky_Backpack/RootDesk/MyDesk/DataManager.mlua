@@ -107,6 +107,7 @@ script DataManager extends Component
 			headers["width"] = true
 			headers["height"] = true
 			headers["cost"] = true
+			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
@@ -133,6 +134,7 @@ script DataManager extends Component
 			headers["width"] = true
 			headers["height"] = true
 			headers["cost"] = true
+			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
@@ -157,6 +159,7 @@ script DataManager extends Component
 			headers["width"] = true
 			headers["height"] = true
 			headers["cost"] = true
+			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
@@ -180,6 +183,7 @@ script DataManager extends Component
 			headers["width"] = true
 			headers["height"] = true
 			headers["cost"] = true
+			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
