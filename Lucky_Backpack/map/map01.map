@@ -727,7 +727,7 @@
       {
         "id": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
         "path": "/maps/map01/GameSystem",
-        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,script.UIMain,MOD.Core.CameraComponent",
+        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,script.UIMain,MOD.Core.CameraComponent,script.MiniGameManager",
         "jsonString": {
           "name": "GameSystem",
           "path": "/maps/map01/GameSystem",
@@ -882,10 +882,86 @@
                 "IsRelative": false,
                 "EntityId": "d860862f-a071-4052-ae98-bae7b14ac77e",
                 "Version2": false
+              },
+              "uiStage5_1": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "19ae0f52-5d31-443a-bb4e-8d5e66a53b77",
+                "Version2": false
+              },
+              "uiStage5_2": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "bd94b3fa-a602-4889-a64a-af5821045268",
+                "Version2": false
+              },
+              "uiStage5_3": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "90a7c34d-c761-44a8-bffb-07f814ac4113",
+                "Version2": false
+              },
+              "btnPlayOddEven": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "7be43aaf-189a-4571-845f-be4ccde2e528",
+                "Version2": false
+              },
+              "btnEnterShop": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "de3fa26d-d9d6-4273-941f-bca9bc5edfd9",
+                "Version2": false
+              },
+              "btnExitMiniGame": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "551a20ba-e431-45f8-bb28-1b64f11e3745",
+                "Version2": false
+              },
+              "btnOdd": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "f339bc46-774e-422e-9a87-8b52ec3489a7",
+                "Version2": false
+              },
+              "btnEven": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "088e390a-e833-4283-8439-e8dc1ba95ba7",
+                "Version2": false
+              },
+              "btnBackFromPlay": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "f5cc518f-8b3f-4cd7-a8a8-e3733be33d99",
+                "Version2": false
+              },
+              "btnSellAllOre": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "1fb1ab1c-e3c4-4a42-9ba0-0b0746abe6e9",
+                "Version2": false
+              },
+              "btnSellAllGoldBar": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "549a5bea-dd31-4201-ad4c-0959d03e80df",
+                "Version2": false
+              },
+              "btnBackFromShop": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "3fd77465-c684-4941-aef6-62036e7939e6",
+                "Version2": false
               }
             },
             {
               "@type": "MOD.Core.CameraComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.MiniGameManager",
               "Enable": true
             }
           ],

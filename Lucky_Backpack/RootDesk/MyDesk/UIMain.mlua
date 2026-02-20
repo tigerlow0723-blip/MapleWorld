@@ -11,6 +11,23 @@ script UIMain extends Component
 	property Entity btnBattleStart = nil
 	property Entity txtStage = nil
 	
+	property Entity uiStage5_1 = nil
+	property Entity uiStage5_2 = nil
+	property Entity uiStage5_3 = nil
+	
+	-- 미니게임 버튼들
+	property Entity btnPlayOddEven = nil
+	property Entity btnEnterShop = nil
+	property Entity btnExitMiniGame = nil
+	
+	property Entity btnOdd = nil
+	property Entity btnEven = nil
+	property Entity btnBackFromPlay = nil
+	
+	property Entity btnSellAllOre = nil
+	property Entity btnSellAllGoldBar = nil
+	property Entity btnBackFromShop = nil
+	
 	property any gameManager = nil
 	property any battleManager = nil
 	property any playerManager = nil
@@ -68,6 +85,75 @@ script UIMain extends Component
 						displayAreaComp:ClearAllItems()
 					end
 					self.gameManager:TriggerBattleStart()
+				end
+			end)
+		end
+		
+		-- ==========================================
+		-- 미니게임 버튼 자동 이벤트 연결
+		-- ==========================================
+		if self.btnPlayOddEven ~= nil then
+			self.btnPlayOddEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:EnterSubPlay()
+				end
+			end)
+		end
+		if self.btnEnterShop ~= nil then
+			self.btnEnterShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:EnterSubShop()
+				end
+			end)
+		end
+		if self.btnExitMiniGame ~= nil then
+			self.btnExitMiniGame:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:ExitMiniGame()
+				end
+			end)
+		end
+		
+		if self.btnOdd ~= nil then
+			self.btnOdd:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:PlayOddEven(1)
+				end
+			end)
+		end
+		if self.btnEven ~= nil then
+			self.btnEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:PlayOddEven(2)
+				end
+			end)
+		end
+		if self.btnBackFromPlay ~= nil then
+			self.btnBackFromPlay:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:BackToMain()
+				end
+			end)
+		end
+		
+		if self.btnSellAllOre ~= nil then
+			self.btnSellAllOre:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:SellAllOre()
+				end
+			end)
+		end
+		if self.btnSellAllGoldBar ~= nil then
+			self.btnSellAllGoldBar:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:SellAllGoldBar()
+				end
+			end)
+		end
+		if self.btnBackFromShop ~= nil then
+			self.btnBackFromShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:BackToMain()
 				end
 			end)
 		end
@@ -132,6 +218,21 @@ script UIMain extends Component
 		if self.btnTurnEnd ~= nil then
 			-- 플레이어 턴이면서 Battle 상태일 때만 활성화할 수도 있으나, 일단 phase 기준
 			self.btnTurnEnd.Enable = (phase == "Battle")
+		end
+		
+		-- 4. 미니게임 서브 메뉴 가시성 제어
+		if phase == "MiniGame" then
+			if self.gameManager ~= nil and self.gameManager.miniGameManager ~= nil then
+				local subState = self.gameManager.miniGameManager.subState
+				if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
+				if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
+				if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
+			end
+		else
+			-- 미니게임 중이 아닐 때는 전부 숨김
+			if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
+			if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
+			if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
 		end
 	end
 	

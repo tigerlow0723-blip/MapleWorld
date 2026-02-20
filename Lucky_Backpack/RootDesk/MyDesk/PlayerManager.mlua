@@ -59,9 +59,9 @@ script PlayerManager extends Component
 	method void OnBeginPlay()
 		self.inventoryComp = self:ResolveInventoryComp()
 		if self.inventoryComp == nil then
-			log_warning("[PlayerManager] Inventory 而댄룷?뚰듃瑜?李얠쓣 ???놁뒿?덈떎.")
+			log_warning("[PlayerManager] Inventory component not found.")
 		end
-		log("[PlayerManager] 珥덇린???쒖옉")
+		log("[PlayerManager] Init Start")
 	end
 
 	method void SyncInventoryFromGrid()
@@ -101,7 +101,7 @@ script PlayerManager extends Component
 		
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		if baseStat == nil then
-			log_error("[PlayerManager] 湲곕낯 ?ㅽ꺈 ?곗씠???놁쓬: " .. self.classId)
+			log_error("[PlayerManager] No base stat data: " .. self.classId)
 			return
 		end
 		
@@ -125,7 +125,7 @@ script PlayerManager extends Component
 		self.currentHP = self.maxHP
 		self.currentCost = self.maxCost
 		
-		log("[PlayerManager] ?뚮젅?댁뼱 珥덇린???꾨즺 (吏곸뾽: " .. self.classId .. ")")
+		log("[PlayerManager] Player Init Complete (Class: " .. self.classId .. ")")
 	end
 
 	method void RecalcAllStats()
@@ -295,16 +295,16 @@ script PlayerManager extends Component
 	method void RestoreCost()
 		self.maxCost = self:CalcMaxCost()
 		self.currentCost = self.maxCost
-		log("[PlayerManager] 肄붿뒪???뚮났: " .. tostring(self.currentCost))
+		log("[PlayerManager] Cost restored: " .. tostring(self.currentCost))
 	end
 
 	method boolean UseCost(number amount)
 		if self.currentCost < amount then
-			log("[PlayerManager] 肄붿뒪??遺議? ?꾩옱: " .. tostring(self.currentCost) .. " ?꾩슂: " .. tostring(amount))
+			log("[PlayerManager] Not enough cost. Curr: " .. tostring(self.currentCost) .. " Need: " .. tostring(amount))
 			return false
 		end
 		self.currentCost -= amount
-		log("[PlayerManager] 肄붿뒪???ъ슜: " .. tostring(amount) .. " ?⑥?: " .. tostring(self.currentCost))
+		log("[PlayerManager] Cost used: " .. tostring(amount) .. " Remain: " .. tostring(self.currentCost))
 		return true
 	end
 
@@ -320,12 +320,12 @@ script PlayerManager extends Component
 		
 		local finalDmg = math.max(1, dmg - totalDef)
 		self.currentHP -= finalDmg
-		log("[PlayerManager] ?쇳빐 諛쏆쓬: " .. tostring(finalDmg) .. " (?먮옒: " .. tostring(dmg) .. " 諛⑹뼱: " .. tostring(totalDef) .. ") ?⑥? HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] Took damage: " .. tostring(finalDmg) .. " (Orig: " .. tostring(dmg) .. " Def: " .. tostring(totalDef) .. ") Remain HP: " .. tostring(self.currentHP))
 		
 		if self.currentHP <= 0 then
 			self.currentHP = 0
 			self.isDead = true
-			log("[PlayerManager] ?뚮젅?댁뼱 ?щ쭩!")
+			log("[PlayerManager] Player died!")
 			self:PlayPlayerAnim("Dead")
 		else
 			self:PlayPlayerAnim("Hit")
@@ -334,7 +334,7 @@ script PlayerManager extends Component
 
 	method void Heal(number amount)
 		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
-		log("[PlayerManager] 泥대젰 ?뚮났: " .. tostring(amount) .. " ?꾩옱 HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] HP recovered: " .. tostring(amount) .. " Current HP: " .. tostring(self.currentHP))
 	end
 
 	method void LevelUp()
@@ -345,7 +345,7 @@ script PlayerManager extends Component
 		local hpGain = self.maxHP - prevMaxHP
 		self.currentHP += hpGain
 		self.currentHP = math.min(self.maxHP, self.currentHP)
-		log("[PlayerManager] ?덈꺼?? Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+		log("[PlayerManager] Level up! Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
 	end
 
 	method void AddBuff(string statName, number value, integer duration)
@@ -354,7 +354,7 @@ script PlayerManager extends Component
 		buff.value = value
 		buff.remainTurn = duration
 		self.buffList[#self.buffList + 1] = buff
-		log("[PlayerManager] 踰꾪봽 異붽?: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. "??")
+		log("[PlayerManager] Buff added: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. " turns)")
 	end
 
 	method number GetBuffValue(string statName)
@@ -376,7 +376,7 @@ script PlayerManager extends Component
 				if buff.remainTurn > 0 then
 					newList[#newList + 1] = buff
 				else
-					log("[PlayerManager] 踰꾪봽 留뚮즺: " .. buff.stat)
+					log("[PlayerManager] Buff expired: " .. buff.stat)
 				end
 			end
 		end
@@ -458,22 +458,31 @@ script PlayerManager extends Component
 				end
 			end
 			if placed == false then
-				log_warning("[PlayerManager] ?몃깽?좊━???꾩씠?쒖쓣 諛곗튂??怨듦컙???놁뒿?덈떎: " .. tostring(itemData.id))
+				log_warning("[PlayerManager] No space to place item in inventory: " .. tostring(itemData.id))
 			end
 		end
 
-		log("[PlayerManager] ?꾩씠??異붽?: " .. (itemData.name or tostring(itemData.id)))
+		log("[PlayerManager] Item added: " .. (itemData.name or tostring(itemData.id)))
 	end
 
 	method void RemoveItem(integer index)
 		if index >= 1 and index <= #self.inventory then
 			local item = self.inventory[index]
-			log("[PlayerManager] ?꾩씠???쒓굅: " .. (item.name or tostring(item.id)))
+			log("[PlayerManager] Item removed: " .. (item.name or tostring(item.id)))
 			local itemId = item.id
 			table.remove(self.inventory, index)
 			self.inventoryComp = self:ResolveInventoryComp()
 			if self.inventoryComp ~= nil then
 				self.inventoryComp:RemoveItem(itemId)
+				
+				-- UI 엔티티 제거 연동
+				local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+				if uiMainEntity ~= nil then
+					local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+					if invUIEntity ~= nil and invUIEntity.InventoryUI ~= nil then
+						invUIEntity.InventoryUI:RemoveItemEntity(itemId)
+					end
+				end
 			end
 			self:RecalcAllStats()
 		end
@@ -482,7 +491,7 @@ script PlayerManager extends Component
 	method table UseSkill(any dataMgr)
 		local skillData = dataMgr:GetSkillData(self.skillName)
 		if skillData == nil then
-			log_error("[PlayerManager] ?ㅽ궗 ?곗씠???놁쓬: " .. self.skillName)
+			log_error("[PlayerManager] No skill data: " .. self.skillName)
 			return nil
 		end
 		
@@ -504,7 +513,7 @@ script PlayerManager extends Component
 			self:AddBuff("atkPercent", skillData.atk, 3)
 		end
 		
-		log("[PlayerManager] ?ㅽ궗 ?ъ슜: " .. self.skillName)
+		log("[PlayerManager] Skill used: " .. self.skillName)
 		return skillData
 	end
 

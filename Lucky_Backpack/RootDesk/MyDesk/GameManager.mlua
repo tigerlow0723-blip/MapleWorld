@@ -16,6 +16,7 @@ script GameManager extends Component
 	property any itemManager = nil
 
 	property any rewardManager = nil
+	property any miniGameManager = nil
 	property any itemDisplayArea = nil
 	property Entity rewardChestEntity = nil
 	
@@ -30,26 +31,26 @@ script GameManager extends Component
 	property boolean canEndPreparation = false
 
 	method void OnInitialize()
-		log("[GameManager] 珥덇린??OnInitialize) ?ㅽ뻾??(肄섏넄 ???뺤씤: Server/Client)")
+		log("[GameManager] OnInitialize executed (Console check: Server/Client)")
 		
 		-- UIMain 李얘린 (?곗꽑?쒖쐞: Inspector ?곌껐 -> 媛숈? ?뷀떚??
 		if self.uiMainEntity ~= nil then
 			self.uiMain = self.uiMainEntity.UIMain
 			if self.uiMain ~= nil then
-				log("[GameManager] UIMain 而댄룷?뚰듃 ?곌껐??(Inspector)")
+				log("[GameManager] UIMain component connected (Inspector)")
 			end
 		end
 		
 		if self.uiMain == nil and self.Entity.UIMain ~= nil then
 			self.uiMain = self.Entity.UIMain
-			log("[GameManager] UIMain 而댄룷?뚰듃 ?먮룞 諛쒓껄 (Self)")
+			log("[GameManager] UIMain component auto-discovered (Self)")
 		end
 	end
 
 	-- @ExecSpace("ServerOnly") ?쒓굅: ?대씪?댁뼵?몄뿉?쒕룄 ?ㅽ뻾?섎룄濡?蹂寃?
 	method void OnBeginPlay()
 		log("========================================")
-		log("[GameManager] 硫붿씠??諛곕궘 ?뚮━???쒖옉!")
+		log("[GameManager] Main backpack logic start")
 		log("========================================")
 
 		-- [[ ?뚮젅?댁뼱 ?대룞 ?쒖뼱 濡쒖쭅 ]]
@@ -79,6 +80,7 @@ script GameManager extends Component
 		self.battleManager = self.Entity.BattleManager
 		self.itemManager = self.Entity.ItemManager
 		self.rewardManager = self.Entity.RewardManager
+		self.miniGameManager = self.Entity.MiniGameManager
 		local parentEntity = self.Entity.Parent
 		if parentEntity ~= nil then
 			local displayAreaEntity = parentEntity:GetChildByName("ItemDisplayArea", true)
@@ -93,15 +95,18 @@ script GameManager extends Component
 			end
 		end
 		
-		-- BattleManager??留ㅻ땲? 李몄“ ?꾨떖		
+		-- BattleManager??留ㅻ땲? 李몄조 ?꾨떖		
 		self.battleManager:SetManagers(self.dataManager, self.playerManager, self.monsterManager, self.itemManager, self.rewardManager)
 		
 		if self.uiMain ~= nil then
 			self.uiMain:InitializeUI(self, self.battleManager, self.playerManager)
 			-- MonsterManager?먭쾶 UI ?곌껐 (?寃잜똿 ?듭떊??
 			self.monsterManager:Init(self.uiMain)
+			if self.miniGameManager ~= nil then
+				self.miniGameManager:Init(self, self.playerManager, self.dataManager, self.uiMain)
+			end
 		else
-			log("[WARNING] [GameManager] UIMain???곌껐?섏? ?딆븯?듬땲??")
+			log("[WARNING] [GameManager] UIMain is not connected.")
 		end
 		
 		local chestEntity = _EntityService:GetEntityByPath("/maps/map01/RewardChest")
@@ -111,7 +116,7 @@ script GameManager extends Component
 		end
 		
 		-- 3珥????ㅽ뻾 (鍮꾨룞湲?
-		-- RewardManager??留ㅻ땲? 李몄“ ?꾨떖
+		-- RewardManager??留ㅻ땲? 李몄조 ?꾨떖
 		self.rewardManager:SetManagers(
 			self.dataManager,
 			self.playerManager,
@@ -121,11 +126,11 @@ script GameManager extends Component
 		-- 珥덇린???꾨즺 ???먮룞 ?쒖옉 (?붾쾭洹몄슜)
 		-- ?ㅼ젣濡쒕뒗 吏곸뾽 ?좏깮 UI ???몄텧
 		local initFunc = function()
-			log("[GameManager] ?먮룞 ?쒖옉 ??대㉧ ?ㅽ뻾?? StartGame ?몄텧 ?쒕룄...")
+			log("[GameManager] Auto-start timer executing. Attempting StartGame...")
 			self:StartGame("War")
 		end
 		_TimerService:SetTimerOnce(initFunc, 1.0)
-		log("[GameManager] 珥덇린???꾨즺. 1珥????먮룞 ?쒖옉 ??대㉧ ?ㅼ젙??")
+		log("[GameManager] Init complete. 1 sec auto-start timer set.")
 	end
 
 	method void StartGame(string classId)
@@ -137,7 +142,7 @@ script GameManager extends Component
 		
 		-- ?뚮젅?댁뼱 珥덇린??
 		if self.playerManager == nil then
-			log("[ERROR] [GameManager] PlayerManager媛 nil?낅땲?? 而댄룷?뚰듃 ?곌껐???뺤씤?섏꽭??")
+			log("[ERROR] [GameManager] PlayerManager is nil. Check component connection.")
 			return
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
@@ -153,18 +158,18 @@ script GameManager extends Component
 			self.itemDisplayArea.Entity:SetEnable(false)
 		end
 		
-		log("[GameManager] ?쒖옉 ?꾩씠??遺꾨같 ?꾨즺")
+		log("[GameManager] Start item distribution complete")
 		
 		-- UI 媛깆떊 (?곗씠??濡쒕뵫 諛??꾩씠??吏湲???
 		if self.uiMain ~= nil then 
 			self.uiMain:UpdateUI() 
 		end
 
-		-- 蹂寃? 寃뚯엫 ?쒖옉?섏옄留덉옄 ?ㅼ쓬 ?ㅽ뀒?댁?濡?媛뺤젣濡??섏뼱媛踰꾨━硫?
+		-- 蹂寃? 寃뚯엫 ?쒖옉?섏옄留덉옄 ?ㅼ쓬 ?ㅽ뀒?댁?濡?媛뺤젣濡??섏뼱媛踰쇨퀬
 		-- ?≪? 寃??二쇱슱 ?쒓컙???놁씠 諛붾줈 ?곴낵 ?꾪닾媛 ?쒖옉?????덉뒿?덈떎.
 		-- ?쒖옉 吏곹썑?먮뒗 "Preparation(以鍮?" ?섏씠利덉씠誘濡? '?꾪닾 ?쒖옉' 踰꾪듉???뚮??????섏뼱媛?꾨줉
 		-- ProceedToStage ?먮룞 吏꾪뻾???쒓굅?섍굅?? 泥??ㅽ뀒?댁????섎룞?쇰줈 ?뚯엯?섎룄濡??⑸땲??
-		-- (湲곕낯?곸쑝濡?Backpack Hero 諛⑹떇? 以鍮꾩떆媛꾩쓣 媛뽰뒿?덈떎)
+		-- (湲곕낯?곸쑝濡?Backpack Hero 諛⑹떆? 以鍮꾩떆媛꾩쓣 媛뽰뒿?덈떎)
 		-- ?먭? ?섏젙: 蹂댁긽李??꾩씠?????꾩슫 ?곹깭?쇰㈃ ?湲고빐???⑸땲??
 		-- self:ProceedToStage()
 	end
@@ -176,12 +181,12 @@ script GameManager extends Component
 		end
 		
 		log("========================================")
-		log("[GameManager] ?ㅽ뀒?댁? " .. tostring(self.currentStage) .. " 吏꾪뻾")
+		log("[GameManager] Proceeding to Stage " .. tostring(self.currentStage))
 		log("========================================")
 		
 		-- 怨좎젙 ?ㅽ뀒?댁? 遺꾧린: 5=?곸젏, 10=蹂댁뒪, ?섎㉧吏=?꾪닾
 		if self.currentStage == 5 then
-			self:EnterShop()
+			self:EnterMiniGameShop()
 		elseif self.currentStage == 10 then
 			self:EnterBossBattle()
 		else
@@ -215,7 +220,7 @@ script GameManager extends Component
 		
 		self.gamePhase = "Battle"
 		self.canEndPreparation = false
-		log("[GameManager] ?꾪닾 ?쒖옉 踰꾪듉 ?뚮┝! 紐ъ뒪???ㅽ룿 諛??꾪닾 媛쒖떆.")
+		log("[GameManager] Battle Start button clicked! Spawning monsters and starting battle.")
 
 		if self.itemDisplayArea == nil then
 			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
@@ -238,7 +243,7 @@ script GameManager extends Component
 		if self.battleManager ~= nil then
 			self.battleManager:StartBattle(self.currentStage)
 		else
-			log("[ERROR] BattleManager媛 ?곌껐?섏? ?딆븯?듬땲??")
+			log("[ERROR] BattleManager is not connected.")
 		end
 		
 		if self.uiMain ~= nil then
@@ -247,10 +252,10 @@ script GameManager extends Component
 	end
 
 	method void EnterShop()
-		log("[GameManager] === ?곸젏 吏꾩엯 (Stage 5) ===")
-		-- ?곸젏 ?꾩씠???앹꽦 (?꾩옱 ?ㅽ뀒?댁???留욌뒗 ?꾩씠??4媛?
+		log("[GameManager] === Enter Shop (Stage 5) ===")
+		-- ?곸젏 ?꾩씠???앹꽦 (?꾩옱 ?ㅽ뀒?댁???留욌뒫 ?꾩씠??4媛?
 		local shopItems = self.itemManager:GenerateDropItems(self.currentStage, 4, self.dataManager)
-		log("[GameManager] ?곸젏 ?꾩씠??" .. tostring(#shopItems) .. "媛?吏꾩뿴")
+		log("[GameManager] Shop items " .. tostring(#shopItems) .. " displayed")
 		for i = 1, #shopItems do
 			log("[GameManager]  [" .. tostring(i) .. "] " .. self.itemManager:GetItemDescription(shopItems[i]))
 		end
@@ -259,30 +264,51 @@ script GameManager extends Component
 		-- self:OnStageComplete()
 	end
 
+	method void EnterMiniGameShop()
+		log("[GameManager] === 5스테이지 미니게임 상점 진입 ===")
+		if self.miniGameManager == nil then
+			self:OnStageComplete()
+			return
+		end
+		
+		local oreCount = self.miniGameManager:GetOreCount()
+		if oreCount <= 0 then
+			log("[GameManager] 황금원석이 없습니다.")
+			_UIToast:ShowMessage("황금원석이 없습니다")
+			local nextFunc = function()
+				self:OnStageComplete()
+			end
+			_TimerService:SetTimerOnce(nextFunc, 1.5)
+		else
+			self.gamePhase = "MiniGame"
+			self.miniGameManager:StartMiniGamePhase()
+		end
+	end
+
 	-- ============================================
 	-- ?꾪닾 ?밸━ ???먮쫫: 蹂댁긽 ???곸젏 NPC ?깆옣
 	-- ============================================
 
 	method void OnBattleVictory()
-		log("[GameManager] === ?꾪닾 ?밸━! ?뺣퉬 ?④퀎 吏꾩엯 ===")
+		log("[GameManager] === Battle Victory! Enter Preparation Phase ===")
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
 		
 		-- 蹂댁긽 ?꾩씠???앹꽦 (5媛? ??諛붾줈 ?ｌ? ?딄퀬 ?湲곗뿴??蹂닿?
 		self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
-		log("[GameManager] 蹂댁긽 ?꾩씠??" .. tostring(#self.pendingRewards) .. "媛??쒕∼ ?꾨즺!")
+		log("[GameManager] Reward items " .. tostring(#self.pendingRewards) .. " dropped!")
 		
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)
-			log("[GameManager] 蹂댁긽 ?곸옄媛 ?섑??ъ뒿?덈떎.")
+			log("[GameManager] Reward chest appeared.")
 		else
 			if self.itemDisplayArea ~= nil then
 				self.itemDisplayArea:DisplayItems(self.pendingRewards)
-				log("[GameManager] 蹂댁긽 ?곸옄 ?뷀떚?곌? ?놁뼱 諛붾줈 UI???쒖떆?⑸땲??")
+				log("[GameManager] No reward chest entity, displaying on UI directly.")
 			end
 		end
 		
-		log("[GameManager] ?몃깽?좊━瑜??뺣━?섍퀬 ?곸옄瑜??뚮윭 ?꾩씠?쒖쓣 ?뺤씤?섏꽭??")
+		log("[GameManager] Please sort inventory and check chest rewards.")
 		
 		-- UI 媛깆떊
 		if self.uiMain ~= nil then
@@ -300,12 +326,12 @@ script GameManager extends Component
 		local discardCount = 0
 		for i = 1, #self.pendingRewards do
 			if self.pendingRewards[i] ~= nil then
-				log("[GameManager] ??" .. self.pendingRewards[i].name .. " 踰꾨젮吏?(誘몄꽑??")
+				log("[GameManager] " .. self.pendingRewards[i].name .. " discarded.")
 				discardCount = discardCount + 1
 			end
 		end
 		self.pendingRewards = {}
-		log("[GameManager] ?뺣퉬 ?꾨즺! (" .. tostring(discardCount) .. "媛??꾩씠??踰꾨젮吏?")
+		log("[GameManager] Preparation complete! (" .. tostring(discardCount) .. " items discarded)")
 		
 		if self.itemDisplayArea ~= nil then
 			self.itemDisplayArea:ClearAllItems()
@@ -341,7 +367,7 @@ script GameManager extends Component
 		end
 		
 		log("========================================")
-		log("[GameManager] ?곸젏 NPC ?깆옣! ?깃툒: " .. grade)
+		log("[GameManager] Shop NPC Appeared! Grade: " .. grade)
 		log("========================================")
 		
 		-- ?깃툒???곕Ⅸ ?곸젏 ?꾩씠??媛쒖닔 寃곗젙
@@ -356,7 +382,7 @@ script GameManager extends Component
 		
 		-- ?곸젏 ?꾩씠???앹꽦
 		local shopItems = self.itemManager:GenerateDropItems(self.currentStage, itemCount, self.dataManager)
-		log("[GameManager] ?곸젏 ?꾩씠??" .. tostring(#shopItems) .. "媛?吏꾩뿴 (" .. grade .. ")")
+		log("[GameManager] Shop items " .. tostring(#shopItems) .. " displayed (" .. grade .. ")")
 		for i = 1, #shopItems do
 			log("[GameManager]  [" .. tostring(i) .. "] " .. self.itemManager:GetItemDescription(shopItems[i]))
 		end
@@ -365,17 +391,17 @@ script GameManager extends Component
 		local doubleMoneyRoll = math.random(1, 100)
 		if doubleMoneyRoll <= 30 then
 			log("[GameManager] Special choice appeared!")
-			log("[GameManager]  [A] ?곸젏 ?댁슜?섍린 (" .. grade .. " ?깃툒)")
+			log("[GameManager]  [A] Use shop (" .. grade .. " grade)")
 			local currentGold = 0
 			if self.playerManager ~= nil then
 				currentGold = self.playerManager.gold or 0
 			end
-			log("[GameManager]  [B] ??2諛?遺덈━湲? (?꾩옱 怨⑤뱶: " .. tostring(currentGold) .. " ??" .. tostring(currentGold * 2) .. ")")
+			log("[GameManager]  [B] Double Money (Current Gold: " .. tostring(currentGold) .. " -> " .. tostring(currentGold * 2) .. ")")
 			-- TODO: ?좏깮 UI ?쒖떆
 			-- ?붾쾭洹? ?먮룞?쇰줈 ?곸젏 ?댁슜 ?좏깮
-			log("[GameManager] (?붾쾭洹? ?먮룞?쇰줈 ?곸젏 ?댁슜 ?좏깮")
+			log("[GameManager] (Debug: Auto-select store)")
 		else
-			log("[GameManager] ?곸젏留??댁슜 媛??(" .. grade .. " ?깃툒)")
+			log("[GameManager] Can only use shop (" .. grade .. " grade)")
 		end
 		
 		-- TODO: ?곸젏 UI ?쒖떆 ??援щℓ/?먮ℓ/?좏깮 ?湲?
@@ -391,7 +417,7 @@ script GameManager extends Component
 		if self.playerManager ~= nil then
 			before = self.playerManager.gold or 0
 			self.playerManager.gold = before * 2
-			log("[GameManager] ??2諛? " .. tostring(before) .. " ??" .. tostring(self.playerManager.gold))
+			log("[GameManager] Double Money: " .. tostring(before) .. " -> " .. tostring(self.playerManager.gold))
 		end
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
@@ -401,7 +427,7 @@ script GameManager extends Component
 
 	method void OnStageComplete()
 		self.currentStage += 1
-		log("[GameManager] ???ㅽ뀒?댁? " .. tostring(self.currentStage) .. " ?쇰줈 ?대룞")
+		log("[GameManager] Proceeding to Stage " .. tostring(self.currentStage))
 		
 		-- UI 媛깆떊
 		if self.uiMain ~= nil then
