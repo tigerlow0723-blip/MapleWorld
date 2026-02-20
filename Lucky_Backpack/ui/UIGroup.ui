@@ -4472,12 +4472,12 @@
         }
       },
       {
-        "id": "d149a627-4dc6-49e6-a956-4857680107d1",
-        "path": "/ui/UIGroup/ShopPanel",
-        "componentNames": "MOD.Core.UITransformComponent,script.ShopUI",
+        "id": "19ae0f52-5d31-443a-bb4e-8d5e66a53b77",
+        "path": "/ui/UIGroup/Stage_5_1",
+        "componentNames": "MOD.Core.UITransformComponent",
         "jsonString": {
-          "name": "ShopPanel",
-          "path": "/ui/UIGroup/ShopPanel",
+          "name": "Stage_5_1",
+          "path": "/ui/UIGroup/Stage_5_1",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -4489,7 +4489,7 @@
             "type": "Model",
             "entry_id": "uiempty",
             "sub_entity_id": null,
-            "root_entity_id": "d149a627-4dc6-49e6-a956-4857680107d1",
+            "root_entity_id": "19ae0f52-5d31-443a-bb4e-8d5e66a53b77",
             "replaced_model_id": null
           },
           "modelId": "uiempty",
@@ -4507,30 +4507,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -194.7556,
-                "y": -294.4838
+                "x": 390.379272,
+                "y": 426.89
               },
               "OffsetMin": {
-                "x": -294.7556,
-                "y": -394.4838
+                "x": -390.379272,
+                "y": -26.8900146
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 780.758545,
+                "y": 453.780029
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -244.7556,
-                "y": -344.4838
+                "x": 0.0,
+                "y": 200.0
               },
               "Position": {
-                "x": -244.7556,
-                "y": -344.4838,
+                "x": 0.0,
+                "y": 200.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -4540,22 +4540,18 @@
                 "w": 1.0
               },
               "Enable": true
-            },
-            {
-              "@type": "script.ShopUI",
-              "Enable": true
             }
           ],
           "@version": 1
         }
       },
       {
-        "id": "25a5eadf-4aaa-4bb1-815a-a099d0e93295",
-        "path": "/ui/UIGroup/ShopPanel/BtnRefresh",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent",
+        "id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+        "path": "/ui/UIGroup/Stage_5_1/minigame",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
         "jsonString": {
-          "name": "BtnRefresh",
-          "path": "/ui/UIGroup/ShopPanel/BtnRefresh",
+          "name": "minigame",
+          "path": "/ui/UIGroup/Stage_5_1/minigame",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -4567,7 +4563,7 @@
             "type": "Model",
             "entry_id": "uibutton",
             "sub_entity_id": null,
-            "root_entity_id": "25a5eadf-4aaa-4bb1-815a-a099d0e93295",
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
             "replaced_model_id": null
           },
           "modelId": "uibutton",
@@ -4585,12 +4581,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -93.2102051,
-                "y": 65.84616
+                "x": 99.9993,
+                "y": 174.2024
               },
               "OffsetMin": {
-                "x": -293.2102,
-                "y": -40.84836
+                "x": -100.0007,
+                "y": 99.20239
               },
               "Pivot": {
                 "x": 0.5,
@@ -4598,17 +4594,17 @@
               },
               "RectSize": {
                 "x": 200.0,
-                "y": 106.694519
+                "y": 75.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -193.2102,
-                "y": 12.4989
+                "x": -0.000699996948,
+                "y": 136.7024
               },
               "Position": {
-                "x": -193.2102,
-                "y": 12.4989,
+                "x": -0.000699996948,
+                "y": 136.7024,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -4621,9 +4617,6 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "ImageRUID": {
-                "DataId": "7977f834cb34481ba4c98a351cc8de07"
-              },
               "OverrideSorting": false,
               "Enable": true
             },
@@ -4671,33 +4664,43 @@
               },
               "OverrideSorting": false,
               "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "미니게임하기",
+              "Enable": true
             }
           ],
           "@version": 1
         }
       },
       {
-        "id": "dcb6fe82-7327-4cb9-a061-ad200278b589",
-        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UIText",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "id": "de3fa26d-d9d6-4273-941f-bca9bc5edfd9",
+        "path": "/ui/UIGroup/Stage_5_1/entershop",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
         "jsonString": {
-          "name": "UIText",
-          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UIText",
+          "name": "entershop",
+          "path": "/ui/UIGroup/Stage_5_1/entershop",
           "nameEditable": true,
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 0,
-          "pathConstraints": "/////",
+          "displayOrder": 1,
+          "pathConstraints": "////",
           "revision": 1,
           "origin": {
             "type": "Model",
-            "entry_id": "uitext",
+            "entry_id": "uibutton",
             "sub_entity_id": null,
-            "root_entity_id": "dcb6fe82-7327-4cb9-a061-ad200278b589",
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
             "replaced_model_id": null
           },
-          "modelId": "uitext",
+          "modelId": "uibutton",
           "@components": [
             {
               "@type": "MOD.Core.UITransformComponent",
@@ -4712,30 +4715,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 49.9987,
-                "y": -41.6187
+                "x": 99.9993,
+                "y": 50.2028
               },
               "OffsetMin": {
-                "x": -50.0013,
-                "y": -141.6187
+                "x": -100.0007,
+                "y": -24.7972
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 75.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -0.0012999773,
-                "y": -91.6187
+                "x": -0.000699996948,
+                "y": 12.7028008
               },
               "Position": {
-                "x": -0.0012999773,
-                "y": -91.6187,
+                "x": -0.000699996948,
+                "y": 12.7028008,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -4749,6 +4752,52 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
               "Enable": true
             },
             {
@@ -4758,7 +4807,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "새로고침",
+              "Text": "상점",
               "Enable": true
             }
           ],
@@ -4766,24 +4815,159 @@
         }
       },
       {
-        "id": "5a988b2a-2823-41d6-87e9-ba0534d83e43",
-        "path": "/ui/UIGroup/ShopPanel/ItemList'",
-        "componentNames": "MOD.Core.UITransformComponent,script.ShopUI",
+        "id": "551a20ba-e431-45f8-bb28-1b64f11e3745",
+        "path": "/ui/UIGroup/Stage_5_1/exitminigame",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
         "jsonString": {
-          "name": "ItemList'",
-          "path": "/ui/UIGroup/ShopPanel/ItemList'",
+          "name": "exitminigame",
+          "path": "/ui/UIGroup/Stage_5_1/exitminigame",
           "nameEditable": true,
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 1,
+          "displayOrder": 2,
           "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 99.9993,
+                "y": -73.7975
+              },
+              "OffsetMin": {
+                "x": -100.0007,
+                "y": -148.7975
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -0.000699996948,
+                "y": -111.2975
+              },
+              "Position": {
+                "x": -0.000699996948,
+                "y": -111.2975,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "나가기",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "bd94b3fa-a602-4889-a64a-af5821045268",
+        "path": "/ui/UIGroup/Stage_5_2",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "Stage_5_2",
+          "path": "/ui/UIGroup/Stage_5_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 11,
+          "pathConstraints": "///",
           "revision": 1,
           "origin": {
             "type": "Model",
             "entry_id": "uiempty",
             "sub_entity_id": null,
-            "root_entity_id": "5a988b2a-2823-41d6-87e9-ba0534d83e43",
+            "root_entity_id": "19ae0f52-5d31-443a-bb4e-8d5e66a53b77",
             "replaced_model_id": null
           },
           "modelId": "uiempty",
@@ -4801,30 +4985,104 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 907.8424,
-                "y": 120.430656
+                "x": 461.4033,
+                "y": 10.3453789
               },
               "OffsetMin": {
-                "x": -32.06241,
-                "y": -113.390663
+                "x": -461.4033,
+                "y": -135.217178
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 939.904846,
-                "y": 233.82132
+                "x": 922.8066,
+                "y": 145.562561
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 437.89,
-                "y": 3.52
+                "x": 0.0,
+                "y": -62.4359
               },
               "Position": {
-                "x": 437.89,
-                "y": 3.52,
+                "x": 0.0,
+                "y": -62.4359,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "f339bc46-774e-422e-9a87-8b52ec3489a7",
+        "path": "/ui/UIGroup/Stage_5_2/playoddeven_1",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "playoddeven_1",
+          "path": "/ui/UIGroup/Stage_5_2/playoddeven_1",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -200.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": -400.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -300.0,
+                "y": 1.694801
+              },
+              "Position": {
+                "x": -300.0,
+                "y": 1.694801,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -4836,7 +5094,815 @@
               "Enable": true
             },
             {
-              "@type": "script.ShopUI",
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "홀",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "088e390a-e833-4283-8439-e8dc1ba95ba7",
+        "path": "/ui/UIGroup/Stage_5_2/playoddeven_2",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "playoddeven_2",
+          "path": "/ui/UIGroup/Stage_5_2/playoddeven_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 400.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": 200.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 300.0,
+                "y": 1.694801
+              },
+              "Position": {
+                "x": 300.0,
+                "y": 1.694801,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "IsLocalizationKey": false,
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "짝",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "f5cc518f-8b3f-4cd7-a8a8-e3733be33d99",
+        "path": "/ui/UIGroup/Stage_5_2/backtomain",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "backtomain",
+          "path": "/ui/UIGroup/Stage_5_2/backtomain",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 100.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": -100.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 1.69480133
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 1.69480133,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "AllowAutomaticTranslation": true,
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "나가기",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "90a7c34d-c761-44a8-bffb-07f814ac4113",
+        "path": "/ui/UIGroup/Stage_5_3",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "Stage_5_3",
+          "path": "/ui/UIGroup/Stage_5_3",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 12,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "19ae0f52-5d31-443a-bb4e-8d5e66a53b77",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 461.4033,
+                "y": 10.3453789
+              },
+              "OffsetMin": {
+                "x": -461.4033,
+                "y": -135.217178
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 922.8066,
+                "y": 145.562561
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": -62.4359
+              },
+              "Position": {
+                "x": 0.0,
+                "y": -62.4359,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "1fb1ab1c-e3c4-4a42-9ba0-0b0746abe6e9",
+        "path": "/ui/UIGroup/Stage_5_3/sellallone",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "sellallone",
+          "path": "/ui/UIGroup/Stage_5_3/sellallone",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -200.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": -400.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -300.0,
+                "y": 1.694801
+              },
+              "Position": {
+                "x": -300.0,
+                "y": 1.694801,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "황금원석팔기",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "549a5bea-dd31-4201-ad4c-0959d03e80df",
+        "path": "/ui/UIGroup/Stage_5_3/sellallgoldbar",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "sellallgoldbar",
+          "path": "/ui/UIGroup/Stage_5_3/sellallgoldbar",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 400.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": 200.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 300.0,
+                "y": 1.694801
+              },
+              "Position": {
+                "x": 300.0,
+                "y": 1.694801,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "골드바 팔기",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "3fd77465-c684-4941-aef6-62036e7939e6",
+        "path": "/ui/UIGroup/Stage_5_3/backtomian",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "backtomian",
+          "path": "/ui/UIGroup/Stage_5_3/backtomian",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uibutton",
+            "sub_entity_id": null,
+            "root_entity_id": "7be43aaf-189a-4571-845f-be4ccde2e528",
+            "replaced_model_id": null
+          },
+          "modelId": "uibutton",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 100.0,
+                "y": 39.1948
+              },
+              "OffsetMin": {
+                "x": -100.0,
+                "y": -35.8052
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 1.69480133
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 1.69480133,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.ButtonComponent",
+              "Colors": {
+                "NormalColor": {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                },
+                "HighlightedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "PressedColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 1.0
+                },
+                "SelectedColor": {
+                  "r": 0.9607843,
+                  "g": 0.9607843,
+                  "b": 0.9607843,
+                  "a": 1.0
+                },
+                "DisabledColor": {
+                  "r": 0.784313738,
+                  "g": 0.784313738,
+                  "b": 0.784313738,
+                  "a": 0.5019608
+                },
+                "ColorMultiplier": 1.0,
+                "FadeDuration": 0.1
+              },
+              "ImageRUIDs": {
+                "HighlightedSprite": null,
+                "PressedSprite": null,
+                "SelectedSprite": null,
+                "DisabledSprite": null
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "나가기",
               "Enable": true
             }
           ],

@@ -176,6 +176,24 @@ method void SpawnItemInGrid(integer itemId, integer row, integer col, integer w,
 end
 
 @ExecSpace("ClientOnly")
+method void RemoveItemEntity(integer itemId)
+    local children = self.Entity.Children
+    if children ~= nil then
+        for i = #children, 1, -1 do
+            local child = children[i]
+            if child ~= nil and child.Item ~= nil then
+                if child.Item.itemId == itemId then
+                    child:Destroy()
+                    log("[InventoryUI] Removed distinct entity for item " .. tostring(itemId))
+                    break
+                end
+            end
+        end
+    end
+    self:RenderGrid()
+end
+
+@ExecSpace("ClientOnly")
 method void StartDrag(Entity itemEntity)
     if self.dragState.isDragging then
         return
