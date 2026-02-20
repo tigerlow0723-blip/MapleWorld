@@ -108,23 +108,23 @@ method void InitFromTable(integer id)
         return
     end
 
-    self.itemId = _DataService:GetCell(dataSet, row, "id")
-    self.itemName = _DataService:GetCell(dataSet, row, "name")
-    self.itemType = _DataService:GetCell(dataSet, row, "type")
-    self.width = _DataService:GetCell(dataSet, row, "width")
-    self.height = _DataService:GetCell(dataSet, row, "height")
-    self.atk = _DataService:GetCell(dataSet, row, "atk")
-    self.def = _DataService:GetCell(dataSet, row, "def")
-    self.hp = _DataService:GetCell(dataSet, row, "hp")
-    self.cost = _DataService:GetCell(dataSet, row, "cost")
-    self.atkPercent = _DataService:GetCell(dataSet, row, "atkPercent")
-    self.accPercent = _DataService:GetCell(dataSet, row, "accPercent")
-    self.critRate = _DataService:GetCell(dataSet, row, "critRate")
-    self.critDmg = _DataService:GetCell(dataSet, row, "critDmg")
-    self.hpPercent = _DataService:GetCell(dataSet, row, "hpPercent")
-    self.spawnGroup = _DataService:GetCell(dataSet, row, "Spawn_Group")
-    self.desc = _DataService:GetCell(dataSet, row, "desc")
-    self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID")
+    self.itemId = tonumber(_DataService:GetCell(dataSet, row, "id")) or 0
+    self.itemName = _DataService:GetCell(dataSet, row, "name") or ""
+    self.itemType = _DataService:GetCell(dataSet, row, "type") or ""
+    self.width = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "width")) or 1)
+    self.height = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "height")) or 1)
+    self.atk = tonumber(_DataService:GetCell(dataSet, row, "atk")) or 0
+    self.def = tonumber(_DataService:GetCell(dataSet, row, "def")) or 0
+    self.hp = tonumber(_DataService:GetCell(dataSet, row, "hp")) or 0
+    self.cost = tonumber(_DataService:GetCell(dataSet, row, "cost")) or 0
+    self.atkPercent = tonumber(_DataService:GetCell(dataSet, row, "atkPercent")) or 0
+    self.accPercent = tonumber(_DataService:GetCell(dataSet, row, "accPercent")) or 0
+    self.critRate = tonumber(_DataService:GetCell(dataSet, row, "critRate")) or 0
+    self.critDmg = tonumber(_DataService:GetCell(dataSet, row, "critDmg")) or 0
+    self.hpPercent = tonumber(_DataService:GetCell(dataSet, row, "hpPercent")) or 0
+    self.spawnGroup = tonumber(_DataService:GetCell(dataSet, row, "Spawn_Group")) or 0
+    self.desc = _DataService:GetCell(dataSet, row, "desc") or ""
+    self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID") or ""
 end
 
 @ExecSpace("ClientOnly")

@@ -69,31 +69,70 @@ script ItemManager extends Component
 			log("[ItemManager] 사용 가능한 아이템 없음 (group: " .. tostring(spawnGroup) .. ")")
 			return drops
 		end
-		
-		for i = 1, count do
-			local idx = math.random(1, #availableItems)
-			local item = availableItems[idx]
-			-- 복사본 생성
+
+		local expandItems = {}
+		local normalItems = {}
+
+		for i = 1, #availableItems do
+			local item = availableItems[i]
+			if item.type == "expand" then
+				table.insert(expandItems, item)
+			else
+				table.insert(normalItems, item)
+			end
+		end
+
+		local function CreateDropItem(item)
 			local drop = {}
 			drop.id = item.id
 			drop.type = item.type
 			drop.name = item.name
 			drop.width = item.width or 1
 			drop.height = item.height or 1
-			drop.cost = item.cost
-			drop.atk = item.atk
-			drop.atkPercent = item.atkPercent
-			drop.accPercent = item.accPercent
-			drop.critRate = item.critRate
-			drop.critDmg = item.critDmg
-			drop.hp = item.hp
-			drop.hpPercent = item.hpPercent
-			drop.def = item.def
+			drop.cost = item.cost or 0
+			drop.atk = item.atk or 0
+			drop.atkPercent = item.atkPercent or 0
+			drop.accPercent = item.accPercent or 0
+			drop.critRate = item.critRate or 0
+			drop.critDmg = item.critDmg or 0
+			drop.hp = item.hp or 0
+			drop.hpPercent = item.hpPercent or 0
+			drop.def = item.def or 0
 			drop.desc = item.desc or ""
 			drop.spawnGroup = item.spawnGroup
 			drop.imageRUID = item.imageRUID or ""
-			drops[#drops + 1] = drop
-			log("[ItemManager] 드랍: " .. drop.name .. " (" .. self:GetItemTypeName(drop.type) .. ")")
+			return drop
+		end
+
+		-- 1. 확장 아이템 무조건 1개 보장
+		if #expandItems > 0 and count > 0 then
+			local idx = math.random(1, #expandItems)
+			local item = expandItems[idx]
+			local drop = CreateDropItem(item)
+			table.insert(drops, drop)
+			log("[ItemManager] 드랍 확정(확장템): " .. drop.name)
+			count = count - 1
+		end
+
+		-- 2. 나머지 아이템들은 랜덤
+		if count > 0 then
+			if #normalItems == 0 then
+				log("[ItemManager] 일반 아이템 없음")
+			else
+				for i = 1, count do
+					local idx = math.random(1, #normalItems)
+					local item = normalItems[idx]
+					local drop = CreateDropItem(item)
+					table.insert(drops, drop)
+					log("[ItemManager] 드랍(일반템): " .. drop.name)
+				end
+			end
+		end
+
+		-- 3. 보상 목록 섞기 (확장템이 항상 첫 번째로 고정되는 것을 방지)
+		for i = #drops, 2, -1 do
+			local j = math.random(1, i)
+			drops[i], drops[j] = drops[j], drops[i]
 		end
 		
 		return drops

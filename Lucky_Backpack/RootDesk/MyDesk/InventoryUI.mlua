@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script InventoryUI extends Component
 
 	property string gridContainerPath = ""
@@ -22,6 +22,8 @@ script InventoryUI extends Component
 	property table cellEntities = {}
 
 	property table dragState = {}
+	
+	property string itemTemplatePath = "/ui/UIGroup/ItemTemplate"
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -47,8 +49,36 @@ script InventoryUI extends Component
 		    }
 		
 		    self:CollectCellEntities()
+		    self:RebuildItemsFromGrid()
 		    self:RenderGrid()
 		    log("[InventoryUI] Initialized")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RebuildItemsFromGrid()
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        return
+		    end
+
+		    local children = self.Entity.Children
+		    if children ~= nil then
+		        for i = #children, 1, -1 do
+		            local child = children[i]
+		            if child ~= nil and child.Item ~= nil then
+		                local name = child.Name or ""
+		                if string.sub(name, 1, 14) == "InventoryItem_" then
+		                    child:Destroy()
+		                end
+		            end
+		        end
+		    end
+
+		    for itemId, info in pairs(inventory.placedItems) do
+		        if info ~= nil then
+		            self:SpawnItemInGrid(itemId, info.row, info.col, info.width, info.height)
+		        end
+		    end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -127,6 +157,37 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method void SpawnItemInGrid(integer itemId, integer row, integer col, integer w, integer h)
+		local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
+		if templateEntity == nil then
+			log_warning("[InventoryUI] Item template not found: " .. self.itemTemplatePath)
+			return
+		end
+
+		local itemEntity = templateEntity:Clone("InventoryItem_" .. itemId)
+		if itemEntity == nil then return end
+
+		itemEntity:SetEnable(true)
+		itemEntity:SetVisible(true)
+
+		local itemComp = itemEntity.Item
+		if itemComp ~= nil then
+			itemComp.itemId = itemId
+			itemComp.inventoryUIPath = self.Entity.Path
+			itemComp:InitFromTable(itemId)
+
+			local renderer = itemEntity.SpriteGUIRendererComponent
+			if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+				renderer.ImageRUID = itemComp.spriteRUID
+			end
+			itemComp:SetGridPosition(row, col)
+		end
+
+		self:SnapItemToGrid(itemEntity, row, col, w, h)
+		log("[InventoryUI] UI Item created for " .. itemId .. " at (" .. row .. "," .. col .. ")")
+	end
+
+	@ExecSpace("ClientOnly")
 	method void StartDrag(Entity itemEntity)
 		    if self.dragState.isDragging then return end
 		
@@ -137,11 +198,6 @@ script InventoryUI extends Component
 		    if gameSystem ~= nil and gameSystem.GameManager ~= nil then
 		        local gameManager = gameSystem.GameManager
 		        if gameManager.gamePhase == "Battle" then
-		            if itemComp.itemType ~= "weapon" then
-		                log("[InventoryUI] 전투 중에는 무기만 사용할 수 있습니다.")
-		                return
-		            end
-
 		            local battleManager = gameSystem.BattleManager
 		            if battleManager == nil then
 		                log_warning("[InventoryUI] BattleManager not found")
@@ -154,15 +210,38 @@ script InventoryUI extends Component
 		                targetMonsterIdx = uiMain.targetMonsterIdx
 		            end
 
-		            battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
-		            return
+		            if itemComp.itemType == "weapon" then
+		                battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
+		                if uiMain ~= nil then uiMain:UpdateUI() end
+		                return
+		            elseif itemComp.itemType == "consumable" then
+		                local used = battleManager:OnPlayerUseConsumableById(itemComp.itemId)
+	                if used then
+	                    local inventory = self.Entity.Inventory
+	                    if inventory ~= nil and itemComp:IsPlaced() then
+	                        inventory:RemoveItemAt(itemComp.itemId, itemComp.gridRow, itemComp.gridCol, itemComp.width, itemComp.height)
+	                    end
+		                    if gameSystem.PlayerManager ~= nil then
+		                        gameSystem.PlayerManager:SyncInventoryFromGrid()
+		                    end
+		                    if isvalid(itemEntity) then
+		                        itemEntity:Destroy()
+		                    end
+		                    self:RenderGrid()
+		                end
+		                if uiMain ~= nil then uiMain:UpdateUI() end
+		                return
+		            else
+		                log("[InventoryUI] 전투 중에는 무기/소모품만 사용할 수 있습니다.")
+		                return
+		            end
 		        end
 		    end
 		
 		    local inventory = self.Entity.Inventory
 		    if inventory == nil then return end
 		
-		    -- 원래 위치 저장
+		    -- ?먮옒 ?꾩튂 ???
 		    local uiTransform = itemEntity.UITransformComponent
 		    if uiTransform ~= nil then
 		        self.dragState.originPosition = Vector2(uiTransform.anchoredPosition.x, uiTransform.anchoredPosition.y)
@@ -208,9 +287,12 @@ script InventoryUI extends Component
 		    if itemComp:IsPlaced() then
 		        inventory:RemoveItem(itemComp.itemId)
 		        self:RenderGrid()
+				if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
+					gameSystem.PlayerManager:SyncInventoryFromGrid()
+				end
 		    end
 		
-		    -- 드래그 이동 + 릴리즈 이벤트 연결
+		    -- ?쒕옒洹??대룞 + 由대━利??대깽???곌껐
 		    self.dragState.touchHandler = _InputService:ConnectEvent(ScreenTouchHoldEvent, function(event)
 		        self:OnDragMove(event)
 		    end)
@@ -227,7 +309,7 @@ script InventoryUI extends Component
 		    if self.dragState.itemEntity == nil then return end
 		
 		    local touchPoint = event.TouchPoint
-		    -- 아이템 부모 기준 로컬 좌표로 변환
+		    -- ?꾩씠??遺紐?湲곗? 濡쒖뺄 醫뚰몴濡?蹂??
 		    local parent = self.dragState.itemEntity.Parent
 		    if parent == nil then return end
 		    local parentUI = parent.UITransformComponent
@@ -252,10 +334,10 @@ script InventoryUI extends Component
 		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
 		
 		    if result.row > 0 and result.col > 0 then
-		        -- 유효한 셀 위에서 놓음 → 배치 시도
+		        -- ?좏슚??? ?꾩뿉???볦쓬 ??諛곗튂 ?쒕룄
 		        self:TryDropItem(result.row, result.col)
 		    else
-		        -- 그리드 밖에서 놓음 → 원래 위치로 복귀
+		        -- 洹몃━??諛뽰뿉???볦쓬 ???먮옒 ?꾩튂濡?蹂듦?
 		        self:ReturnToOrigin()
 		        self:EndDrag()
 		    end
@@ -347,8 +429,13 @@ script InventoryUI extends Component
 		
 		        self:SnapItemToGrid(itemEntity, row, col, w, h)
 		        log("[InventoryUI] Item " .. itemId .. " placed at (" .. row .. "," .. col .. ")")
+				
+				local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+				if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
+					gameSystem.PlayerManager:SyncInventoryFromGrid()
+				end
 		    else
-		        -- 배치 불가 → 원래 위치로 복귀
+		        -- 諛곗튂 遺덇? ???먮옒 ?꾩튂濡?蹂듦?
 		        self:ReturnToOrigin()
 		        log_warning("[InventoryUI] Cannot place item " .. itemId .. " at (" .. row .. "," .. col .. ")")
 		    end
@@ -389,7 +476,7 @@ script InventoryUI extends Component
 		    local bestRow = 0
 		    local bestCol = 0
 		
-		    -- GridContainer 기준 로컬 좌표로 변환
+		    -- GridContainer 湲곗? 濡쒖뺄 醫뚰몴濡?蹂??
 		    local container = _EntityService:GetEntityByPath(self.gridContainerPath)
 		    if container == nil then
 		        return {row = 0, col = 0}
@@ -400,8 +487,8 @@ script InventoryUI extends Component
 		    end
 		    local uiPos = _UILogic:ScreenToLocalUIPosition(screenPos, containerUI)
 		
-		    -- 커서 위치는 아이템 중심 → 시작 셀(왼쪽 위)로 보정
-		    -- SnapItemToGrid의 역방향: X를 왼쪽으로, Y를 위로 이동
+		    -- 而ㅼ꽌 ?꾩튂???꾩씠??以묒떖 ???쒖옉 ?(?쇱そ ??濡?蹂댁젙
+		    -- SnapItemToGrid????갑?? X瑜??쇱そ?쇰줈, Y瑜??꾨줈 ?대룞
 		    local adjustedX = uiPos.x - (itemW - 1) * self.cellSize * 0.5
 		    local adjustedY = uiPos.y + (itemH - 1) * self.cellSize * 0.5
 		

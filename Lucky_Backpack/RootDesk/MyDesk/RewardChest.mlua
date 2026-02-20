@@ -7,6 +7,12 @@ script RewardChest extends Component
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
+			self.Entity:SetEnable(false)
+			local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
+				gameSystemEntity.GameManager.rewardChestEntity = self.Entity
+			end
+			
 		    self.Entity:ConnectEvent(ButtonClickEvent, function(event)
 		        self:SpawnItems()
 		    end)
@@ -25,9 +31,18 @@ script RewardChest extends Component
 		        log_warning("[RewardChest] ItemDisplayArea component not found")
 		        return
 		    end
+			
+			local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
+				displayArea:DisplayItems(gameSystemEntity.GameManager.pendingRewards)
+			else
+				log_warning("[RewardChest] GameSystem or GameManager not found. Cannot populate rewards.")
+			end
 		
-		    displayArea:GenerateTutorialItems()
-		    self.Entity:Destroy()
+			if displayAreaEntity ~= nil then
+				displayAreaEntity:SetEnable(true)
+			end
+		    self.Entity:SetEnable(false)
 	end
 
 end

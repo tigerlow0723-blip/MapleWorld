@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script PlayerManager extends Component
 
 	property string classId = "War"
@@ -25,6 +25,7 @@ script PlayerManager extends Component
 	property number acc = 0
 	property number critRate = 0
 	property number critDmg = 0
+	property integer gold = 0
 
 	property table inventory = {}
 
@@ -37,20 +38,37 @@ script PlayerManager extends Component
 	property any dataManager = nil
 	property any inventoryComp = nil
 
-	-- @ExecSpace("ServerOnly") 제거: 클라이언트에서도 실행되도록 변경
-	method void OnBeginPlay()
-		self.inventoryComp = self.Entity.Inventory
-		if self.inventoryComp == nil then
-			log_warning("[PlayerManager] Inventory 컴포넌트를 찾을 수 없습니다.")
+	method any ResolveInventoryComp()
+		if self.inventoryComp ~= nil then
+			return self.inventoryComp
 		end
-		log("[PlayerManager] 초기화 시작")
+
+		self.inventoryComp = self.Entity.Inventory
+		if self.inventoryComp ~= nil then
+			return self.inventoryComp
+		end
+
+		local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if invUIEntity ~= nil then
+			self.inventoryComp = invUIEntity.Inventory
+		end
+
+		return self.inventoryComp
+	end
+	-- @ExecSpace("ServerOnly") ?쒓굅: ?대씪?댁뼵?몄뿉?쒕룄 ?ㅽ뻾?섎룄濡?蹂寃?
+	method void OnBeginPlay()
+		self.inventoryComp = self:ResolveInventoryComp()
+		if self.inventoryComp == nil then
+			log_warning("[PlayerManager] Inventory 而댄룷?뚰듃瑜?李얠쓣 ???놁뒿?덈떎.")
+		end
+		log("[PlayerManager] 珥덇린???쒖옉")
 	end
 
 	method void SyncInventoryFromGrid()
+		self.inventoryComp = self:ResolveInventoryComp()
 		if self.inventoryComp == nil then
 			return
 		end
-
 		self.inventory = {}
 		for itemId, _ in pairs(self.inventoryComp.placedItems) do
 			local itemData = self.dataManager:GetItemData(itemId)
@@ -59,6 +77,10 @@ script PlayerManager extends Component
 			end
 		end
 		self:RecalcAllStats()
+		-- maxHP가 변경되면 currentHP 캡핑
+		if self.currentHP > self.maxHP then
+			self.currentHP = self.maxHP
+		end
 	end
 
 	method void InitPlayer(string selectedClassId, any dataMgr)
@@ -66,12 +88,20 @@ script PlayerManager extends Component
 		self.dataManager = dataMgr
 		self.level = 1
 		self.isDead = false
+		self.gold = 0
 		self.inventory = {}
 		self.buffList = {}
+
+		self.inventoryComp = self:ResolveInventoryComp()
+
+
+		if self.inventoryComp ~= nil then
+			self.inventoryComp:InitGrid()
+		end
 		
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		if baseStat == nil then
-			log_error("[PlayerManager] 기본 스탯 데이터 없음: " .. self.classId)
+			log_error("[PlayerManager] 湲곕낯 ?ㅽ꺈 ?곗씠???놁쓬: " .. self.classId)
 			return
 		end
 		
@@ -79,46 +109,23 @@ script PlayerManager extends Component
 		self.baseACC = baseStat.acc
 		self.baseCritRate = baseStat.critRate
 		self.baseCritDmg = baseStat.critDmg
-		self.currentCost = self.maxCost -- 처음에 코스트 가득
+		-- currentCost는 RecalcAllStats() 이후에 설정?
 		
-		-- 현재 스탯 초기화
+		-- ?꾩옱 ?ㅽ꺈 珥덇린??
 		self.atk = self.baseATK
 		self.acc = self.baseACC
 		self.critRate = self.baseCritRate
 		self.critDmg = self.baseCritDmg
 		
-		self:GenerateBasicItems()
-		
 		self.skillName = baseStat.skill
 		
-		-- 최종 스탯 계산
+		-- 理쒖쥌 ?ㅽ꺈 怨꾩궛
 		self:RecalcAllStats()
 		
 		self.currentHP = self.maxHP
+		self.currentCost = self.maxCost
 		
-		log("[PlayerManager] 플레이어 초기화 완료 (직업: " .. self.classId .. ")")
-	end
-
-	method void GenerateBasicItems()
-		-- 기본 아이템 지급: 낡은 검(1), 체력포션(8)
-		
-		-- 1. 낡은 검 (ID: 1)
-		local sword = self.dataManager:GetItemData(1)
-		if sword ~= nil then
-			self:AddItem(sword)
-		else
-			log_error("[PlayerManager] 시작 아이템(1: 낡은 검) 데이터가 없습니다.")
-		end
-		
-		-- 3. 체력포션 (ID: 8)
-		local potion = self.dataManager:GetItemData(8)
-		if potion ~= nil then
-			self:AddItem(potion)
-		else
-			log_error("[PlayerManager] 시작 아이템(8: 체력 포션) 데이터가 없습니다.")
-		end
-		
-		log("[PlayerManager] 기본 아이템 지급 로직 완료")
+		log("[PlayerManager] ?뚮젅?댁뼱 珥덇린???꾨즺 (吏곸뾽: " .. self.classId .. ")")
 	end
 
 	method void RecalcAllStats()
@@ -288,21 +295,21 @@ script PlayerManager extends Component
 	method void RestoreCost()
 		self.maxCost = self:CalcMaxCost()
 		self.currentCost = self.maxCost
-		log("[PlayerManager] 코스트 회복: " .. tostring(self.currentCost))
+		log("[PlayerManager] 肄붿뒪???뚮났: " .. tostring(self.currentCost))
 	end
 
 	method boolean UseCost(number amount)
 		if self.currentCost < amount then
-			log("[PlayerManager] 코스트 부족! 현재: " .. tostring(self.currentCost) .. " 필요: " .. tostring(amount))
+			log("[PlayerManager] 肄붿뒪??遺議? ?꾩옱: " .. tostring(self.currentCost) .. " ?꾩슂: " .. tostring(amount))
 			return false
 		end
 		self.currentCost -= amount
-		log("[PlayerManager] 코스트 사용: " .. tostring(amount) .. " 남은: " .. tostring(self.currentCost))
+		log("[PlayerManager] 肄붿뒪???ъ슜: " .. tostring(amount) .. " ?⑥?: " .. tostring(self.currentCost))
 		return true
 	end
 
 	method void TakeDamage(number dmg)
-		-- 방어력 계산 (아이템 방어력)
+		-- 諛⑹뼱??怨꾩궛 (?꾩씠??諛⑹뼱??
 		local totalDef = 0
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
@@ -313,29 +320,32 @@ script PlayerManager extends Component
 		
 		local finalDmg = math.max(1, dmg - totalDef)
 		self.currentHP -= finalDmg
-		log("[PlayerManager] 피해 받음: " .. tostring(finalDmg) .. " (원래: " .. tostring(dmg) .. " 방어: " .. tostring(totalDef) .. ") 남은 HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] ?쇳빐 諛쏆쓬: " .. tostring(finalDmg) .. " (?먮옒: " .. tostring(dmg) .. " 諛⑹뼱: " .. tostring(totalDef) .. ") ?⑥? HP: " .. tostring(self.currentHP))
 		
 		if self.currentHP <= 0 then
 			self.currentHP = 0
 			self.isDead = true
-			log("[PlayerManager] 플레이어 사망!")
+			log("[PlayerManager] ?뚮젅?댁뼱 ?щ쭩!")
+			self:PlayPlayerAnim("Dead")
+		else
+			self:PlayPlayerAnim("Hit")
 		end
 	end
 
 	method void Heal(number amount)
 		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
-		log("[PlayerManager] 체력 회복: " .. tostring(amount) .. " 현재 HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] 泥대젰 ?뚮났: " .. tostring(amount) .. " ?꾩옱 HP: " .. tostring(self.currentHP))
 	end
 
 	method void LevelUp()
 		self.level += 1
 		local prevMaxHP = self.maxHP
 		self:RecalcAllStats()
-		-- 레벨업 시 증가분만큼 현재체력도 증가
+		-- ?덈꺼????利앷?遺꾨쭔???꾩옱泥대젰??利앷?
 		local hpGain = self.maxHP - prevMaxHP
 		self.currentHP += hpGain
 		self.currentHP = math.min(self.maxHP, self.currentHP)
-		log("[PlayerManager] 레벨업! Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+		log("[PlayerManager] ?덈꺼?? Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
 	end
 
 	method void AddBuff(string statName, number value, integer duration)
@@ -344,7 +354,7 @@ script PlayerManager extends Component
 		buff.value = value
 		buff.remainTurn = duration
 		self.buffList[#self.buffList + 1] = buff
-		log("[PlayerManager] 버프 추가: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. "턴)")
+		log("[PlayerManager] 踰꾪봽 異붽?: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. "??")
 	end
 
 	method number GetBuffValue(string statName)
@@ -366,7 +376,7 @@ script PlayerManager extends Component
 				if buff.remainTurn > 0 then
 					newList[#newList + 1] = buff
 				else
-					log("[PlayerManager] 버프 만료: " .. buff.stat)
+					log("[PlayerManager] 踰꾪봽 留뚮즺: " .. buff.stat)
 				end
 			end
 		end
@@ -374,8 +384,8 @@ script PlayerManager extends Component
 	end
 
 	method void AddItem(table itemData)
-		self.inventory[#self.inventory + 1] = itemData
-		self:RecalcAllStats()
+		self.inventoryComp = self:ResolveInventoryComp()
+
 
 		if self.inventoryComp ~= nil then
 			local width = itemData.width or 1
@@ -386,6 +396,16 @@ script PlayerManager extends Component
 					if self.inventoryComp:CanPlace(r, c, width, height) then
 						self.inventoryComp:PlaceItem(r, c, itemData.id, width, height)
 						placed = true
+						-- ?꾩씠???쒓컖???쒖떆 ?앹꽦
+						local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+						if uiMainEntity ~= nil then
+							local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+							if invUIEntity ~= nil and invUIEntity.InventoryUI ~= nil then
+								invUIEntity.InventoryUI:SpawnItemInGrid(itemData.id, r, c, width, height)
+							end
+						end
+						-- 洹몃━???쒖뒪?쒖뿉 留욎떠 ?숆린??
+						self:SyncInventoryFromGrid()
 						break
 					end
 				end
@@ -394,19 +414,20 @@ script PlayerManager extends Component
 				end
 			end
 			if placed == false then
-				log_warning("[PlayerManager] 인벤토리에 아이템을 배치할 공간이 없습니다: " .. tostring(itemData.id))
+				log_warning("[PlayerManager] ?몃깽?좊━???꾩씠?쒖쓣 諛곗튂??怨듦컙???놁뒿?덈떎: " .. tostring(itemData.id))
 			end
 		end
 
-		log("[PlayerManager] 아이템 추가: " .. (itemData.name or tostring(itemData.id)))
+		log("[PlayerManager] ?꾩씠??異붽?: " .. (itemData.name or tostring(itemData.id)))
 	end
 
 	method void RemoveItem(integer index)
 		if index >= 1 and index <= #self.inventory then
 			local item = self.inventory[index]
-			log("[PlayerManager] 아이템 제거: " .. (item.name or tostring(item.id)))
+			log("[PlayerManager] ?꾩씠???쒓굅: " .. (item.name or tostring(item.id)))
 			local itemId = item.id
 			table.remove(self.inventory, index)
+			self.inventoryComp = self:ResolveInventoryComp()
 			if self.inventoryComp ~= nil then
 				self.inventoryComp:RemoveItem(itemId)
 			end
@@ -417,7 +438,7 @@ script PlayerManager extends Component
 	method table UseSkill(any dataMgr)
 		local skillData = dataMgr:GetSkillData(self.skillName)
 		if skillData == nil then
-			log_error("[PlayerManager] 스킬 데이터 없음: " .. self.skillName)
+			log_error("[PlayerManager] ?ㅽ궗 ?곗씠???놁쓬: " .. self.skillName)
 			return nil
 		end
 		
@@ -425,7 +446,7 @@ script PlayerManager extends Component
 			return nil
 		end
 		
-		-- 스킬 효과 적용
+		-- ?ㅽ궗 ?④낵 ?곸슜
 		if skillData.heal > 0 then
 			self:Heal(skillData.heal)
 		end
@@ -439,8 +460,19 @@ script PlayerManager extends Component
 			self:AddBuff("atkPercent", skillData.atk, 3)
 		end
 		
-		log("[PlayerManager] 스킬 사용: " .. self.skillName)
+		log("[PlayerManager] ?ㅽ궗 ?ъ슜: " .. self.skillName)
 		return skillData
 	end
 
+	@ExecSpace("Client")
+	method void PlayPlayerAnim(string stateName)
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		local stateComp = player.StateComponent
+		if stateComp ~= nil then
+			stateComp:ChangeState(stateName)
+		end
+	end
+
 end
+
