@@ -34,13 +34,18 @@ script RewardChest extends Component
 			
 			local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
-				displayArea:DisplayItems(gameSystemEntity.GameManager.pendingRewards)
+				local rewards = gameSystemEntity.GameManager.pendingRewards
+				if rewards == nil then
+					rewards = {}
+				end
+				displayArea:DisplayItems(rewards)
 			else
 				log_warning("[RewardChest] GameSystem or GameManager not found. Cannot populate rewards.")
 			end
 		
 			if displayAreaEntity ~= nil then
 				displayAreaEntity:SetEnable(true)
+				displayAreaEntity:SetVisible(true)
 			end
 		    self.Entity:SetEnable(false)
 	end

@@ -1,27 +1,15 @@
-@Component
+﻿@Component
 script Item extends Component
 
--- ============================================================
--- 아이템 데이터 모델 컴포넌트
--- 아이템 엔티티에 부착하여 아이템 정보를 관리합니다.
--- ============================================================
-
--- 아이템 기본 정보
 property integer itemId = 0
-
 property string itemName = ""
-
 property string itemType = ""
-
 property integer width = 1
-
 property integer height = 1
+property table shapeMatrix = {}
 
--- 아이템 스탯
 property integer atk = 0
-
 property integer def = 0
-
 property integer hp = 0
 property integer cost = 0
 property integer atkPercent = 0
@@ -31,56 +19,41 @@ property integer critDmg = 0
 property integer hpPercent = 0
 property integer spawnGroup = 0
 
--- 설명 & 이미지
 property string desc = ""
 property string spriteRUID = ""
 
--- 인벤토리 내 배치 위치 (row, col) — 미배치 시 -1
 property integer gridRow = -1
-
 property integer gridCol = -1
 
--- InventoryUI가 있는 부모 엔티티 경로
 property string inventoryUIPath = ""
-
--- 최초 생성 위치 (배치 실패 시 돌아갈 위치)
 property table spawnPosition = {}
 
--- ============================================================
--- 터치 시 드래그 시작 연결
--- ============================================================
 @ExecSpace("ClientOnly")
 method void OnBeginPlay()
-    -- 최초 위치 저장 (1회만)
     local uiTransform = self.Entity.UITransformComponent
     if uiTransform ~= nil then
         self.spawnPosition = {x = uiTransform.anchoredPosition.x, y = uiTransform.anchoredPosition.y}
     end
 
-    -- itemId가 설정되어 있으면 CSV에서 자동 로드
     if self.itemId > 0 then
         self:InitFromTable(self.itemId)
     end
 
-    -- 스프라이트 이미지 적용
     if self.spriteRUID ~= "" and self.spriteRUID ~= "NONE" then
         local renderer = self.Entity.SpriteGUIRendererComponent
         if renderer ~= nil then
             renderer.ImageRUID = self.spriteRUID
-            log("[Item] Sprite applied: " .. self.spriteRUID)
         end
     end
 
     self.Entity:ConnectEvent(UITouchDownEvent, function(event)
         local inventoryUI = nil
-        -- inventoryUIPath가 설정되어 있으면 해당 경로에서 찾기
         if self.inventoryUIPath ~= "" then
             local targetEntity = _EntityService:GetEntityByPath(self.inventoryUIPath)
             if targetEntity ~= nil then
                 inventoryUI = targetEntity.InventoryUI
             end
         else
-            -- 부모 엔티티에서 InventoryUI 찾기
             local parent = self.Entity.Parent
             if parent ~= nil then
                 inventoryUI = parent.InventoryUI
@@ -93,12 +66,8 @@ method void OnBeginPlay()
             log_warning("[Item] InventoryUI not found")
         end
     end)
-    log("[Item] UITouch handler connected: " .. self.itemName)
 end
 
--- ============================================================
--- ItemTable에서 데이터 로드
--- ============================================================
 @ExecSpace("ClientOnly")
 method void InitFromTable(integer id)
     local dataSet = "Data_Table - 아이템리스트"
@@ -125,6 +94,29 @@ method void InitFromTable(integer id)
     self.spawnGroup = tonumber(_DataService:GetCell(dataSet, row, "Spawn_Group")) or 0
     self.desc = _DataService:GetCell(dataSet, row, "desc") or ""
     self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID") or ""
+
+    local shapeMask = _DataService:GetCell(dataSet, row, "shapeMask") or ""
+    self.shapeMatrix = self:ParseShapeMask(shapeMask)
+
+    if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
+        self.shapeMatrix = {}
+        for r = 1, self.height do
+            self.shapeMatrix[r] = {}
+            for c = 1, self.width do
+                self.shapeMatrix[r][c] = 1
+            end
+        end
+    else
+        self.height = #self.shapeMatrix
+        local maxWidth = 0
+        for r = 1, #self.shapeMatrix do
+            local rowData = self.shapeMatrix[r]
+            if rowData ~= nil and #rowData > maxWidth then
+                maxWidth = #rowData
+            end
+        end
+        self.width = math.max(1, maxWidth)
+    end
 end
 
 @ExecSpace("ClientOnly")
@@ -139,39 +131,133 @@ method integer FindItemRowById(string dataSet, integer id)
     return 0
 end
 
--- ============================================================
--- 아이템이 차지하는 셀 좌표 리스트 반환 (직사각형 기준)
--- 반환: {{row=0,col=0}, {row=0,col=1}, ...} 상대 좌표
--- ============================================================
-method table GetShapeCells()
-    local cells = {}
-    for r = 0, self.height - 1 do
-        for c = 0, self.width - 1 do
-            table.insert(cells, {row = r, col = c})
+@ExecSpace("ClientOnly")
+method table ParseShapeMask(string shapeMask)
+    local matrix = {}
+    if shapeMask == nil or shapeMask == "" then
+        return matrix
+    end
+
+    local currentRow = ""
+    for i = 1, string.len(shapeMask) do
+        local ch = string.sub(shapeMask, i, i)
+        if ch == "," or ch == "/" then
+            if currentRow ~= "" then
+                local rowData = {}
+                for j = 1, string.len(currentRow) do
+                    local cellChar = string.sub(currentRow, j, j)
+                    if cellChar == "1" then
+                        rowData[#rowData + 1] = 1
+                    else
+                        rowData[#rowData + 1] = 0
+                    end
+                end
+                matrix[#matrix + 1] = rowData
+            end
+            currentRow = ""
+        else
+            currentRow = currentRow .. ch
         end
     end
+
+    if currentRow ~= "" then
+        local rowData = {}
+        for j = 1, string.len(currentRow) do
+            local cellChar = string.sub(currentRow, j, j)
+            if cellChar == "1" then
+                rowData[#rowData + 1] = 1
+            else
+                rowData[#rowData + 1] = 0
+            end
+        end
+        matrix[#matrix + 1] = rowData
+    end
+
+    return matrix
+end
+
+method table GetShapeCells()
+    local cells = {}
+
+    if self.shapeMatrix ~= nil and #self.shapeMatrix > 0 then
+        for r = 1, #self.shapeMatrix do
+            local rowData = self.shapeMatrix[r]
+            if rowData ~= nil then
+                for c = 1, #rowData do
+                    if rowData[c] == 1 then
+                        cells[#cells + 1] = {row = r - 1, col = c - 1}
+                    end
+                end
+            end
+        end
+    end
+
+    if #cells == 0 then
+        for r = 0, self.height - 1 do
+            for c = 0, self.width - 1 do
+                cells[#cells + 1] = {row = r, col = c}
+            end
+        end
+    end
+
     return cells
 end
 
--- ============================================================
--- 아이템 배치 위치 설정
--- ============================================================
+@ExecSpace("ClientOnly")
+method void Rotate90Degrees()
+    if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
+        return
+    end
+
+    local oldRows = #self.shapeMatrix
+    local oldCols = 0
+    for r = 1, oldRows do
+        local rowData = self.shapeMatrix[r]
+        if rowData ~= nil and #rowData > oldCols then
+            oldCols = #rowData
+        end
+    end
+
+    if oldRows <= 0 or oldCols <= 0 then
+        return
+    end
+
+    local rotated = {}
+    for c = 1, oldCols do
+        rotated[c] = {}
+        for r = 1, oldRows do
+            local srcRow = oldRows - r + 1
+            local srcCell = 0
+            local srcRowData = self.shapeMatrix[srcRow]
+            if srcRowData ~= nil and srcRowData[c] ~= nil then
+                srcCell = srcRowData[c]
+            end
+            rotated[c][r] = srcCell
+        end
+    end
+
+    self.shapeMatrix = rotated
+
+    local temp = self.width
+    self.width = self.height
+    self.height = temp
+
+    local uiTransform = self.Entity.UITransformComponent
+    if uiTransform ~= nil then
+        uiTransform.ZRotation = uiTransform.ZRotation - 90
+    end
+end
+
 method void SetGridPosition(integer row, integer col)
     self.gridRow = row
     self.gridCol = col
 end
 
--- ============================================================
--- 아이템 배치 해제
--- ============================================================
 method void ClearGridPosition()
     self.gridRow = -1
     self.gridCol = -1
 end
 
--- ============================================================
--- 아이템이 인벤토리에 배치되었는지 여부
--- ============================================================
 method boolean IsPlaced()
     return self.gridRow >= 0 and self.gridCol >= 0
 end

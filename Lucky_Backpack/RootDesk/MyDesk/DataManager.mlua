@@ -168,6 +168,7 @@ script DataManager extends Component
 				data.desc = ds:GetCell(i, "desc") or ""
 				data.spawnGroup = tonumber(ds:GetCell(i, "Spawn_Group")) or 1
 				data.imageRUID = ds:GetCell(i, "imageRUID") or ""
+				data.shapeMask = ds:GetCell(i, "shapeMask") or ""
 				self.ItemTable[id] = data
 			end
 		end
