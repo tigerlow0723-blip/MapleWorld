@@ -110,9 +110,16 @@ end
 
 @ExecSpace("ClientOnly")
 method void GenerateShopItems()
-    self.shopItems = {}
+    -- 배열 명시적 초기화: 기존 흔적 완전 삭제
+    if self.shopItems == nil then
+        self.shopItems = {}
+    end
+    for i = 1, 5 do
+        self.shopItems[i] = nil
+    end
 
     if self.dataManager == nil then
+        self:RenderShopItems()
         return
     end
 
@@ -141,8 +148,13 @@ end
 method void RenderShopItems()
     for i = 1, 5 do
         local cardEntity = self.cardEntities[i]
+        -- 새로운 아이템을 그리기 전에 UI 잔상 초기화 (빈 슬롯 렌더링)
+        self:RenderCard(cardEntity, nil)
+
         local itemData = self.shopItems[i]
-        self:RenderCard(cardEntity, itemData)
+        if itemData ~= nil then
+            self:RenderCard(cardEntity, itemData)
+        end
     end
 end
 

@@ -115,6 +115,7 @@
 - **`OpenShop()` & `GenerateShopItems()`**: 총 5개의 랜덤 카드를 표시합니다. 이때 `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
 - **`OnClickRefresh()`**: 유저가 수동 리롤 요청 시, 내 골드가 2 이상(`refreshCost`) 일 때 `SpendGold()`하고 진열 목록을 전체 갱신(Re-draw)합니다.
 - **`OnClickCard(index)`**: 골드가 충분하면 아이템을 구매하며, 성공하면 배열을 지우고 `ItemDisplayArea`에 카드 이미지를 스폰시킵니다.
+- **[이슈 트래킹]**: 간헐적으로 리롤 시 이전 아이템의 카드 이미지가 그대로 남아 이름과 불일치하는 "유령 스프라이트" 현상이 발견되었습니다. 현재 방어 로직(`ImageRUID` 명시적 초기화)을 넣었으나 엔진 이슈로 완화되지 않을 수 있으므로, **추후 전체 아이템 데이터에 모든 `imageRUID`가 채워진 상태에서 다시 한 번 버그 유무를 재테스트**해야 합니다.
 
 ### 6-4. InventoryUI.mlua (판매 구역 드래그 드롭)
 - **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.
