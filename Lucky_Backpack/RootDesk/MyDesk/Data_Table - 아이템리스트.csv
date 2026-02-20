@@ -1,4 +1,4 @@
-id,type,name,width,height,cost,atk,atkPercent,accPercent,critRate,critDmg,hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask
+﻿id,type,name,width,height,cost,atk,atkPercent,accPercent,critRate,critDmg,hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask
 1,weapon,목검,1,3,5,20,0,100,0,0,0,0,0,1,기본 레어 두손검,f3ae2a504d6543dd97b852ba72ae22d3,1/1/1
 2,weapon,쟈드,1,3,5,30,0,100,0,0,0,0,0,0,기본 에픽 두손검,3a0ded694eab4360a98073799002f1e9,1/1/1
 3,weapon,청운검,1,3,5,40,0,100,0,0,0,0,0,0,기본 유니크 두손검,29459cbfc27c4c6a84d626b5ffa71ad4,1/1/1
@@ -79,7 +79,7 @@ id,type,name,width,height,cost,atk,atkPercent,accPercent,critRate,critDmg,hp,hpP
 78,consumable,돼지고기,0,0,0,0,0,0,0,0,0,25,0,0,상점 회복 음식,e3cc3e68f52f41c9bba92b0dd075ada5,1
 79,goods,황금 원석,0,0,0,0,0,0,0,0,0,0,0,0,미니게임 재화,4bad190b58cf42ec9ea619b8060ba865,1
 80,goods,순금괴,0,0,0,0,0,0,0,0,0,0,0,0,미니게임 재화,c23750942e9b4cf18c2b4aee246fadd0,1
-81,expand,인벤토리 확장,0,0,0,0,0,0,0,0,0,0,0,0,인벤토리 확장,,1
+81,expand,인벤토리 확장,0,0,0,0,0,0,0,0,0,0,0,0,인벤토리 확장,8467fd4b9fd346caa5ff3e83818f518e,1
 82,stone,,,,,,,,,,,,,,유물,,1
 901,weapon,더미 ㄱ자 무기,2,2,1,1,0,100,0,0,0,0,0,0,shape test L,,11/10
 902,weapon,더미 T자 무기,3,2,1,1,0,100,0,0,0,0,0,0,shape test T,,111/010
