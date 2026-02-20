@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script PlayerManager extends Component
 
 	property string classId = "War"
@@ -55,13 +55,13 @@ script PlayerManager extends Component
 
 		return self.inventoryComp
 	end
-	-- @ExecSpace("ServerOnly") ?쒓굅: ?대씪?댁뼵?몄뿉?쒕룄 ?ㅽ뻾?섎룄濡?蹂寃?
+	--
 	method void OnBeginPlay()
 		self.inventoryComp = self:ResolveInventoryComp()
 		if self.inventoryComp == nil then
-			log_warning("[PlayerManager] Inventory 而댄룷?뚰듃瑜?李얠쓣 ???놁뒿?덈떎.")
+			log_warning("[PlayerManager] Inventory component not found")
 		end
-		log("[PlayerManager] 珥덇린???쒖옉")
+		log("[PlayerManager] Initialized")
 	end
 
 	method void SyncInventoryFromGrid()
@@ -77,7 +77,7 @@ script PlayerManager extends Component
 			end
 		end
 		self:RecalcAllStats()
-		-- maxHP가 변경되면 currentHP 캡핑
+		--
 		if self.currentHP > self.maxHP then
 			self.currentHP = self.maxHP
 		end
@@ -101,7 +101,7 @@ script PlayerManager extends Component
 		
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		if baseStat == nil then
-			log_error("[PlayerManager] 湲곕낯 ?ㅽ꺈 ?곗씠???놁쓬: " .. self.classId)
+			log_error("[PlayerManager] Base stat not found: " .. self.classId)
 			return
 		end
 		
@@ -109,9 +109,9 @@ script PlayerManager extends Component
 		self.baseACC = baseStat.acc
 		self.baseCritRate = baseStat.critRate
 		self.baseCritDmg = baseStat.critDmg
-		-- currentCost는 RecalcAllStats() 이후에 설정?
+		--
 		
-		-- ?꾩옱 ?ㅽ꺈 珥덇린??
+		--
 		self.atk = self.baseATK
 		self.acc = self.baseACC
 		self.critRate = self.baseCritRate
@@ -119,13 +119,13 @@ script PlayerManager extends Component
 		
 		self.skillName = baseStat.skill
 		
-		-- 理쒖쥌 ?ㅽ꺈 怨꾩궛
+		--
 		self:RecalcAllStats()
 		
 		self.currentHP = self.maxHP
 		self.currentCost = self.maxCost
 		
-		log("[PlayerManager] ?뚮젅?댁뼱 珥덇린???꾨즺 (吏곸뾽: " .. self.classId .. ")")
+		log("[PlayerManager] Init complete. class=" .. self.classId)
 	end
 
 	method void RecalcAllStats()
@@ -295,21 +295,41 @@ script PlayerManager extends Component
 	method void RestoreCost()
 		self.maxCost = self:CalcMaxCost()
 		self.currentCost = self.maxCost
-		log("[PlayerManager] 肄붿뒪???뚮났: " .. tostring(self.currentCost))
+		log("[PlayerManager] Cost restored: " .. tostring(self.currentCost))
+	end
+
+	method void AddGold(integer amount)
+		if amount <= 0 then
+			return
+		end
+		self.gold = (self.gold or 0) + amount
+		log("[PlayerManager] Gold +" .. tostring(amount) .. " => " .. tostring(self.gold))
+	end
+
+	method boolean SpendGold(integer amount)
+		if amount <= 0 then
+			return true
+		end
+		if (self.gold or 0) < amount then
+			return false
+		end
+		self.gold = self.gold - amount
+		log("[PlayerManager] Gold -" .. tostring(amount) .. " => " .. tostring(self.gold))
+		return true
 	end
 
 	method boolean UseCost(number amount)
 		if self.currentCost < amount then
-			log("[PlayerManager] 肄붿뒪??遺議? ?꾩옱: " .. tostring(self.currentCost) .. " ?꾩슂: " .. tostring(amount))
+			log("[PlayerManager] Not enough cost. Current: " .. tostring(self.currentCost) .. " Need: " .. tostring(amount))
 			return false
 		end
 		self.currentCost -= amount
-		log("[PlayerManager] 肄붿뒪???ъ슜: " .. tostring(amount) .. " ?⑥?: " .. tostring(self.currentCost))
+		log("[PlayerManager] Cost spent: " .. tostring(amount) .. " Left: " .. tostring(self.currentCost))
 		return true
 	end
 
 	method void TakeDamage(number dmg)
-		-- 諛⑹뼱??怨꾩궛 (?꾩씠??諛⑹뼱??
+		--
 		local totalDef = 0
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
@@ -320,12 +340,12 @@ script PlayerManager extends Component
 		
 		local finalDmg = math.max(1, dmg - totalDef)
 		self.currentHP -= finalDmg
-		log("[PlayerManager] ?쇳빐 諛쏆쓬: " .. tostring(finalDmg) .. " (?먮옒: " .. tostring(dmg) .. " 諛⑹뼱: " .. tostring(totalDef) .. ") ?⑥? HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] Took damage: " .. tostring(finalDmg) .. " (raw: " .. tostring(dmg) .. " def: " .. tostring(totalDef) .. ") HP: " .. tostring(self.currentHP))
 		
 		if self.currentHP <= 0 then
 			self.currentHP = 0
 			self.isDead = true
-			log("[PlayerManager] ?뚮젅?댁뼱 ?щ쭩!")
+			log("[PlayerManager] Player dead")
 			self:PlayPlayerAnim("Dead")
 		else
 			self:PlayPlayerAnim("Hit")
@@ -334,18 +354,18 @@ script PlayerManager extends Component
 
 	method void Heal(number amount)
 		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
-		log("[PlayerManager] 泥대젰 ?뚮났: " .. tostring(amount) .. " ?꾩옱 HP: " .. tostring(self.currentHP))
+		log("[PlayerManager] Heal: " .. tostring(amount) .. " Current HP: " .. tostring(self.currentHP))
 	end
 
 	method void LevelUp()
 		self.level += 1
 		local prevMaxHP = self.maxHP
 		self:RecalcAllStats()
-		-- ?덈꺼????利앷?遺꾨쭔???꾩옱泥대젰??利앷?
+		--
 		local hpGain = self.maxHP - prevMaxHP
 		self.currentHP += hpGain
 		self.currentHP = math.min(self.maxHP, self.currentHP)
-		log("[PlayerManager] ?덈꺼?? Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+		log("[PlayerManager] Level up: " .. tostring(self.level) .. " HP " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
 	end
 
 	method void AddBuff(string statName, number value, integer duration)
@@ -354,7 +374,7 @@ script PlayerManager extends Component
 		buff.value = value
 		buff.remainTurn = duration
 		self.buffList[#self.buffList + 1] = buff
-		log("[PlayerManager] 踰꾪봽 異붽?: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. "??")
+		log("[PlayerManager] Buff add: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. " turns)")
 	end
 
 	method number GetBuffValue(string statName)
@@ -376,7 +396,7 @@ script PlayerManager extends Component
 				if buff.remainTurn > 0 then
 					newList[#newList + 1] = buff
 				else
-					log("[PlayerManager] 踰꾪봽 留뚮즺: " .. buff.stat)
+					log("[PlayerManager] Buff expired: " .. buff.stat)
 				end
 			end
 		end
@@ -440,7 +460,7 @@ script PlayerManager extends Component
 					if self.inventoryComp:CanPlace(r, c, shapeCells) then
 						self.inventoryComp:PlaceItem(r, c, itemData.id, shapeCells)
 						placed = true
-						-- ?꾩씠???쒓컖???쒖떆 ?앹꽦
+						--
 						local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 						if uiMainEntity ~= nil then
 							local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
@@ -448,7 +468,7 @@ script PlayerManager extends Component
 								invUIEntity.InventoryUI:SpawnItemInGrid(itemData.id, r, c, width, height)
 							end
 						end
-						-- 洹몃━???쒖뒪?쒖뿉 留욎떠 ?숆린??
+						--
 						self:SyncInventoryFromGrid()
 						break
 					end
@@ -458,17 +478,17 @@ script PlayerManager extends Component
 				end
 			end
 			if placed == false then
-				log_warning("[PlayerManager] ?몃깽?좊━???꾩씠?쒖쓣 諛곗튂??怨듦컙???놁뒿?덈떎: " .. tostring(itemData.id))
+				log_warning("[PlayerManager] No inventory space for itemId: " .. tostring(itemData.id))
 			end
 		end
 
-		log("[PlayerManager] ?꾩씠??異붽?: " .. (itemData.name or tostring(itemData.id)))
+		log("[PlayerManager] Item added: " .. (itemData.name or tostring(itemData.id)))
 	end
 
 	method void RemoveItem(integer index)
 		if index >= 1 and index <= #self.inventory then
 			local item = self.inventory[index]
-			log("[PlayerManager] ?꾩씠???쒓굅: " .. (item.name or tostring(item.id)))
+			log("[PlayerManager] Item removed: " .. (item.name or tostring(item.id)))
 			local itemId = item.id
 			table.remove(self.inventory, index)
 			self.inventoryComp = self:ResolveInventoryComp()
@@ -482,7 +502,7 @@ script PlayerManager extends Component
 	method table UseSkill(any dataMgr)
 		local skillData = dataMgr:GetSkillData(self.skillName)
 		if skillData == nil then
-			log_error("[PlayerManager] ?ㅽ궗 ?곗씠???놁쓬: " .. self.skillName)
+			log_error("[PlayerManager] Skill not found: " .. self.skillName)
 			return nil
 		end
 		
@@ -490,7 +510,7 @@ script PlayerManager extends Component
 			return nil
 		end
 		
-		-- ?ㅽ궗 ?④낵 ?곸슜
+		--
 		if skillData.heal > 0 then
 			self:Heal(skillData.heal)
 		end
@@ -504,7 +524,7 @@ script PlayerManager extends Component
 			self:AddBuff("atkPercent", skillData.atk, 3)
 		end
 		
-		log("[PlayerManager] ?ㅽ궗 ?ъ슜: " .. self.skillName)
+		log("[PlayerManager] Skill used: " .. self.skillName)
 		return skillData
 	end
 

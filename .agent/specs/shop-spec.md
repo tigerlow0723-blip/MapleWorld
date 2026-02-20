@@ -31,21 +31,28 @@
 > - 맨 왼쪽에 "새로고침(주사위 아이콘)" 패널
 > - 우측에 나란히 세워진 5개의 "상품 카드 패널"
 
-### 2-1. 주요 구조 (UI Entity)
-- **`ShopPanel` (최상위 부모)** : 평소에는 안 보임(`Enable=false`). `gamePhase == "Shop"`일 때만 켜짐.
-- **`BtnRefresh` (새로고침 버튼)**: 좌측에 배치됨. "새로고침" 텍스트와 주사위 아이콘, 그리고 하단에 요구 재화(예: 2골드)가 표기.
-- **`ItemList` (가로 스택/수평 정렬)**: 우측에 상점에서 파는 아이템 카드 5개가 나란히 진열되는 그룹.
-- **상품 카드 (ItemCard)**: 각 5개의 카드는 오직 다음 3가지만 보여줍니다.
-  1. `아이템 이미지(Sprite)`: 카드 중앙의 둥근 테두리 안.
-  2. `가격(Price 텍스트)`: 이미지 바로 아래에 코인 아이콘과 함께(예: 💰2).
-  3. `이름(Name 텍스트)`: 카드 최하단에 상품명 기재 (예: 망각의 수호병).
-- **`TxtPlayerGold`**: 내 현재 남은 돈 표시.
-- **`BtnCloseShop`**: 상점을 닫고 다시 `Preparation`(정비) 단계로 넘어가는(혹은 스테이지 클리어 처리) 버튼.
+### 2-1. 메이커(Maker) 화면에서 만들 UI 엔티티 (Hierarchy 계층 구조)
+상점이 열리는 정확한 타이밍은 **[전투 승리 -> 보상 상자 정리 -> '다음으로' 버튼 클릭 시]** 상점창이 화면에 팝업되는 순서입니다.
 
-### 2-2. 상점 로직 (`OpenShop()` 메서드)
-1. 상점이 열리면(특정 스테이지 클리어 시) `self.gamePhase = "Shop"`으로 변경.
-2. `DataManager`를 통해 아이템 데이터 **5개**를 무작위로 뽑아 배열(`shopItems`)에 저장합니다.
-3. 이 데이터를 바탕으로 `ItemList` 내부의 카드 빈칸 5곳에 이미지, 이름, 가격 텍스트를 최신화하여 스폰(렌더링)시킵니다.
+**UI 계층 구조도 (Workspace -> `ui` -> `UIGroup` 밑에 생성):**
+- **`ShopPanel`** (`SpriteGUIRendererComponent` 및 빈 스크립트 **`ShopUI`** 부착)
+  - 기본 상태(Inspector): `Enable = false` (평소엔 무조건 꺼둠)
+  - **`BtnRefresh` (새로고침 버튼)**: (`ButtonComponent`, `SpriteGUIRendererComponent`)
+    - 주사위 아이콘과 "새로고침💰2" 텍스트 포함
+  - **`ItemList` (가로 진열대)**: 
+    - 상점 아이템 카드 5개가 나란히 진열되는 그룹. 비워둠.
+    - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
+      - 카드를 클릭해야 하므로 버튼 부착. 그 속에는 다음 3가지만 노출.
+      1. `이미지(Sprite)`: 아이템 사진.
+      2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
+      3. `이름(Text)`: 최하단 상품명.
+  - **`TxtPlayerGold`**: (`TextComponent`) 내 현재 남은 돈 표시.
+  - **`BtnCloseShop`**: (`ButtonComponent`) 상점 닫고 다음 스테이지(정비)로 넘어가는 닫기 버튼.
+
+### 2-2. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
+- 1. **등장(On)**: `GameManager`에서 보상을 모두 줍고 정비 종료를 눌렀을 때(`EndPreparation()`), `self.gamePhase = "Shop"`가 되면서 `ShopPanel` 엔티티의 `Enable = true`로 화면에 나타납니다.
+- 2. **세팅**: 켜지는 즉시 `ShopUI:OpenShop()`이 발동하며 무작위 5개의 아이템 카드가 `ItemList` 안에 렌더링 됩니다.
+- 3. **퇴장(Off)**: 유저가 `BtnCloseShop` 버튼을 누르면, 상점 패널의 `Enable = false`로 꺼버린 뒤, `GameManager`에 신호를 보내 다음 스테이지(`currentStage + 1`)의 **정비(Preparation) 단계**로 사이클을 깔끔하게 다시 돌립니다!
 
 ### 2-3. 새로고침 (Reroll) 로직 (`OnClickRefresh()`)
 - 유저가 좌측의 새로고침 버튼을 누를 때 발동.

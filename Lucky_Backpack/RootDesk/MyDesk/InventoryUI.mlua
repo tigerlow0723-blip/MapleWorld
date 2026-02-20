@@ -15,6 +15,7 @@ property table colorCannotPlace = {}
 property table cellEntities = {}
 property table dragState = {}
 property string itemTemplatePath = "/ui/UIGroup/ItemTemplate"
+property string shopPanelPath = "/ui/UIGroup/ShopPanel"
 
 @ExecSpace("ClientOnly")
 method void OnBeginPlay()
@@ -372,9 +373,61 @@ method void OnDragRelease(ScreenTouchReleaseEvent event)
     if result.row > 0 and result.col > 0 then
         self:TryDropItem(result.row, result.col)
     else
+        if self:TrySellDrop(touchPoint) then
+            self:EndDrag()
+            return
+        end
         self:ReturnToOrigin()
         self:EndDrag()
     end
+end
+
+@ExecSpace("ClientOnly")
+method boolean TrySellDrop(Vector2 touchPoint)
+    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+    if gameSystem == nil or gameSystem.GameManager == nil then
+        return false
+    end
+    if gameSystem.GameManager.gamePhase ~= "Shop" then
+        return false
+    end
+
+    if self.dragState.originRow <= 0 or self.dragState.originCol <= 0 then
+        return false
+    end
+
+    local shopEntity = _EntityService:GetEntityByPath(self.shopPanelPath)
+    if shopEntity == nil or shopEntity.ShopUI == nil then
+        return false
+    end
+    if shopEntity.ShopUI:IsInSellArea(touchPoint) == false then
+        return false
+    end
+
+    local itemEntity = self.dragState.itemEntity
+    if itemEntity == nil or itemEntity.Item == nil then
+        return false
+    end
+
+    local sold = shopEntity.ShopUI:SellItemById(itemEntity.Item.itemId)
+    if sold == false then
+        return false
+    end
+
+    local soldItemId = itemEntity.Item.itemId
+    if isvalid(itemEntity) then
+        itemEntity:Destroy()
+    end
+
+    local inventory = self.Entity.Inventory
+    if inventory ~= nil then
+        inventory.placedItems[soldItemId] = nil
+    end
+    if gameSystem.PlayerManager ~= nil then
+        gameSystem.PlayerManager:SyncInventoryFromGrid()
+    end
+
+    return true
 end
 
 @ExecSpace("ClientOnly")

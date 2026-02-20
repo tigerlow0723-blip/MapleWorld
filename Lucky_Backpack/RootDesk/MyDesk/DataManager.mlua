@@ -81,8 +81,7 @@ script DataManager extends Component
 				data.dotTurn = tonumber(ds:GetCell(i, "dotTurn")) or 0
 				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
 				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
-				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
-				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
+				data.goldDrop = tonumber(ds:GetCell(i, "goldDrop")) or data.rewardGold
 				data.modelID = ds:GetCell(i, "ModelID") or ""
 				self.MonsterTable[id] = data
 			end
@@ -157,6 +156,7 @@ script DataManager extends Component
 				data.width = math.max(1, tonumber(ds:GetCell(i, "width")) or 1)
 				data.height = math.max(1, tonumber(ds:GetCell(i, "height")) or 1)
 				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
+				data.price = tonumber(ds:GetCell(i, "price")) or data.cost
 				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
 				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0
 				data.accPercent = tonumber(ds:GetCell(i, "accPercent")) or 0

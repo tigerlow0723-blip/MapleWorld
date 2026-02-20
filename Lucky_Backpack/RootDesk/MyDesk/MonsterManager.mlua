@@ -77,9 +77,7 @@ script MonsterManager extends Component
 			monster.dotDmg = template.dotDmg
 			monster.dotTurn = template.dotTurn
 			monster.rewardExp = template.rewardExp
-			monster.rewardGold = template.rewardGold
-			monster.rewardExp = template.rewardExp
-			monster.rewardGold = template.rewardGold
+			monster.rewardGold = template.goldDrop or template.rewardGold or 0
 			monster.modelID = template.modelID or ""
 			monster.alive = true
 			monster.dotEffects = {}

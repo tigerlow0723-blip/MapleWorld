@@ -1,7 +1,7 @@
-﻿ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,ModelID
-M_01,독버섯,1,50,8,2,5,POISON,50,1,독,5,3,10,5,model://maplestorymonster$8dd319b680f54ce590bc63b47b80cfb8
-M_02,좀비,1,80,10,5,0,MULTI,50,2,없음,0,0,15,10,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54
-M_03,화염술사,2,60,12,1,10,BURN,50,1,화상,8,2,20,15,model://maplestorymonster$6cd4eacefeb14836a002d48b112db1cb
-M_04,얼음골렘,2,100,9,8,0,FREEZE,50,1,빙결,0,1,25,20,
-M_05,다크나이트,3,120,14,6,15,DARK,50,1,암흑,6,2,30,25,
-M_06,화산거북,4,150,16,10,5,BURN,50,1,화상,10,3,40,30,
+ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,goldDrop,ModelID
+M_01,독버섯,1,50,8,2,5,POISON,50,1,독,5,3,10,5,5,model://maplestorymonster$8dd319b680f54ce590bc63b47b80cfb8
+M_02,좀비,1,80,10,5,0,MULTI,50,2,없음,0,0,15,10,10,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54
+M_03,화염술사,2,60,12,1,10,BURN,50,1,화상,8,2,20,15,15,model://maplestorymonster$6cd4eacefeb14836a002d48b112db1cb
+M_04,얼음골렘,2,100,9,8,0,FREEZE,50,1,빙결,0,1,25,20,20,
+M_05,다크나이트,3,120,14,6,15,DARK,50,1,암흑,6,2,30,25,25,
+M_06,화산거북,4,150,16,10,5,BURN,50,1,화상,10,3,40,30,30,
