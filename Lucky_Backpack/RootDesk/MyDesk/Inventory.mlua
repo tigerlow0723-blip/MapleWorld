@@ -223,6 +223,30 @@ method boolean RemoveItem(integer itemId)
     return true
 end
 
+-- 위치 기반 아이템 제거 (동일 ID 아이템이 여러 개일 때 사용)
+method boolean RemoveItemAt(integer itemId, integer row, integer col, integer w, integer h)
+    -- 해당 위치의 셀 비우기
+    for dr = 0, h - 1 do
+        for dc = 0, w - 1 do
+            local r = row + dr
+            local c = col + dc
+            if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
+                self.grid[r][c] = 1
+            end
+        end
+    end
+
+    -- placedItems에서도 제거 (위치가 일치하는 경우만)
+    local info = self.placedItems[itemId]
+    if info ~= nil and info.row == row and info.col == col then
+        self.placedItems[itemId] = nil
+    end
+
+    self.gridVersion = self.gridVersion + 1
+    log("[Inventory] Removed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
+    return true
+end
+
 -- ============================================================
 -- 인벤토리 1칸 확장
 -- 비활성 셀 중 활성 셀과 인접한 셀 하나를 활성화

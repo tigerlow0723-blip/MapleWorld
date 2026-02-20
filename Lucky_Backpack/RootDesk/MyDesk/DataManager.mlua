@@ -154,8 +154,8 @@ script DataManager extends Component
 				data.id = id
 				data.type = ds:GetCell(i, "type") or "weapon"
 				data.name = ds:GetCell(i, "name") or ""
-				data.width = tonumber(ds:GetCell(i, "width")) or 1
-				data.height = tonumber(ds:GetCell(i, "height")) or 1
+				data.width = math.max(1, tonumber(ds:GetCell(i, "width")) or 1)
+				data.height = math.max(1, tonumber(ds:GetCell(i, "height")) or 1)
 				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
 				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
 				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0

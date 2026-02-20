@@ -17,8 +17,6 @@ property integer width = 1
 
 property integer height = 1
 
-property table shapeMatrix = {}
-
 -- 아이템 스탯
 property integer atk = 0
 
@@ -110,65 +108,23 @@ method void InitFromTable(integer id)
         return
     end
 
-    self.itemId = _DataService:GetCell(dataSet, row, "id")
-    self.itemName = _DataService:GetCell(dataSet, row, "name")
-    self.itemType = _DataService:GetCell(dataSet, row, "type")
-    self.width = _DataService:GetCell(dataSet, row, "width")
-    self.height = _DataService:GetCell(dataSet, row, "height")
-    self.atk = _DataService:GetCell(dataSet, row, "atk")
-    self.def = _DataService:GetCell(dataSet, row, "def")
-    self.hp = _DataService:GetCell(dataSet, row, "hp")
-    self.cost = _DataService:GetCell(dataSet, row, "cost")
-    self.atkPercent = _DataService:GetCell(dataSet, row, "atkPercent")
-    self.accPercent = _DataService:GetCell(dataSet, row, "accPercent")
-    self.critRate = _DataService:GetCell(dataSet, row, "critRate")
-    self.critDmg = _DataService:GetCell(dataSet, row, "critDmg")
-    self.hpPercent = _DataService:GetCell(dataSet, row, "hpPercent")
-    self.spawnGroup = _DataService:GetCell(dataSet, row, "Spawn_Group")
-    self.desc = _DataService:GetCell(dataSet, row, "desc")
-    self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID")
-
-    local shapeMask = _DataService:GetCell(dataSet, row, "shapeMask")
-    self.shapeMatrix = {}
-
-    if shapeMask ~= nil and shapeMask ~= "" then
-        local rowStrings = {}
-        local currentRow = ""
-        for i = 1, #shapeMask do
-            local ch = string.sub(shapeMask, i, i)
-            if ch == "," then
-                rowStrings[#rowStrings + 1] = currentRow
-                currentRow = ""
-            else
-                currentRow = currentRow .. ch
-            end
-        end
-        if currentRow ~= "" then
-            rowStrings[#rowStrings + 1] = currentRow
-        end
-
-        for r = 1, #rowStrings do
-            local rowText = rowStrings[r]
-            self.shapeMatrix[r] = {}
-            for c = 1, #rowText do
-                local cellChar = string.sub(rowText, c, c)
-                if cellChar == "1" then
-                    self.shapeMatrix[r][c] = 1
-                else
-                    self.shapeMatrix[r][c] = 0
-                end
-            end
-        end
-    end
-
-    if #self.shapeMatrix == 0 then
-        for r = 1, self.height do
-            self.shapeMatrix[r] = {}
-            for c = 1, self.width do
-                self.shapeMatrix[r][c] = 1
-            end
-        end
-    end
+    self.itemId = tonumber(_DataService:GetCell(dataSet, row, "id")) or 0
+    self.itemName = _DataService:GetCell(dataSet, row, "name") or ""
+    self.itemType = _DataService:GetCell(dataSet, row, "type") or ""
+    self.width = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "width")) or 1)
+    self.height = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "height")) or 1)
+    self.atk = tonumber(_DataService:GetCell(dataSet, row, "atk")) or 0
+    self.def = tonumber(_DataService:GetCell(dataSet, row, "def")) or 0
+    self.hp = tonumber(_DataService:GetCell(dataSet, row, "hp")) or 0
+    self.cost = tonumber(_DataService:GetCell(dataSet, row, "cost")) or 0
+    self.atkPercent = tonumber(_DataService:GetCell(dataSet, row, "atkPercent")) or 0
+    self.accPercent = tonumber(_DataService:GetCell(dataSet, row, "accPercent")) or 0
+    self.critRate = tonumber(_DataService:GetCell(dataSet, row, "critRate")) or 0
+    self.critDmg = tonumber(_DataService:GetCell(dataSet, row, "critDmg")) or 0
+    self.hpPercent = tonumber(_DataService:GetCell(dataSet, row, "hpPercent")) or 0
+    self.spawnGroup = tonumber(_DataService:GetCell(dataSet, row, "Spawn_Group")) or 0
+    self.desc = _DataService:GetCell(dataSet, row, "desc") or ""
+    self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID") or ""
 end
 
 @ExecSpace("ClientOnly")
@@ -189,64 +145,12 @@ end
 -- ============================================================
 method table GetShapeCells()
     local cells = {}
-    for r = 1, #self.shapeMatrix do
-        local rowData = self.shapeMatrix[r]
-        if rowData == nil then
-            continue
-        end
-        for c = 1, #rowData do
-            if rowData[c] == 1 then
-                table.insert(cells, {row = r - 1, col = c - 1})
-            end
+    for r = 0, self.height - 1 do
+        for c = 0, self.width - 1 do
+            table.insert(cells, {row = r, col = c})
         end
     end
     return cells
-end
-
-@ExecSpace("ClientOnly")
-method void Rotate90Degrees()
-    local oldRows = #self.shapeMatrix
-    if oldRows <= 0 then return end
-
-    local oldCols = 0
-    for r = 1, oldRows do
-        if self.shapeMatrix[r] ~= nil and #self.shapeMatrix[r] > oldCols then
-            oldCols = #self.shapeMatrix[r]
-        end
-    end
-    if oldCols <= 0 then return end
-
-    local newMatrix = {}
-    for r = 1, oldCols do
-        newMatrix[r] = {}
-        for c = 1, oldRows do
-            newMatrix[r][c] = 0
-        end
-    end
-
-    for r = 1, oldRows do
-        local rowData = self.shapeMatrix[r]
-        if rowData == nil then
-            continue
-        end
-        for c = 1, #rowData do
-            if rowData[c] == 1 then
-                local newR = c
-                local newC = oldRows - r + 1
-                newMatrix[newR][newC] = 1
-            end
-        end
-    end
-
-    self.shapeMatrix = newMatrix
-    local oldWidth = self.width
-    self.width = self.height
-    self.height = oldWidth
-
-    local uiTransform = self.Entity.UITransformComponent
-    if uiTransform ~= nil then
-        uiTransform.ZRotation = uiTransform.ZRotation - 90
-    end
 end
 
 -- ============================================================

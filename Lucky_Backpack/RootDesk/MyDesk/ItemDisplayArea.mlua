@@ -14,6 +14,23 @@ script ItemDisplayArea extends Component
 	property string itemTemplatePath = ""
 
 	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self.Entity:SetEnable(false)
+		
+		-- 에디터에 미리 배치해둔 UI 아이템(템플릿 등)이 같이 뜨는 것을 방지
+		local children = self.Entity.Children
+		if children ~= nil then
+			for i = 1, #children do
+				local child = children[i]
+				-- Item 컴포넌트를 가진 자식이라면 모두 끄기
+				if child.Item ~= nil then
+					child:SetEnable(false)
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
 	method void ClearAllItems()
 		    for i = #self.spawnedItems, 1, -1 do
 		        local itemEntity = self.spawnedItems[i]
@@ -47,12 +64,9 @@ script ItemDisplayArea extends Component
 		    local rowCount = _DataService:GetRowCount(dataSet)
 		
 		    for row = 1, rowCount do
-		        local itemType = _DataService:GetCell(dataSet, row, "type")
-		        if itemType ~= "expand" then
-		            local itemId = tonumber(_DataService:GetCell(dataSet, row, "id"))
-		            if itemId ~= nil then
-		                table.insert(selectableItemIds, itemId)
-		            end
+		        local itemId = tonumber(_DataService:GetCell(dataSet, row, "id"))
+		        if itemId ~= nil then
+		            table.insert(selectableItemIds, itemId)
 		        end
 		    end
 		

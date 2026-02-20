@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script BattleManager extends Component
 
 	property string currentTurn = "None"
@@ -25,9 +25,15 @@ script BattleManager extends Component
 
 	property table playerDotEffects = {}
 
+	method void RefreshUI()
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+			self.gameManager.uiMain:UpdateUI()
+		end
+	end
+
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
-		log("[BattleManager] 초기화 완료")
+		log("[BattleManager] 珥덇린???꾨즺")
 	end
 
 	method void SetManagers(any dataMgr, any playerMgr, any monsterMgr, any itemMgr, any rewardMgr)
@@ -36,9 +42,9 @@ script BattleManager extends Component
 		self.monsterManager = monsterMgr
 		self.itemManager = itemMgr
 		self.rewardManager = rewardMgr
-		-- GameManager는 같은 엔티티에서 자동 검색
+		-- GameManager??媛숈? ?뷀떚?곗뿉???먮룞 寃??
 		self.gameManager = self.Entity.GameManager
-		log("[BattleManager] 매니저 참조 설정 완료")
+		log("[BattleManager] 留ㅻ땲? 李몄“ ?ㅼ젙 ?꾨즺")
 	end
 
 	method void StartBattle(integer stageId)
@@ -47,108 +53,31 @@ script BattleManager extends Component
 		self.playerDotEffects = {}
 		
 		log("========================================")
-		log("[BattleManager] === 전투 시작! 스테이지 " .. tostring(stageId) .. " ===")
+		log("[BattleManager] === ?꾪닾 ?쒖옉! ?ㅽ뀒?댁? " .. tostring(stageId) .. " ===")
 		log("========================================")
 		
-		-- 보스 맵 확인 (Stage 10 = 보스)
+		-- 蹂댁뒪 留??뺤씤 (Stage 10 = 蹂댁뒪)
 		if stageId == 10 then
-			-- 보스 전투
+			-- 蹂댁뒪 ?꾪닾
 			self.monsterManager:SpawnBoss("B_01", self.dataManager)
 		else
-			-- 일반 전투: 몬스터 생성
+			-- ?쇰컲 ?꾪닾: 紐ъ뒪???앹꽦
 			self.monsterManager:SpawnMonsters(stageId, self.dataManager)
 		end
 		
-		-- 플레이어 코스트 충전
+		-- ?뚮젅?댁뼱 肄붿뒪??異⑹쟾
 		self.playerManager:RestoreCost()
 		
-		-- 플레이어 턴 시작
+		-- ?뚮젅?댁뼱 ???쒖옉
 		self.currentTurn = "Player"
-		log("[BattleManager] >>> 플레이어 턴 시작 <<<")
+		log("[BattleManager] >>> ?뚮젅?댁뼱 ???쒖옉 <<<")
 	end
 
-	method void OnPlayerUseItem(integer itemIndex, integer targetMonsterIdx)
-		if self.currentTurn ~= "Player" then
-			log("[BattleManager] 플레이어 턴이 아닙니다!")
-			return
-		end
-		
-		if self.playerManager.isDead == true then
-			return
-		end
-		
-		-- 인벤토리에서 아이템 가져오기
-		local inventory = self.playerManager.inventory
-		if itemIndex < 1 or itemIndex > #inventory then
-			log("[BattleManager] 유효하지 않은 아이템 인덱스: " .. tostring(itemIndex))
-			return
-		end
-		
-		local itemData = inventory[itemIndex]
-		if itemData == nil then
-			return
-		end
-		
-		-- 무기(type 1)만 공격에 사용 가능
-		if itemData.type ~= 1 then
-			log("[BattleManager] 무기가 아닌 아이템으로는 공격할 수 없습니다")
-			return
-		end
-		
-		-- 코스트 확인 및 소모
-		if self.playerManager:UseCost(itemData.cost) == false then
-			return
-		end
-		
-		-- 데미지 계산 및 적용
-		local damage = self:CalculatePlayerDamage(itemData)
-		local accuracy = self.playerManager.acc or 0
-		
-		-- 타겟 처리
-		-- targetMonsterIdx가 0이거나 nil이면 전체 공격(혹은 랜덤)일 수 있으나
-		-- 기본 공격은 단일 타겟이므로 타겟이 있어야 함
-		
-		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
-			log("[BattleManager] 타겟이 지정되지 않았습니다. (기본값: 1번 몬스터 공격)")
-			targetMonsterIdx = 1
-		end
-		
-		
-		-- 디버깅 로그 추가
-		log("[BattleManager DEBUG] 공격 시도: Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
-		if self.monsterManager == nil then
-			log("[ERROR] MonsterManager가 nil입니다!")
-			return
-		end
-		
-		-- 몬스터 타격
-		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
-		
-		if result ~= nil then
-			-- 결과 UI 표시 (데미지 폰트 등)
-			log("[Battle] 공격 히트! 대상:" .. tostring(targetMonsterIdx) .. " Dmg:" .. tostring(result.damage))
-		else
-			log("[Battle] 공격 실패 (대상 없음 or 이미 죽음)")
-		end
-		
-		-- 아이템 사용 후처리 (소모품이면 삭제 등)
-		if itemData.type == 2 then -- 소모품
-			self.playerManager:RemoveItem(itemIndex)
-		end
-		
-		-- 턴 종료 체크 (액션 포인트가 없거나 자동 종료 아님)
-		-- 유저가 '턴 종료' 버튼을 눌러야 턴이 넘어감
-		
-		-- 모든 몬스터 처치 확인 (승리 조건)
-		if self.monsterManager:IsAllDead() then
-			self:EndBattle("Victory")
-			return
-		end
-	end
+	-- ?쒓굅?? OnPlayerUseItem (援ы삎 ?щ’ 湲곕컲)
 
 	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
-			log("[BattleManager] 플레이어 턴이 아닙니다!")
+			log("[BattleManager] ?뚮젅?댁뼱 ?댁씠 ?꾨떃?덈떎!")
 			return
 		end
 		
@@ -161,12 +90,28 @@ script BattleManager extends Component
 			itemData = self.dataManager:GetItemData(itemId)
 		end
 		if itemData == nil then
-			log("[BattleManager] 유효하지 않은 아이템 ID: " .. tostring(itemId))
+			log("[BattleManager] ?좏슚?섏? ?딆? ?꾩씠??ID: " .. tostring(itemId))
 			return
 		end
 
 		if itemData.type ~= "weapon" then
 			log("[BattleManager] 무기가 아닌 아이템으로는 공격할 수 없습니다")
+			return
+		end
+
+		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
+			targetMonsterIdx = 1
+		end
+
+		-- 타겟 몬스터가 살아있는지 먼저 확인
+		if self.monsterManager == nil then
+			log("[ERROR] MonsterManager가 nil입니다")
+			return
+		end
+
+		local targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
+		if targetMonster == nil or targetMonster.alive == false then
+			log("[BattleManager] 타겟 몬스터가 없거나 이미 죽었습니다: " .. tostring(targetMonsterIdx))
 			return
 		end
 
@@ -177,22 +122,16 @@ script BattleManager extends Component
 		local damage = self:CalculatePlayerDamage(itemData)
 		local accuracy = self.playerManager.acc or 0
 
-		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
-			targetMonsterIdx = 1
-		end
-
 		log("[BattleManager DEBUG] 공격 시도(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
-		if self.monsterManager == nil then
-			log("[ERROR] MonsterManager가 nil입니다!")
-			return
-		end
 
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		if result ~= nil then
-			log("[Battle] 공격 히트! 대상:" .. tostring(targetMonsterIdx) .. " Dmg:" .. tostring(result.damage))
+			log("[Battle] 怨듦꺽 ?덊듃! ???" .. tostring(targetMonsterIdx) .. " Dmg:" .. tostring(result.damage))
 		else
-			log("[Battle] 공격 실패 (대상 없음 or 이미 죽음)")
+			log("[Battle] 怨듦꺽 ?ㅽ뙣 (????놁쓬 or ?대? 二쎌쓬)")
 		end
+
+		self:RefreshUI()
 
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
@@ -200,19 +139,69 @@ script BattleManager extends Component
 		end
 	end
 
+	method boolean OnPlayerUseConsumableById(integer itemId)
+		if self.currentTurn ~= "Player" then
+			return false
+		end
+
+		if self.playerManager == nil or self.playerManager.isDead == true then
+			return false
+		end
+
+		local itemData = nil
+		if self.dataManager ~= nil then
+			itemData = self.dataManager:GetItemData(itemId)
+		end
+		if itemData == nil then
+			return false
+		end
+
+		if itemData.type ~= "consumable" then
+			return false
+		end
+
+		if self.playerManager:UseCost(itemData.cost or 0) == false then
+			return false
+		end
+
+		-- ?뚮え???④낵 ?곸슜
+		if (itemData.hp or 0) > 0 then
+			self.playerManager:Heal(itemData.hp)
+		end
+		if (itemData.atkPercent or 0) > 0 then
+			self.playerManager:AddBuff("atkPercent", itemData.atkPercent, 3)
+		end
+		if (itemData.accPercent or 0) > 0 then
+			self.playerManager:AddBuff("accPercent", itemData.accPercent, 3)
+		end
+		if (itemData.critRate or 0) > 0 then
+			self.playerManager:AddBuff("critRate", itemData.critRate, 3)
+		end
+		if (itemData.critDmg or 0) > 0 then
+			self.playerManager:AddBuff("critDmg", itemData.critDmg, 3)
+		end
+		if (itemData.hpPercent or 0) > 0 then
+			self.playerManager:AddBuff("hpPercent", itemData.hpPercent, 3)
+		end
+
+		log("[BattleManager] ?뚮え???ъ슜: " .. tostring(itemData.name))
+		self:RefreshUI()
+		return true
+	end
+
 	method number CalculatePlayerDamage(table itemData)
 		if self.playerManager == nil then return 0 end
 		
-		-- 플레이어 기본 공격력 + 아이템 공격력
+		-- ?뚮젅?댁뼱 湲곕낯 怨듦꺽??+ ?꾩씠??怨듦꺽??
 		local baseAtk = self.playerManager.atk
 		local itemAtk = itemData.atk or 0
 		
-		-- 최종 공격력 계산 (간단 예시: 합산)
-		-- 실제로는 퍼센트 증가, 크리티컬 등을 적용
+		-- 理쒖쥌 怨듦꺽??怨꾩궛 (媛꾨떒 ?덉떆: ?⑹궛)
+		-- ?ㅼ젣濡쒕뒗 ?쇱꽱??利앷?, ?щ━?곗뺄 ?깆쓣 ?곸슜
 		
 		local finalAtk = baseAtk + itemAtk
 		
-		-- 크리티컬 여부 확인
+		-- ?щ━?곗뺄 ?щ? ?뺤씤
 		local critRate = self.playerManager.critRate
 		local roll = math.random(1, 100)
 		if roll <= critRate then
@@ -224,45 +213,7 @@ script BattleManager extends Component
 		return math.floor(finalAtk)
 	end
 
-	method void OnPlayerUseConsumable(integer itemIndex)
-		if self.currentTurn ~= "Player" then
-			return
-		end
-		
-		local inventory = self.playerManager.inventory
-		if itemIndex < 1 or itemIndex > #inventory then
-			return
-		end
-		
-		local itemData = inventory[itemIndex]
-		if itemData == nil or itemData.type ~= 3 then
-			log("[BattleManager] 소모품이 아닙니다")
-			return
-		end
-		
-		-- 코스트 소모
-		if self.playerManager:UseCost(itemData.cost) == false then
-			return
-		end
-		
-		-- 소모품 효과 적용
-		if itemData.hp > 0 then
-			self.playerManager:Heal(itemData.hp)
-		end
-		if itemData.atkPercent > 0 then
-			self.playerManager:AddBuff("atkPercent", itemData.atkPercent, 3)
-		end
-		if itemData.accPercent > 0 then
-			self.playerManager:AddBuff("accPercent", itemData.accPercent, 3)
-		end
-		if itemData.critRate > 0 then
-			self.playerManager:AddBuff("critRate", itemData.critRate, 3)
-		end
-		
-		-- 소모품은 사용 후 제거
-		self.playerManager:RemoveItem(itemIndex)
-		log("[BattleManager] 소모품 사용 완료")
-	end
+	-- ?쒓굅?? OnPlayerUseConsumable (援ы삎 ?щ’ 湲곕컲)
 
 	method void OnPlayerUseSkill(integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
@@ -274,17 +225,22 @@ script BattleManager extends Component
 			return
 		end
 		
-		-- 스킬 데미지가 있으면 몬스터에 적용
+		-- ?ㅽ궗 ?곕?吏媛 ?덉쑝硫?紐ъ뒪?곗뿉 ?곸슜
 		if skillData.skillDmg > 0 and targetMonsterIdx > 0 then
+			-- ?뚮젅?댁뼱 怨듦꺽 ?좊땲硫붿씠???ъ깮
+			self.playerManager:PlayPlayerAnim("Attack")
+			
 			local acc = 100
 			if skillData.alwaysHit == 1 then
 				acc = 999
 			end
 			local result = self.monsterManager:DamageMonster(targetMonsterIdx, skillData.skillDmg, acc)
-			log("[BattleManager] 스킬 데미지: " .. tostring(skillData.skillDmg))
+			log("[BattleManager] ?ㅽ궗 ?곕?吏: " .. tostring(skillData.skillDmg))
 		end
 		
-		-- 전멸 체크
+		self:RefreshUI()
+
+		-- ?꾨㈇ 泥댄겕
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
 		end
@@ -295,16 +251,16 @@ script BattleManager extends Component
 			return
 		end
 		
-		log("[BattleManager] >>> 플레이어 턴 종료 → 몬스터 턴 시작 <<<")
+		log("[BattleManager] >>> ?뚮젅?댁뼱 ??醫낅즺 ??紐ъ뒪?????쒖옉 <<<")
 		self.currentTurn = "Monster"
 		
-		-- 플레이어 도트 데미지 처리
+		-- ?뚮젅?댁뼱 ?꾪듃 ?곕?吏 泥섎━
 		self:ProcessPlayerDots()
 		
-		-- 플레이어 버프 턴 감소
+		-- ?뚮젅?댁뼱 踰꾪봽 ??媛먯냼
 		self.playerManager:TickBuffs()
 		
-		-- 몬스터 순차 행동 시작
+		-- 紐ъ뒪???쒖감 ?됰룞 ?쒖옉
 		self.monsterTurnIndex = 0
 		self:ExecuteNextMonsterAction()
 	end
@@ -314,7 +270,7 @@ script BattleManager extends Component
 		
 		local monsterList = self.monsterManager.monsterList
 		
-		-- 살아있는 다음 몬스터 찾기
+		-- ?댁븘?덈뒗 ?ㅼ쓬 紐ъ뒪??李얘린
 		while self.monsterTurnIndex <= #monsterList do
 			local monster = monsterList[self.monsterTurnIndex]
 			if monster ~= nil and monster.alive == true then
@@ -323,26 +279,26 @@ script BattleManager extends Component
 			self.monsterTurnIndex += 1
 		end
 		
-		-- 모든 몬스터 행동 완료
+		-- 紐⑤뱺 紐ъ뒪???됰룞 ?꾨즺
 		if self.monsterTurnIndex > #monsterList then
 			self:OnMonsterTurnEnd()
 			return
 		end
 		
-		-- 몬스터 행동 실행
+		-- 紐ъ뒪???됰룞 ?ㅽ뻾
 		if self.monsterManager.isBossBattle then
 			self.monsterManager:BossAction()
 		else
 			self.monsterManager:MonsterAction(self.monsterTurnIndex)
 		end
 		
-		-- 플레이어에 데미지 적용
+		-- ?뚮젅?댁뼱???곕?吏 ?곸슜
 		if self.monsterManager.lastActionValid == true then
 			self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 		
-			-- 상태이상 적용 (도트 데미지)
+			-- ?곹깭?댁긽 ?곸슜 (?꾪듃 ?곕?吏)
 			local statusName = self.monsterManager.lastStatus
-			if statusName ~= "없음" and statusName ~= "none" then
+			if statusName ~= "?놁쓬" and statusName ~= "none" then
 				local dotDmgVal = self.monsterManager.lastDotDmg
 				local dotTurnVal = self.monsterManager.lastDotTurn
 				if dotDmgVal > 0 then
@@ -351,18 +307,20 @@ script BattleManager extends Component
 					dot.dmg = dotDmgVal
 					dot.remainTurn = dotTurnVal
 					self.playerDotEffects[#self.playerDotEffects + 1] = dot
-					log("[BattleManager] 상태이상 적용: " .. statusName .. " (데미지: " .. tostring(dotDmgVal) .. " x " .. tostring(dotTurnVal) .. "턴)")
+					log("[BattleManager] ?곹깭?댁긽 ?곸슜: " .. statusName .. " (?곕?吏: " .. tostring(dotDmgVal) .. " x " .. tostring(dotTurnVal) .. "??")
 				end
 			end
 		
-			-- 플레이어 사망 체크
+			self:RefreshUI()
+
+			-- ?뚮젅?댁뼱 ?щ쭩 泥댄겕
 			if self.playerManager.isDead == true then
 				self:EndBattle("Defeat")
 				return
 			end
 		end
 		
-		-- 다음 몬스터 행동 (1초 후)
+		-- ?ㅼ쓬 紐ъ뒪???됰룞 (1珥???
 		local nextFunc = function()
 			self:ExecuteNextMonsterAction()
 		end
@@ -375,12 +333,12 @@ script BattleManager extends Component
 			local dot = self.playerDotEffects[i]
 			if dot ~= nil and dot.remainTurn > 0 then
 				self.playerManager:TakeDamage(dot.dmg)
-				log("[BattleManager] 도트 데미지: " .. dot.status .. " " .. tostring(dot.dmg))
+				log("[BattleManager] ?꾪듃 ?곕?吏: " .. dot.status .. " " .. tostring(dot.dmg))
 				dot.remainTurn -= 1
 				if dot.remainTurn > 0 then
 					newDots[#newDots + 1] = dot
 				else
-					log("[BattleManager] 도트 해제: " .. dot.status)
+					log("[BattleManager] ?꾪듃 ?댁젣: " .. dot.status)
 				end
 			end
 		end
@@ -392,18 +350,19 @@ script BattleManager extends Component
 	end
 
 	method void OnMonsterTurnEnd()
-		log("[BattleManager] >>> 몬스터 턴 종료 → 플레이어 턴 시작 <<<")
+		log("[BattleManager] >>> 紐ъ뒪????醫낅즺 ???뚮젅?댁뼱 ???쒖옉 <<<")
 		
-		-- 플레이어 턴으로 전환 + 코스트 회복
+		-- ?뚮젅?댁뼱 ?댁쑝濡??꾪솚 + 肄붿뒪???뚮났
 		self.currentTurn = "Player"
 		self.playerManager:RestoreCost()
+		self:RefreshUI()
 	end
 
 	method void EndBattle(string result)
 		self.battleState = "End"
 		self.currentTurn = "None"
 		
-		-- 타이머 정리
+		-- ??대㉧ ?뺣━
 		if self.monsterTurnTimerId > 0 then
 			_TimerService:ClearTimer(self.monsterTurnTimerId)
 			self.monsterTurnTimerId = 0
@@ -411,31 +370,32 @@ script BattleManager extends Component
 		
 		log("========================================")
 		if result == "Victory" then
-			log("[BattleManager] ★★★ 승리! ★★★")
+			log("[BattleManager] Victory")
 		
-			-- 보상 수집
+			-- 蹂댁긽 ?섏쭛
 			self.monsterManager:CollectRewards()
-			log("[BattleManager] 획득 EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
+			self.playerManager.gold = (self.playerManager.gold or 0) + (self.monsterManager.lastRewardGold or 0)
+			log("[BattleManager] ?띾뱷 EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
 		
-			-- 레벨업 체크 (간단히 EXP 기준)
+			-- ?덈꺼??泥댄겕 (媛꾨떒??EXP 湲곗?)
 			if self.monsterManager.lastRewardExp >= 20 then
 				self.playerManager:LevelUp()
 			end
 		
-			-- 보상 아이템 생성
+			-- 蹂댁긽 ?꾩씠???앹꽦
 			if self.rewardManager ~= nil then
 				self.rewardManager:GenerateRewards(self.currentStage, self.dataManager)
 			end
 		else
-			log("[BattleManager] ✕✕✕ 패배... ✕✕✕")
+			log("[BattleManager] Defeat")
 		end
 		log("========================================")
 		
-		-- 몬스터 매니저 정리
+		-- 紐ъ뒪??留ㅻ땲? ?뺣━
 		self.monsterManager:ClearAll()
 		self.playerDotEffects = {}
 		
-		-- GameManager에 결과 전달
+		-- GameManager??寃곌낵 ?꾨떖
 		if self.gameManager ~= nil then
 			if result == "Victory" then
 				local victoryFunc = function()
@@ -449,12 +409,12 @@ script BattleManager extends Component
 	end
 
 	method void DebugSimulateBattle(integer stageId)
-		log("=== 디버그 전투 시뮬레이션 시작 ===")
+		log("=== ?붾쾭洹??꾪닾 ?쒕??덉씠???쒖옉 ===")
 		
-		-- 전투 시작
+		-- ?꾪닾 ?쒖옉
 		self:StartBattle(stageId)
 		
-		-- 플레이어가 첫 번째 무기로 첫 번째 몬스터 공격 시뮬레이션
+		-- ?뚮젅?댁뼱媛 泥?踰덉㎏ 臾닿린濡?泥?踰덉㎏ 紐ъ뒪??怨듦꺽 ?쒕??덉씠??
 		local weaponIdx = 0
 		for i = 1, #self.playerManager.inventory do
 			if self.playerManager.inventory[i].type == 1 then
@@ -464,13 +424,13 @@ script BattleManager extends Component
 		end
 		
 		if weaponIdx > 0 then
-			log("[Debug] 무기 인덱스 " .. tostring(weaponIdx) .. "로 공격 시도")
+			log("[Debug] 臾닿린 ?몃뜳??" .. tostring(weaponIdx) .. "濡?怨듦꺽 ?쒕룄")
 			self:OnPlayerUseItem(weaponIdx, 1)
 		else
-			log("[Debug] 무기가 없어서 턴 종료")
+			log("[Debug] 臾닿린媛 ?놁뼱????醫낅즺")
 		end
 		
-		-- 턴 종료
+		-- ??醫낅즺
 		self:EndPlayerTurn()
 	end
 
