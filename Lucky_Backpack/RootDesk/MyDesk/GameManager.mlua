@@ -147,8 +147,19 @@ script GameManager extends Component
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		
-		-- 시작 아이템 지급(낡은 검) - 게임 시작 시 인벤토리에 즉시 배치
+		-- 시작 아이템 지급(무기 1개) - 데이터 분할 테이블 대응
 		local startWeapon = self.dataManager:GetItemData(1)
+		if startWeapon == nil or startWeapon.type ~= "weapon" then
+			startWeapon = self.dataManager:GetItemData(1001)
+		end
+		if startWeapon == nil then
+			for _, itemData in pairs(self.dataManager.ItemTable) do
+				if itemData ~= nil and itemData.type == "weapon" then
+					startWeapon = itemData
+					break
+				end
+			end
+		end
 		if startWeapon ~= nil then
 			self.playerManager:AddItem(startWeapon)
 		end

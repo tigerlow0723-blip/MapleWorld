@@ -27,6 +27,7 @@ property integer gridCol = -1
 
 property string inventoryUIPath = ""
 property table spawnPosition = {}
+property any dataManager = nil
 
 @ExecSpace("ClientOnly")
 method void OnBeginPlay()
@@ -70,32 +71,36 @@ end
 
 @ExecSpace("ClientOnly")
 method void InitFromTable(integer id)
-    local dataSet = "Data_Table - 아이템리스트"
-    local row = self:FindItemRowById(dataSet, id)
-    if row <= 0 then
-        log_warning("[Item] ItemTable row not found for id: " .. id)
+    local itemData = nil
+    self:ResolveDataManager()
+    if self.dataManager ~= nil then
+        itemData = self.dataManager:GetItemData(id)
+    end
+
+    if itemData == nil then
+        log_warning("[Item] Item data not found for id: " .. tostring(id))
         return
     end
 
-    self.itemId = tonumber(_DataService:GetCell(dataSet, row, "id")) or 0
-    self.itemName = _DataService:GetCell(dataSet, row, "name") or ""
-    self.itemType = _DataService:GetCell(dataSet, row, "type") or ""
-    self.width = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "width")) or 1)
-    self.height = math.max(1, tonumber(_DataService:GetCell(dataSet, row, "height")) or 1)
-    self.atk = tonumber(_DataService:GetCell(dataSet, row, "atk")) or 0
-    self.def = tonumber(_DataService:GetCell(dataSet, row, "def")) or 0
-    self.hp = tonumber(_DataService:GetCell(dataSet, row, "hp")) or 0
-    self.cost = tonumber(_DataService:GetCell(dataSet, row, "cost")) or 0
-    self.atkPercent = tonumber(_DataService:GetCell(dataSet, row, "atkPercent")) or 0
-    self.accPercent = tonumber(_DataService:GetCell(dataSet, row, "accPercent")) or 0
-    self.critRate = tonumber(_DataService:GetCell(dataSet, row, "critRate")) or 0
-    self.critDmg = tonumber(_DataService:GetCell(dataSet, row, "critDmg")) or 0
-    self.hpPercent = tonumber(_DataService:GetCell(dataSet, row, "hpPercent")) or 0
-    self.spawnGroup = tonumber(_DataService:GetCell(dataSet, row, "Spawn_Group")) or 0
-    self.desc = _DataService:GetCell(dataSet, row, "desc") or ""
-    self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID") or ""
+    self.itemId = tonumber(itemData.id) or 0
+    self.itemName = itemData.name or ""
+    self.itemType = itemData.type or ""
+    self.width = math.max(1, tonumber(itemData.width) or 1)
+    self.height = math.max(1, tonumber(itemData.height) or 1)
+    self.atk = tonumber(itemData.atk) or 0
+    self.def = tonumber(itemData.def) or 0
+    self.hp = tonumber(itemData.hp) or 0
+    self.cost = tonumber(itemData.cost) or 0
+    self.atkPercent = tonumber(itemData.atkPercent) or 0
+    self.accPercent = tonumber(itemData.accPercent) or 0
+    self.critRate = tonumber(itemData.critRate) or 0
+    self.critDmg = tonumber(itemData.critDmg) or 0
+    self.hpPercent = tonumber(itemData.hpPercent) or 0
+    self.spawnGroup = tonumber(itemData.spawnGroup) or 0
+    self.desc = itemData.desc or ""
+    self.spriteRUID = itemData.imageRUID or ""
 
-    local shapeMask = _DataService:GetCell(dataSet, row, "shapeMask") or ""
+    local shapeMask = itemData.shapeMask or ""
     self.shapeMatrix = self:ParseShapeMask(shapeMask)
 
     if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
@@ -116,6 +121,18 @@ method void InitFromTable(integer id)
             end
         end
         self.width = math.max(1, maxWidth)
+    end
+end
+
+@ExecSpace("ClientOnly")
+method void ResolveDataManager()
+    if self.dataManager ~= nil then
+        return
+    end
+
+    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+    if gameSystem ~= nil then
+        self.dataManager = gameSystem.DataManager
     end
 end
 

@@ -41,6 +41,19 @@ script ItemDisplayArea extends Component
 	method void GenerateTutorialItems()
 		self:ClearAllItems()
 		local tutorialIds = {1, 2, 3, 4, 5}
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local dataManager = nil
+		if gameSystem ~= nil then
+			dataManager = gameSystem.DataManager
+		end
+
+		if dataManager ~= nil then
+			local firstItem = dataManager:GetItemData(1)
+			if firstItem == nil or firstItem.type ~= "weapon" then
+				tutorialIds = {1001, 1002, 1003, 1004, 1005}
+			end
+		end
+
 		for i = 1, #tutorialIds do
 			self:CreateItemEntity(tutorialIds[i], i - 1)
 		end
@@ -52,18 +65,22 @@ script ItemDisplayArea extends Component
 		self:ClearAllItems()
 
 		local selectableItemIds = {}
-		local dataSet = "Data_Table - 아이템리스트"
-		local rowCount = _DataService:GetRowCount(dataSet)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local dataManager = nil
+		if gameSystem ~= nil then
+			dataManager = gameSystem.DataManager
+		end
 
-		for row = 1, rowCount do
-			local itemId = tonumber(_DataService:GetCell(dataSet, row, "id"))
-			if itemId ~= nil then
-				table.insert(selectableItemIds, itemId)
+		if dataManager ~= nil then
+			for itemId, itemData in pairs(dataManager.ItemTable) do
+				if itemData ~= nil then
+					selectableItemIds[#selectableItemIds + 1] = itemId
+				end
 			end
 		end
 
 		if #selectableItemIds == 0 then
-			log_warning("[ItemDisplayArea] No selectable item in " .. dataSet)
+			log_warning("[ItemDisplayArea] No selectable item data")
 			return
 		end
 
