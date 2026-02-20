@@ -8,6 +8,7 @@ script UIMain extends Component
 	property Entity txtCost = nil 
 	
 	property Entity btnTurnEnd = nil
+	property Entity btnBattleStart = nil
 	property Entity txtStage = nil
 	
 	-- 인벤토리 슬롯 (Entity로 변경)
@@ -56,6 +57,15 @@ script UIMain extends Component
 			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
 				self.battleManager:EndPlayerTurn()
 				self:UpdateUI()
+			end)
+		end
+
+		-- 전투 시작 버튼
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
+					self.gameManager:TriggerBattleStart()
+				end
 			end)
 		end
 		
@@ -120,6 +130,21 @@ script UIMain extends Component
 		
 		-- 5. 보상 목록 업데이트
 		self:UpdateRewardUI()
+		
+		-- Button 가시성 제어 (Preparation vs Battle)
+		local phase = "None"
+		if self.gameManager ~= nil then
+			phase = self.gameManager.gamePhase
+		end
+		
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart.Enable = (phase == "Preparation")
+		end
+		
+		if self.btnTurnEnd ~= nil then
+			-- 플레이어 턴이면서 Battle 상태일 때만 활성화할 수도 있으나, 일단 phase 기준
+			self.btnTurnEnd.Enable = (phase == "Battle")
+		end
 	end
 	
 	method void UpdateInventorySlots()
