@@ -8,6 +8,7 @@ script UIMain extends Component
 	property Entity txtCost = nil 
 	
 	property Entity btnTurnEnd = nil
+	property Entity btnBattleStart = nil
 	property Entity txtStage = nil
 	
 	-- 인벤토리 슬롯 (Entity로 변경)
@@ -54,8 +55,37 @@ script UIMain extends Component
 		-- 턴 종료 버튼
 		if self.btnTurnEnd ~= nil then
 			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
+				if self.gameManager == nil or self.gameManager.gamePhase ~= "Battle" then
+					return
+				end
 				self.battleManager:EndPlayerTurn()
 				self:UpdateUI()
+			end)
+		end
+
+		-- 전투 시작 버튼
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
+					local displayAreaComp = nil
+					local parentEntity = self.Entity.Parent
+					if parentEntity ~= nil then
+						local displayAreaEntity = parentEntity:GetChildByName("ItemDisplayArea", true)
+						if displayAreaEntity ~= nil then
+							displayAreaComp = displayAreaEntity.ItemDisplayArea
+						end
+					end
+					if displayAreaComp == nil then
+						local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
+						if displayAreaEntity ~= nil then
+							displayAreaComp = displayAreaEntity.ItemDisplayArea
+						end
+					end
+					if displayAreaComp ~= nil then
+						displayAreaComp:ClearAllItems()
+					end
+					self.gameManager:TriggerBattleStart()
+				end
 			end)
 		end
 		
@@ -71,6 +101,10 @@ script UIMain extends Component
 		if self.btnFinishPrep ~= nil then
 			self.btnFinishPrep:ConnectEvent("ButtonClickEvent", function()
 				if self.gameManager ~= nil then
+					-- 신규 전투 시작 버튼이 있으면 정비 완료 버튼은 전환 경로에서 제외
+					if self.btnBattleStart ~= nil then
+						return
+					end
 					self.gameManager:EndPreparation()
 				end
 			end)
@@ -120,6 +154,30 @@ script UIMain extends Component
 		
 		-- 5. 보상 목록 업데이트
 		self:UpdateRewardUI()
+		
+		-- Button 가시성 제어 (Preparation vs Battle)
+		local phase = "None"
+		if self.gameManager ~= nil then
+			phase = self.gameManager.gamePhase
+		end
+		
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart.Enable = (phase == "Preparation")
+		end
+		
+		if self.btnTurnEnd ~= nil then
+			-- 플레이어 턴이면서 Battle 상태일 때만 활성화할 수도 있으나, 일단 phase 기준
+			self.btnTurnEnd.Enable = (phase == "Battle")
+		end
+
+		-- 전투 시작 버튼을 사용하는 구성에서는 기존 정비 완료 버튼을 비활성화해 경로 충돌 방지
+		if self.btnFinishPrep ~= nil then
+			if self.btnBattleStart ~= nil then
+				self.btnFinishPrep.Enable = false
+			else
+				self.btnFinishPrep.Enable = (phase == "Preparation")
+			end
+		end
 	end
 	
 	method void UpdateInventorySlots()
@@ -165,6 +223,10 @@ script UIMain extends Component
 		-- 정비 단계: 인벤토리 클릭 시 버리기
 		if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
 			self.gameManager:DiscardInventoryItem(index)
+			return
+		end
+		
+		if self.gameManager ~= nil and self.gameManager.gamePhase ~= "Battle" then
 			return
 		end
 		

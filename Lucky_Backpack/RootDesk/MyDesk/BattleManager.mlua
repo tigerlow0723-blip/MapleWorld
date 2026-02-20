@@ -146,6 +146,60 @@ script BattleManager extends Component
 		end
 	end
 
+	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
+		if self.currentTurn ~= "Player" then
+			log("[BattleManager] 플레이어 턴이 아닙니다!")
+			return
+		end
+		
+		if self.playerManager.isDead == true then
+			return
+		end
+
+		local itemData = nil
+		if self.dataManager ~= nil then
+			itemData = self.dataManager:GetItemData(itemId)
+		end
+		if itemData == nil then
+			log("[BattleManager] 유효하지 않은 아이템 ID: " .. tostring(itemId))
+			return
+		end
+
+		if itemData.type ~= "weapon" then
+			log("[BattleManager] 무기가 아닌 아이템으로는 공격할 수 없습니다")
+			return
+		end
+
+		if self.playerManager:UseCost(itemData.cost) == false then
+			return
+		end
+
+		local damage = self:CalculatePlayerDamage(itemData)
+		local accuracy = self.playerManager.acc or 0
+
+		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
+			targetMonsterIdx = 1
+		end
+
+		log("[BattleManager DEBUG] 공격 시도(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
+		if self.monsterManager == nil then
+			log("[ERROR] MonsterManager가 nil입니다!")
+			return
+		end
+
+		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
+		if result ~= nil then
+			log("[Battle] 공격 히트! 대상:" .. tostring(targetMonsterIdx) .. " Dmg:" .. tostring(result.damage))
+		else
+			log("[Battle] 공격 실패 (대상 없음 or 이미 죽음)")
+		end
+
+		if self.monsterManager:IsAllDead() then
+			self:EndBattle("Victory")
+			return
+		end
+	end
+
 	method number CalculatePlayerDamage(table itemData)
 		if self.playerManager == nil then return 0 end
 		

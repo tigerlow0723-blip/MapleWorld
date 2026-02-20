@@ -132,6 +132,32 @@ script InventoryUI extends Component
 		
 		    local itemComp = itemEntity.Item
 		    if itemComp == nil then return end
+
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem ~= nil and gameSystem.GameManager ~= nil then
+		        local gameManager = gameSystem.GameManager
+		        if gameManager.gamePhase == "Battle" then
+		            if itemComp.itemType ~= "weapon" then
+		                log("[InventoryUI] 전투 중에는 무기만 사용할 수 있습니다.")
+		                return
+		            end
+
+		            local battleManager = gameSystem.BattleManager
+		            if battleManager == nil then
+		                log_warning("[InventoryUI] BattleManager not found")
+		                return
+		            end
+
+		            local targetMonsterIdx = 1
+		            local uiMain = gameSystem.UIMain
+		            if uiMain ~= nil and uiMain.targetMonsterIdx ~= nil and uiMain.targetMonsterIdx > 0 then
+		                targetMonsterIdx = uiMain.targetMonsterIdx
+		            end
+
+		            battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
+		            return
+		        end
+		    end
 		
 		    local inventory = self.Entity.Inventory
 		    if inventory == nil then return end

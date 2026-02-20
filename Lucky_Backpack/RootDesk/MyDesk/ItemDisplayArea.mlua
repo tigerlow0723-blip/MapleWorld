@@ -14,14 +14,33 @@ script ItemDisplayArea extends Component
 	property string itemTemplatePath = ""
 
 	@ExecSpace("ClientOnly")
-	method void GenerateRandomItems(integer count)
+	method void ClearAllItems()
 		    for i = #self.spawnedItems, 1, -1 do
 		        local itemEntity = self.spawnedItems[i]
 		        if itemEntity ~= nil and isvalid(itemEntity) then
-		            itemEntity:Destroy()
+		            if itemEntity.Parent == self.Entity then
+		                itemEntity:Destroy()
+		            end
 		        end
 		        table.remove(self.spawnedItems, i)
 		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void GenerateTutorialItems()
+		    self:ClearAllItems()
+
+		    local tutorialIds = {1, 2, 3, 4, 5}
+		    for i = 1, #tutorialIds do
+		        self:CreateItemEntity(tutorialIds[i], i - 1)
+		    end
+
+		    self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void GenerateRandomItems(integer count)
+		    self:ClearAllItems()
 		
 		    local selectableItemIds = {}
 		    local dataSet = "Data_Table - 아이템리스트"
@@ -128,13 +147,7 @@ script ItemDisplayArea extends Component
 
 	@ExecSpace("ClientOnly")
 	method void DisplayItems(table itemDataList)
-		    for i = #self.spawnedItems, 1, -1 do
-		        local itemEntity = self.spawnedItems[i]
-		        if itemEntity ~= nil and isvalid(itemEntity) then
-		            itemEntity:Destroy()
-		        end
-		        table.remove(self.spawnedItems, i)
-		    end
+		    self:ClearAllItems()
 
 		    for i = 1, #itemDataList do
 		        self:CreateItemEntity(itemDataList[i].id, i - 1)
