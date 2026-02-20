@@ -319,6 +319,9 @@ script PlayerManager extends Component
 			self.currentHP = 0
 			self.isDead = true
 			log("[PlayerManager] 플레이어 사망!")
+			self:PlayPlayerAnim("Dead")
+		else
+			self:PlayPlayerAnim("Hit")
 		end
 	end
 
@@ -441,6 +444,16 @@ script PlayerManager extends Component
 		
 		log("[PlayerManager] 스킬 사용: " .. self.skillName)
 		return skillData
+	end
+
+	@ExecSpace("Client")
+	method void PlayPlayerAnim(string stateName)
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		local stateComp = player.StateComponent
+		if stateComp ~= nil then
+			stateComp:ChangeState(stateName)
+		end
 	end
 
 end

@@ -753,30 +753,6 @@
                 "EntityId": "3f5beece-2f46-42ef-9051-9195325107df",
                 "Version2": false
               },
-              "slot1": {
-                "tempEntityId": null,
-                "IsRelative": false,
-                "EntityId": "f62accad-0dd8-49f1-9ba7-d0f7eed730e4",
-                "Version2": false
-              },
-              "slot2": {
-                "tempEntityId": null,
-                "IsRelative": false,
-                "EntityId": "32788964-65ed-45eb-97de-1ca9b5a3c13e",
-                "Version2": false
-              },
-              "slot3": {
-                "tempEntityId": null,
-                "IsRelative": false,
-                "EntityId": "1878564b-7a6e-4331-b3ed-d2dcb5fbb0c9",
-                "Version2": false
-              },
-              "slot4": {
-                "tempEntityId": null,
-                "IsRelative": false,
-                "EntityId": "4163b9f9-01c0-4c41-acc3-4244487bad99",
-                "Version2": false
-              },
               "rewardGroup": {
                 "tempEntityId": null,
                 "IsRelative": false,

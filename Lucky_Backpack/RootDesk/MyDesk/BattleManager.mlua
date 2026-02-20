@@ -121,6 +121,9 @@ script BattleManager extends Component
 			return
 		end
 		
+		-- 플레이어 공격 애니메이션 재생
+		self.playerManager:PlayPlayerAnim("Attack")
+		
 		-- 몬스터 타격
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		
@@ -222,6 +225,9 @@ script BattleManager extends Component
 		
 		-- 스킬 데미지가 있으면 몬스터에 적용
 		if skillData.skillDmg > 0 and targetMonsterIdx > 0 then
+			-- 플레이어 공격 애니메이션 재생
+			self.playerManager:PlayPlayerAnim("Attack")
+			
 			local acc = 100
 			if skillData.alwaysHit == 1 then
 				acc = 999
