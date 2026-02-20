@@ -17,6 +17,8 @@ property integer width = 1
 
 property integer height = 1
 
+property table shapeMatrix = {}
+
 -- 아이템 스탯
 property integer atk = 0
 
@@ -125,6 +127,48 @@ method void InitFromTable(integer id)
     self.spawnGroup = _DataService:GetCell(dataSet, row, "Spawn_Group")
     self.desc = _DataService:GetCell(dataSet, row, "desc")
     self.spriteRUID = _DataService:GetCell(dataSet, row, "imageRUID")
+
+    local shapeMask = _DataService:GetCell(dataSet, row, "shapeMask")
+    self.shapeMatrix = {}
+
+    if shapeMask ~= nil and shapeMask ~= "" then
+        local rowStrings = {}
+        local currentRow = ""
+        for i = 1, #shapeMask do
+            local ch = string.sub(shapeMask, i, i)
+            if ch == "," then
+                rowStrings[#rowStrings + 1] = currentRow
+                currentRow = ""
+            else
+                currentRow = currentRow .. ch
+            end
+        end
+        if currentRow ~= "" then
+            rowStrings[#rowStrings + 1] = currentRow
+        end
+
+        for r = 1, #rowStrings do
+            local rowText = rowStrings[r]
+            self.shapeMatrix[r] = {}
+            for c = 1, #rowText do
+                local cellChar = string.sub(rowText, c, c)
+                if cellChar == "1" then
+                    self.shapeMatrix[r][c] = 1
+                else
+                    self.shapeMatrix[r][c] = 0
+                end
+            end
+        end
+    end
+
+    if #self.shapeMatrix == 0 then
+        for r = 1, self.height do
+            self.shapeMatrix[r] = {}
+            for c = 1, self.width do
+                self.shapeMatrix[r][c] = 1
+            end
+        end
+    end
 end
 
 @ExecSpace("ClientOnly")
@@ -145,9 +189,15 @@ end
 -- ============================================================
 method table GetShapeCells()
     local cells = {}
-    for r = 0, self.height - 1 do
-        for c = 0, self.width - 1 do
-            table.insert(cells, {row = r, col = c})
+    for r = 1, #self.shapeMatrix do
+        local rowData = self.shapeMatrix[r]
+        if rowData == nil then
+            continue
+        end
+        for c = 1, #rowData do
+            if rowData[c] == 1 then
+                table.insert(cells, {row = r - 1, col = c - 1})
+            end
         end
     end
     return cells

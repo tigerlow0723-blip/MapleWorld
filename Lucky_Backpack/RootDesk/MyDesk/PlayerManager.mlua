@@ -373,18 +373,53 @@ script PlayerManager extends Component
 		self.buffList = newList
 	end
 
-	method void AddItem(table itemData)
+method void AddItem(table itemData)
 		self.inventory[#self.inventory + 1] = itemData
 		self:RecalcAllStats()
 
 		if self.inventoryComp ~= nil then
-			local width = itemData.width or 1
-			local height = itemData.height or 1
+			local shapeCells = {}
+			local shapeMask = itemData.shapeMask or ""
+			if shapeMask ~= "" then
+				local rowStrings = {}
+				local currentRow = ""
+				for i = 1, #shapeMask do
+					local ch = string.sub(shapeMask, i, i)
+					if ch == "," then
+						rowStrings[#rowStrings + 1] = currentRow
+						currentRow = ""
+					else
+						currentRow = currentRow .. ch
+					end
+				end
+				if currentRow ~= "" then
+					rowStrings[#rowStrings + 1] = currentRow
+				end
+
+				for r = 1, #rowStrings do
+					local rowText = rowStrings[r]
+					for c = 1, #rowText do
+						if string.sub(rowText, c, c) == "1" then
+							shapeCells[#shapeCells + 1] = {row = r - 1, col = c - 1}
+						end
+					end
+				end
+			end
+			if #shapeCells == 0 then
+				local width = itemData.width or 1
+				local height = itemData.height or 1
+				for r = 0, height - 1 do
+					for c = 0, width - 1 do
+						shapeCells[#shapeCells + 1] = {row = r, col = c}
+					end
+				end
+			end
+
 			local placed = false
 			for r = 1, 6 do
 				for c = 1, 6 do
-					if self.inventoryComp:CanPlace(r, c, width, height) then
-						self.inventoryComp:PlaceItem(r, c, itemData.id, width, height)
+					if self.inventoryComp:CanPlace(r, c, shapeCells) then
+						self.inventoryComp:PlaceItem(r, c, itemData.id, shapeCells)
 						placed = true
 						break
 					end

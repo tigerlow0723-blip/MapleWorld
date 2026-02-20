@@ -19,7 +19,7 @@ property integer currentHeight = 3
 property integer maxWidth = 6
 property integer maxHeight = 6
 
--- 배치된 아이템 목록 {itemId = {row, col, width, height}}
+-- 배치된 아이템 목록 {itemId = {row, col, shapeCells}}
 property table placedItems = {}
 
 -- 그리드 변경 알림용
@@ -134,18 +134,27 @@ end
 -- ============================================================
 -- 아이템 배치 가능 여부 확인
 -- row, col: 아이템 좌상단 위치 (1-indexed)
--- w, h: 아이템 크기
+-- shapeCells: 아이템 마스크 상대 좌표 목록
 -- ============================================================
-method boolean CanPlace(integer row, integer col, integer w, integer h)
-    for dr = 0, h - 1 do
-        for dc = 0, w - 1 do
-            local r = row + dr
-            local c = col + dc
-            if not self:IsCellEmpty(r, c) then
+method boolean CanPlace(integer row, integer col, table shapeCells)
+    if shapeCells == nil or #shapeCells == 0 then
+        return false
+    end
+
+    for i = 1, #shapeCells do
+        local cell = shapeCells[i]
+        if cell ~= nil then
+            local absR = row + cell.row
+            local absC = col + cell.col
+            if absR < 1 or absR > self.maxHeight or absC < 1 or absC > self.maxWidth then
+                return false
+            end
+            if self.grid[absR][absC] ~= 1 then
                 return false
             end
         end
     end
+
     return true
 end
 
@@ -153,16 +162,19 @@ end
 -- 아이템 배치
 -- 성공 시 true, 실패 시 false 반환
 -- ============================================================
-method boolean PlaceItem(integer row, integer col, integer itemId, integer w, integer h)
-    if not self:CanPlace(row, col, w, h) then
+method boolean PlaceItem(integer row, integer col, integer itemId, table shapeCells)
+    if not self:CanPlace(row, col, shapeCells) then
         log_warning("[Inventory] Cannot place item " .. itemId .. " at (" .. row .. "," .. col .. ")")
         return false
     end
 
     -- 셀 점유 표시
-    for dr = 0, h - 1 do
-        for dc = 0, w - 1 do
-            self.grid[row + dr][col + dc] = itemId
+    for i = 1, #shapeCells do
+        local cell = shapeCells[i]
+        if cell ~= nil then
+            local absR = row + cell.row
+            local absC = col + cell.col
+            self.grid[absR][absC] = itemId
         end
     end
 
@@ -170,12 +182,11 @@ method boolean PlaceItem(integer row, integer col, integer itemId, integer w, in
     self.placedItems[itemId] = {
         row = row,
         col = col,
-        width = w,
-        height = h
+        shapeCells = shapeCells
     }
 
     self.gridVersion = self.gridVersion + 1
-    log("[Inventory] Placed item " .. itemId .. " at (" .. row .. "," .. col .. ") size " .. w .. "x" .. h)
+    log("[Inventory] Placed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
     return true
 end
 
@@ -189,10 +200,20 @@ method boolean RemoveItem(integer itemId)
         return false
     end
 
-    -- 셀 비우기
-    for dr = 0, info.height - 1 do
-        for dc = 0, info.width - 1 do
-            self.grid[info.row + dr][info.col + dc] = 1
+    -- 셀 비우기 (마스크 기반)
+    local shapeCells = info.shapeCells
+    if shapeCells == nil then
+        shapeCells = {}
+    end
+
+    for i = 1, #shapeCells do
+        local cell = shapeCells[i]
+        if cell ~= nil then
+            local absR = info.row + cell.row
+            local absC = info.col + cell.col
+            if absR >= 1 and absR <= self.maxHeight and absC >= 1 and absC <= self.maxWidth then
+                self.grid[absR][absC] = 1
+            end
         end
     end
 

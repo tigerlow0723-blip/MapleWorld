@@ -39,6 +39,7 @@ script InventoryUI extends Component
 		        itemId = 0,
 		        itemWidth = 0,
 		        itemHeight = 0,
+		        shapeCells = nil,
 		        originRow = -1,
 		        originCol = -1,
 		        originPosition = nil,
@@ -174,6 +175,7 @@ script InventoryUI extends Component
 		    self.dragState.itemId = itemComp.itemId
 		    self.dragState.itemWidth = itemComp.width
 		    self.dragState.itemHeight = itemComp.height
+		    self.dragState.shapeCells = itemComp:GetShapeCells()
 		    self.dragState.originRow = itemComp.gridRow
 		    self.dragState.originCol = itemComp.gridCol
 
@@ -240,7 +242,7 @@ script InventoryUI extends Component
 		
 		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
 		    if result.row > 0 and result.col > 0 then
-		        self:HighlightPlacement(result.row, result.col, self.dragState.itemWidth, self.dragState.itemHeight)
+		        self:HighlightPlacement(result.row, result.col, self.dragState.shapeCells)
 		    end
 	end
 
@@ -301,6 +303,7 @@ script InventoryUI extends Component
 		
 		    self.dragState.isDragging = false
 		    self.dragState.originPosition = nil
+		    self.dragState.shapeCells = nil
 		    self:RenderGrid()
 		    self.dragState.itemEntity = nil
 		    self.dragState.originParent = nil
@@ -335,11 +338,15 @@ script InventoryUI extends Component
 		    end
 		
 		    local itemId = self.dragState.itemId
+		    local shapeCells = self.dragState.shapeCells
+		    if shapeCells == nil or #shapeCells == 0 then
+		        shapeCells = itemComp:GetShapeCells()
+		    end
 		    local w = self.dragState.itemWidth
 		    local h = self.dragState.itemHeight
 		
-		    if inventory:CanPlace(row, col, w, h) then
-		        inventory:PlaceItem(row, col, itemId, w, h)
+		    if inventory:CanPlace(row, col, shapeCells) then
+		        inventory:PlaceItem(row, col, itemId, shapeCells)
 		
 		        if itemEntity ~= nil and itemEntity.Item ~= nil then
 		            itemEntity.Item:SetGridPosition(row, col)
@@ -433,7 +440,7 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void HighlightPlacement(integer row, integer col, integer w, integer h)
+	method void HighlightPlacement(integer row, integer col, table shapeCells)
 		    local inventory = self.Entity.Inventory
 		    if inventory == nil then return end
 		
@@ -445,10 +452,15 @@ script InventoryUI extends Component
 		    if itemEntity ~= nil then
 		        itemComp = itemEntity.Item
 		    end
+		    local cellsToCheck = shapeCells
+		    if cellsToCheck == nil or #cellsToCheck == 0 then
+		        cellsToCheck = {{row = 0, col = 0}}
+		    end
+
 		    if itemComp ~= nil and itemComp.itemType == "expand" then
 		        canPlace = inventory:GetCellValue(row, col) == -1
 		    else
-		        canPlace = inventory:CanPlace(row, col, w, h)
+		        canPlace = inventory:CanPlace(row, col, cellsToCheck)
 		    end
 		    local highlightColor = nil
 		    if canPlace then
@@ -457,10 +469,11 @@ script InventoryUI extends Component
 		        highlightColor = self.colorCannotPlace
 		    end
 		
-		    for dr = 0, h - 1 do
-		        for dc = 0, w - 1 do
-		            local r = row + dr
-		            local c = col + dc
+		    for i = 1, #cellsToCheck do
+		        local cell = cellsToCheck[i]
+		        if cell ~= nil then
+		            local r = row + cell.row
+		            local c = col + cell.col
 		            if r >= 1 and r <= 6 and c >= 1 and c <= 6 then
 		                if self.cellEntities[r] ~= nil and self.cellEntities[r][c] ~= nil then
 		                    local renderer = self.cellEntities[r][c].SpriteGUIRendererComponent
