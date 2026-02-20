@@ -6023,30 +6023,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -435.150421,
-                "y": -238.173615
+                "x": -376.4225,
+                "y": -230.0
               },
               "OffsetMin": {
-                "x": -542.3186,
-                "y": -313.1736
+                "x": -556.4225,
+                "y": -380.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 107.168159,
-                "y": 75.0
+                "x": 180.0,
+                "y": 150.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -488.7345,
-                "y": -275.6736
+                "x": -466.4225,
+                "y": -305.0
               },
               "Position": {
-                "x": -488.7345,
-                "y": -275.6736,
+                "x": -466.4225,
+                "y": -305.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6059,7 +6059,16 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "703df8dcd5fbc98429abf5e45373bbf6"
+              },
               "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
               "Enable": true
             },
             {
@@ -6112,9 +6121,544 @@
         }
       },
       {
+        "id": "6f8eecbd-7e22-47ee-9bad-367df86abfdb",
+        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/ImgDice",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "ImgDice",
+          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/ImgDice",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "43e226d9-65a5-4c87-8ff3-517f5514ca00",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -20.0,
+                "y": 60.0
+              },
+              "OffsetMin": {
+                "x": -70.0,
+                "y": 10.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -45.0,
+                "y": 35.0
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": -45.0,
+                "y": 35.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "7977f834cb34481ba4c98a351cc8de07"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "FlipX": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "01caed10-e475-4067-9255-202c1dd18fdf",
+        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/TxtReroll",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtReroll",
+          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/TxtReroll",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uitext",
+            "sub_entity_id": null,
+            "root_entity_id": "01caed10-e475-4067-9255-202c1dd18fdf",
+            "replaced_model_id": null
+          },
+          "modelId": "uitext",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 60.0,
+                "y": 75.0
+              },
+              "OffsetMin": {
+                "x": -20.0,
+                "y": -5.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 80.0,
+                "y": 80.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 20.0,
+                "y": 35.0
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 20.0,
+                "y": 35.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "FontSize": 25,
+              "MaxSize": 40,
+              "MinSize": 10,
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "리롤",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "43e226d9-65a5-4c87-8ff3-517f5514ca00",
+        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "UISprite",
+          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "43e226d9-65a5-4c87-8ff3-517f5514ca00",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 50.0,
+                "y": -5.0
+              },
+              "OffsetMin": {
+                "x": -50.0,
+                "y": -55.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 100.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": -30.0
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 0.0,
+                "y": -30.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "FlipX": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "d42a57e9-c73f-4f06-a547-beb789ee41be",
+        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite/ImgCoin",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "ImgCoin",
+          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite/ImgCoin",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "//////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "43e226d9-65a5-4c87-8ff3-517f5514ca00",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -15.0,
+                "y": 15.0
+              },
+              "OffsetMin": {
+                "x": -45.0,
+                "y": -15.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 30.0,
+                "y": 30.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -30.0,
+                "y": 0.0
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": -30.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "4cc5ffc272224edc809a792b8efa16e3"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "FlipX": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "593f8bfe-6dcd-4c0c-9ecd-e2ab7aa6f975",
+        "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite/TxtCoinCost",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtCoinCost",
+          "path": "/ui/UIGroup/ShopPanel/BtnRefresh/UISprite/TxtCoinCost",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "//////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uitext",
+            "sub_entity_id": null,
+            "root_entity_id": "01caed10-e475-4067-9255-202c1dd18fdf",
+            "replaced_model_id": null
+          },
+          "modelId": "uitext",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 35.0,
+                "y": 25.0
+              },
+              "OffsetMin": {
+                "x": -15.0,
+                "y": -25.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 10.0,
+                "y": 0.0
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 10.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "Bold": false,
+              "FontSize": 20,
+              "MaxSize": 40,
+              "MinSize": 10,
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "2",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
         "id": "25f1d465-e371-4d12-a6ce-a94b6a1e6ac0",
         "path": "/ui/UIGroup/ShopPanel/BtnCloseShop",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent,MOD.Core.TextComponent",
         "jsonString": {
           "name": "BtnCloseShop",
           "path": "/ui/UIGroup/ShopPanel/BtnCloseShop",
@@ -6147,12 +6691,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 815.7246,
-                "y": 103.0751
+                "x": -761.6713,
+                "y": 165.0751
               },
               "OffsetMin": {
-                "x": 615.7246,
-                "y": 28.0751038
+                "x": -961.6713,
+                "y": 90.0751
               },
               "Pivot": {
                 "x": 0.5,
@@ -6165,12 +6709,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 715.7246,
-                "y": 65.5751
+                "x": -861.6713,
+                "y": 127.5751
               },
               "Position": {
-                "x": 715.7246,
-                "y": 65.5751,
+                "x": -861.6713,
+                "y": 127.5751,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6183,7 +6727,16 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
               "Enable": true
             },
             {
@@ -6229,6 +6782,16 @@
                 "DisabledSprite": null
               },
               "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "상점 닫기",
               "Enable": true
             }
           ],
@@ -6307,7 +6870,11 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "3e9d52ed52d64794bbd6f72bab8ee3d9"
+              },
               "OverrideSorting": false,
+              "FlipX": true,
               "Enable": true
             },
             {
@@ -6326,7 +6893,7 @@
       {
         "id": "ef9816a4-a65a-46db-81fe-fc6dad6abbda",
         "path": "/ui/UIGroup/ShopPanel/SellArea",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
         "jsonString": {
           "name": "SellArea",
           "path": "/ui/UIGroup/ShopPanel/SellArea",
@@ -6359,12 +6926,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 4.497799,
-                "y": 31.7974
+                "x": 804.2664,
+                "y": 185.579
               },
               "OffsetMin": {
-                "x": -95.5022,
-                "y": -68.2026
+                "x": 704.2664,
+                "y": 85.5789948
               },
               "Pivot": {
                 "x": 0.5,
@@ -6377,12 +6944,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -45.5022,
-                "y": -18.2026
+                "x": 754.2664,
+                "y": 135.579
               },
               "Position": {
-                "x": -45.5022,
-                "y": -18.2026,
+                "x": 754.2664,
+                "y": 135.579,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6395,7 +6962,26 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "판매",
               "Enable": true
             }
           ],
@@ -6438,12 +7024,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 720.134033,
-                "y": -214.99411
+                "x": 850.0,
+                "y": -205.0
               },
               "OffsetMin": {
-                "x": -479.866,
-                "y": -564.994141
+                "x": -350.0,
+                "y": -555.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -6456,12 +7042,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 120.134,
-                "y": -389.9941
+                "x": 250.0,
+                "y": -380.0
               },
               "Position": {
-                "x": 120.134,
-                "y": -389.9941,
+                "x": 250.0,
+                "y": -380.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6548,7 +7134,16 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
               "Enable": true
             },
             {
@@ -6608,7 +7203,7 @@
           "name": "Img",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/Img",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 0,
@@ -6721,20 +7316,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0,
-                "y": -50.0
+                "x": 100.0,
+                "y": -60.0
               },
               "OffsetMin": {
-                "x": -50.0,
-                "y": -150.0
+                "x": -100.0,
+                "y": -140.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -6762,6 +7357,7 @@
             },
             {
               "@type": "MOD.Core.TextComponent",
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -6934,6 +7530,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -6995,7 +7594,7 @@
           "name": "Img",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_2/Img",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 0,
@@ -7109,20 +7708,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0,
-                "y": -50.0
+                "x": 100.0,
+                "y": -60.0
               },
               "OffsetMin": {
-                "x": -50.0,
-                "y": -150.0
+                "x": -100.0,
+                "y": -140.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -7151,6 +7750,7 @@
             },
             {
               "@type": "MOD.Core.TextComponent",
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -7323,6 +7923,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -7498,20 +8101,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0,
-                "y": -50.0
+                "x": 100.0,
+                "y": -60.0
               },
               "OffsetMin": {
-                "x": -50.0,
-                "y": -150.0
+                "x": -100.0,
+                "y": -140.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -7540,6 +8143,7 @@
             },
             {
               "@type": "MOD.Core.TextComponent",
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -7712,6 +8316,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -7887,20 +8494,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0,
-                "y": -50.0
+                "x": 100.0,
+                "y": -60.0
               },
               "OffsetMin": {
-                "x": -50.0,
-                "y": -150.0
+                "x": -100.0,
+                "y": -140.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -7929,6 +8536,7 @@
             },
             {
               "@type": "MOD.Core.TextComponent",
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -8101,6 +8709,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -8276,20 +8887,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0,
-                "y": -50.0
+                "x": 100.0,
+                "y": -60.0
               },
               "OffsetMin": {
-                "x": -50.0,
-                "y": -150.0
+                "x": -100.0,
+                "y": -140.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 200.0,
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -8318,6 +8929,7 @@
             },
             {
               "@type": "MOD.Core.TextComponent",
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0

@@ -4,6 +4,7 @@
 > **작업 브랜치**: `HeungGyu`  
 > **mLua 문법 참조**: MCP 도구 `mcp_msw-mcp_mlua_grammer` 사용  
 > **작업 전 필수**: `/mlua-workflow` 워크플로우 확인
+> **[CRITICAL RULE] ONLY ENGLISH ALLOWED IN SCRIPTS**: Codex MUST write all script comments, `log()` messages, and logic context entirely in English. Do NOT write any Korean in the generated mlua scripts to prevent severe EUC-KR encoding corruption. (However, if a specific table or data name explicitly requires Korean to connect with the MSW Maker, you may use it exactly as provided, but keep everything else in English.)
 
 ---
 

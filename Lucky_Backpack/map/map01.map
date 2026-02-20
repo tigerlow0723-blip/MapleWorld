@@ -727,7 +727,7 @@
       {
         "id": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
         "path": "/maps/map01/GameSystem",
-        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,script.UIMain,MOD.Core.CameraComponent,script.MiniGameManager",
+        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,MOD.Core.CameraComponent,script.MiniGameManager,script.UIMain",
         "jsonString": {
           "name": "GameSystem",
           "path": "/maps/map01/GameSystem",
@@ -845,6 +845,14 @@
               "isMaintenanceMode": false
             },
             {
+              "@type": "MOD.Core.CameraComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.MiniGameManager",
+              "Enable": true
+            },
+            {
               "@type": "script.UIMain",
               "Enable": true,
               "sliderHP": {
@@ -955,14 +963,6 @@
                 "EntityId": "3fd77465-c684-4941-aef6-62036e7939e6",
                 "Version2": false
               }
-            },
-            {
-              "@type": "MOD.Core.CameraComponent",
-              "Enable": true
-            },
-            {
-              "@type": "script.MiniGameManager",
-              "Enable": true
             }
           ],
           "@version": 1
