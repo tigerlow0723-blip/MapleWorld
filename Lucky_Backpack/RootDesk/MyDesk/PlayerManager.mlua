@@ -383,6 +383,49 @@ script PlayerManager extends Component
 		self.buffList = newList
 	end
 
+	method table BuildShapeCells(table itemData)
+		local shapeCells = {}
+		if itemData ~= nil and itemData.shapeMask ~= nil and itemData.shapeMask ~= "" then
+			local rowText = ""
+			local mask = itemData.shapeMask
+			local rowIndex = 0
+			for i = 1, string.len(mask) do
+				local ch = string.sub(mask, i, i)
+				if ch == "," or ch == "/" then
+					for colIndex = 1, string.len(rowText) do
+						if string.sub(rowText, colIndex, colIndex) == "1" then
+							shapeCells[#shapeCells + 1] = {row = rowIndex, col = colIndex - 1}
+						end
+					end
+					rowText = ""
+					rowIndex = rowIndex + 1
+				else
+					rowText = rowText .. ch
+				end
+			end
+
+			if rowText ~= "" then
+				for colIndex = 1, string.len(rowText) do
+					if string.sub(rowText, colIndex, colIndex) == "1" then
+						shapeCells[#shapeCells + 1] = {row = rowIndex, col = colIndex - 1}
+					end
+				end
+			end
+		end
+
+		if #shapeCells == 0 then
+			local width = itemData.width or 1
+			local height = itemData.height or 1
+			for r = 0, height - 1 do
+				for c = 0, width - 1 do
+					shapeCells[#shapeCells + 1] = {row = r, col = c}
+				end
+			end
+		end
+
+		return shapeCells
+	end
+
 	method void AddItem(table itemData)
 		self.inventoryComp = self:ResolveInventoryComp()
 
@@ -390,11 +433,12 @@ script PlayerManager extends Component
 		if self.inventoryComp ~= nil then
 			local width = itemData.width or 1
 			local height = itemData.height or 1
+			local shapeCells = self:BuildShapeCells(itemData)
 			local placed = false
 			for r = 1, 6 do
 				for c = 1, 6 do
-					if self.inventoryComp:CanPlace(r, c, width, height) then
-						self.inventoryComp:PlaceItem(r, c, itemData.id, width, height)
+					if self.inventoryComp:CanPlace(r, c, shapeCells) then
+						self.inventoryComp:PlaceItem(r, c, itemData.id, shapeCells)
 						placed = true
 						-- ?꾩씠???쒓컖???쒖떆 ?앹꽦
 						local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")

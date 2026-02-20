@@ -1,42 +1,18 @@
-@Component
+﻿@Component
 script Inventory extends Component
 
--- ============================================================
--- 인벤토리 그리드 관리 컴포넌트
--- 6x6 그리드 기반, 초기 3x3 중앙 활성, 확장 시스템
--- 셀 상태: 0=비활성, 1=빈칸(활성), 아이템ID=점유
--- ============================================================
-
--- 그리드 데이터 (6x6 2D table, table은 Sync 불가이므로 로컬 관리)
 property table grid = {}
-
--- 현재 활성 그리드 크기
 property integer currentWidth = 3
-
 property integer currentHeight = 3
-
--- 최대 그리드 크기
 property integer maxWidth = 6
 property integer maxHeight = 6
-
--- 배치된 아이템 목록 {itemId = {row, col, shapeCells}}
 property table placedItems = {}
-
--- 그리드 변경 알림용
 property integer gridVersion = 0
 
--- ============================================================
--- 초기화
--- ============================================================
 method void OnBeginPlay()
     self:InitGrid()
 end
 
--- ============================================================
--- 6x6 그리드 초기화 — 중앙 3x3만 활성화
--- 그리드 좌표: grid[row][col], 1-indexed (Lua 관례)
--- 활성 영역: 중앙 정렬 (offset 계산)
--- ============================================================
 method void InitGrid()
     local offsetRow = math.floor((self.maxHeight - self.currentHeight) / 2)
     local offsetCol = math.floor((self.maxWidth - self.currentWidth) / 2)
@@ -51,8 +27,7 @@ method void InitGrid()
 
     for r = 1, self.maxHeight do
         for c = 1, self.maxWidth do
-            if r > offsetRow and r <= offsetRow + self.currentHeight
-               and c > offsetCol and c <= offsetCol + self.currentWidth then
+            if r > offsetRow and r <= offsetRow + self.currentHeight and c > offsetCol and c <= offsetCol + self.currentWidth then
                 self.grid[r][c] = 1
             end
         end
@@ -61,7 +36,7 @@ method void InitGrid()
     self:UpdateExpandableCells()
 
     self.placedItems = {}
-    self.gridVersion = self.gridVersion + 1
+    self.gridVersion += 1
     log("[Inventory] Grid initialized: " .. self.currentWidth .. "x" .. self.currentHeight)
 end
 
@@ -107,13 +82,10 @@ method boolean ActivateCell(integer row, integer col)
 
     self.grid[row][col] = 1
     self:UpdateExpandableCells()
-    self.gridVersion = self.gridVersion + 1
+    self.gridVersion += 1
     return true
 end
 
--- ============================================================
--- 셀이 활성 영역인지 확인
--- ============================================================
 method boolean IsCellActive(integer row, integer col)
     if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
         return false
@@ -121,9 +93,6 @@ method boolean IsCellActive(integer row, integer col)
     return self.grid[row][col] ~= 0
 end
 
--- ============================================================
--- 셀이 비어있는지 확인 (활성이고 점유되지 않음)
--- ============================================================
 method boolean IsCellEmpty(integer row, integer col)
     if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
         return false
@@ -131,11 +100,6 @@ method boolean IsCellEmpty(integer row, integer col)
     return self.grid[row][col] == 1
 end
 
--- ============================================================
--- 아이템 배치 가능 여부 확인
--- row, col: 아이템 좌상단 위치 (1-indexed)
--- shapeCells: 아이템 마스크 상대 좌표 목록
--- ============================================================
 method boolean CanPlace(integer row, integer col, table shapeCells)
     if shapeCells == nil or #shapeCells == 0 then
         return false
@@ -158,17 +122,12 @@ method boolean CanPlace(integer row, integer col, table shapeCells)
     return true
 end
 
--- ============================================================
--- 아이템 배치
--- 성공 시 true, 실패 시 false 반환
--- ============================================================
 method boolean PlaceItem(integer row, integer col, integer itemId, table shapeCells)
     if not self:CanPlace(row, col, shapeCells) then
         log_warning("[Inventory] Cannot place item " .. itemId .. " at (" .. row .. "," .. col .. ")")
         return false
     end
 
-    -- 셀 점유 표시
     for i = 1, #shapeCells do
         local cell = shapeCells[i]
         if cell ~= nil then
@@ -178,21 +137,25 @@ method boolean PlaceItem(integer row, integer col, integer itemId, table shapeCe
         end
     end
 
-    -- 배치 정보 저장
+    local placedShapeCells = {}
+    for i = 1, #shapeCells do
+        local cell = shapeCells[i]
+        if cell ~= nil then
+            placedShapeCells[#placedShapeCells + 1] = {row = cell.row, col = cell.col}
+        end
+    end
+
     self.placedItems[itemId] = {
         row = row,
         col = col,
-        shapeCells = shapeCells
+        shapeCells = placedShapeCells
     }
 
-    self.gridVersion = self.gridVersion + 1
+    self.gridVersion += 1
     log("[Inventory] Placed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
     return true
 end
 
--- ============================================================
--- 아이템 제거
--- ============================================================
 method boolean RemoveItem(integer itemId)
     local info = self.placedItems[itemId]
     if info == nil then
@@ -200,7 +163,6 @@ method boolean RemoveItem(integer itemId)
         return false
     end
 
-    -- 셀 비우기 (마스크 기반)
     local shapeCells = info.shapeCells
     if shapeCells == nil then
         shapeCells = {}
@@ -218,61 +180,68 @@ method boolean RemoveItem(integer itemId)
     end
 
     self.placedItems[itemId] = nil
-    self.gridVersion = self.gridVersion + 1
+    self.gridVersion += 1
     log("[Inventory] Removed item " .. itemId)
     return true
 end
 
--- 위치 기반 아이템 제거 (동일 ID 아이템이 여러 개일 때 사용)
 method boolean RemoveItemAt(integer itemId, integer row, integer col, integer w, integer h)
-    -- 해당 위치의 셀 비우기
-    for dr = 0, h - 1 do
-        for dc = 0, w - 1 do
-            local r = row + dr
-            local c = col + dc
-            if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
-                self.grid[r][c] = 1
+    local info = self.placedItems[itemId]
+    local shapeCells = nil
+    if info ~= nil and info.row == row and info.col == col then
+        shapeCells = info.shapeCells
+    end
+
+    if shapeCells ~= nil and #shapeCells > 0 then
+        for i = 1, #shapeCells do
+            local cell = shapeCells[i]
+            if cell ~= nil then
+                local r = row + cell.row
+                local c = col + cell.col
+                if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
+                    self.grid[r][c] = 1
+                end
+            end
+        end
+    else
+        for dr = 0, h - 1 do
+            for dc = 0, w - 1 do
+                local r = row + dr
+                local c = col + dc
+                if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
+                    self.grid[r][c] = 1
+                end
             end
         end
     end
 
-    -- placedItems에서도 제거 (위치가 일치하는 경우만)
-    local info = self.placedItems[itemId]
     if info ~= nil and info.row == row and info.col == col then
         self.placedItems[itemId] = nil
     end
 
-    self.gridVersion = self.gridVersion + 1
+    self.gridVersion += 1
     log("[Inventory] Removed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
     return true
 end
 
--- ============================================================
--- 인벤토리 1칸 확장
--- 비활성 셀 중 활성 셀과 인접한 셀 하나를 활성화
--- 확장 순서: 위→오른쪽→아래→왼쪽 순으로 탐색
--- ============================================================
 method boolean ExpandGrid()
     if self.currentWidth >= self.maxWidth and self.currentHeight >= self.maxHeight then
         log_warning("[Inventory] Grid already at max size")
         return false
     end
 
-    -- 비활성 셀 중 활성 셀과 인접한 것을 찾아 활성화
     local directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
 
     for r = 1, self.maxHeight do
         for c = 1, self.maxWidth do
             if self.grid[r][c] == 0 then
-                -- 인접 셀 중 활성인 것이 있는지 확인
                 for _, dir in ipairs(directions) do
                     local nr = r + dir[1]
                     local nc = c + dir[2]
                     if nr >= 1 and nr <= self.maxHeight and nc >= 1 and nc <= self.maxWidth then
                         if self.grid[nr][nc] ~= 0 then
-                            -- 활성화
                             self.grid[r][c] = 1
-                            self.gridVersion = self.gridVersion + 1
+                            self.gridVersion += 1
                             log("[Inventory] Expanded grid: activated cell (" .. r .. "," .. c .. ")")
                             return true
                         end
@@ -285,17 +254,10 @@ method boolean ExpandGrid()
     return false
 end
 
--- ============================================================
--- 현재 그리드 상태 반환 (UI 렌더링용)
--- 반환: 6x6 테이블 (각 셀 값)
--- ============================================================
 method table GetGrid()
     return self.grid
 end
 
--- ============================================================
--- 특정 셀의 아이템 ID 반환 (0=비활성, 1=빈칸, 그 외=아이템ID)
--- ============================================================
 method integer GetCellValue(integer row, integer col)
     if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
         return 0
@@ -303,9 +265,6 @@ method integer GetCellValue(integer row, integer col)
     return self.grid[row][col]
 end
 
--- ============================================================
--- 배치된 아이템 정보 반환
--- ============================================================
 method table GetPlacedItemInfo(integer itemId)
     return self.placedItems[itemId]
 end
