@@ -203,6 +203,52 @@ method table GetShapeCells()
     return cells
 end
 
+@ExecSpace("ClientOnly")
+method void Rotate90Degrees()
+    local oldRows = #self.shapeMatrix
+    if oldRows <= 0 then return end
+
+    local oldCols = 0
+    for r = 1, oldRows do
+        if self.shapeMatrix[r] ~= nil and #self.shapeMatrix[r] > oldCols then
+            oldCols = #self.shapeMatrix[r]
+        end
+    end
+    if oldCols <= 0 then return end
+
+    local newMatrix = {}
+    for r = 1, oldCols do
+        newMatrix[r] = {}
+        for c = 1, oldRows do
+            newMatrix[r][c] = 0
+        end
+    end
+
+    for r = 1, oldRows do
+        local rowData = self.shapeMatrix[r]
+        if rowData == nil then
+            continue
+        end
+        for c = 1, #rowData do
+            if rowData[c] == 1 then
+                local newR = c
+                local newC = oldRows - r + 1
+                newMatrix[newR][newC] = 1
+            end
+        end
+    end
+
+    self.shapeMatrix = newMatrix
+    local oldWidth = self.width
+    self.width = self.height
+    self.height = oldWidth
+
+    local uiTransform = self.Entity.UITransformComponent
+    if uiTransform ~= nil then
+        uiTransform.ZRotation = uiTransform.ZRotation - 90
+    end
+end
+
 -- ============================================================
 -- 아이템 배치 위치 설정
 -- ============================================================

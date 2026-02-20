@@ -40,11 +40,13 @@ script InventoryUI extends Component
 		        itemWidth = 0,
 		        itemHeight = 0,
 		        shapeCells = nil,
+		        dragActivated = false,
 		        originRow = -1,
 		        originCol = -1,
 		        originPosition = nil,
 		        touchHandler = nil,
-		        releaseHandler = nil
+		        releaseHandler = nil,
+		        rotateHandler = nil
 		    }
 		
 		    self:CollectCellEntities()
@@ -189,35 +191,15 @@ script InventoryUI extends Component
 		        end
 		    end
 
-		    if itemEntity.Parent ~= self.Entity then
-		        local itemUI = itemEntity.UITransformComponent
-		        local fromParent = itemEntity.Parent
-		        local fromParentUI = nil
-		        if fromParent ~= nil then
-		            fromParentUI = fromParent.UITransformComponent
-		        end
-		        local toParentUI = self.Entity.UITransformComponent
-		        if itemUI ~= nil and fromParentUI ~= nil and toParentUI ~= nil then
-		            local worldPos = _UILogic:LocalUIToWorldPosition(itemUI.anchoredPosition, fromParentUI)
-		            local screenPos = _UILogic:WorldToScreenPosition(worldPos)
-		            self.Entity:AttachChild(itemEntity)
-		            itemUI.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, toParentUI)
-		        else
-		            self.Entity:AttachChild(itemEntity)
-		        end
-		    end
-		
-		    if itemComp:IsPlaced() then
-		        inventory:RemoveItem(itemComp.itemId)
-		        self:RenderGrid()
-		    end
-		
 		    -- 드래그 이동 + 릴리즈 이벤트 연결
 		    self.dragState.touchHandler = _InputService:ConnectEvent(ScreenTouchHoldEvent, function(event)
 		        self:OnDragMove(event)
 		    end)
 		    self.dragState.releaseHandler = _InputService:ConnectEvent(ScreenTouchReleaseEvent, function(event)
 		        self:OnDragRelease(event)
+		    end)
+		    self.dragState.rotateHandler = _InputService:ConnectEvent(KeyDownEvent, function(event)
+		        self:OnRotateInput(event)
 		    end)
 		
 		    log("[InventoryUI] Drag started: item " .. itemComp.itemId)
@@ -227,6 +209,10 @@ script InventoryUI extends Component
 	method void OnDragMove(ScreenTouchHoldEvent event)
 		    if not self.dragState.isDragging then return end
 		    if self.dragState.itemEntity == nil then return end
+
+		    if not self.dragState.dragActivated then
+		        self:ActivateDragVisual()
+		    end
 		
 		    local touchPoint = event.TouchPoint
 		    -- 아이템 부모 기준 로컬 좌표로 변환
@@ -249,6 +235,11 @@ script InventoryUI extends Component
 	@ExecSpace("ClientOnly")
 	method void OnDragRelease(ScreenTouchReleaseEvent event)
 		    if not self.dragState.isDragging then return end
+
+		    if not self.dragState.dragActivated then
+		        self:EndDrag()
+		        return
+		    end
 		
 		    local touchPoint = event.TouchPoint
 		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
@@ -300,14 +291,82 @@ script InventoryUI extends Component
 		        _InputService:DisconnectEvent(ScreenTouchReleaseEvent, self.dragState.releaseHandler)
 		        self.dragState.releaseHandler = nil
 		    end
+		    if self.dragState.rotateHandler ~= nil then
+		        _InputService:DisconnectEvent(KeyDownEvent, self.dragState.rotateHandler)
+		        self.dragState.rotateHandler = nil
+		    end
 		
 		    self.dragState.isDragging = false
+		    self.dragState.dragActivated = false
 		    self.dragState.originPosition = nil
 		    self.dragState.shapeCells = nil
 		    self:RenderGrid()
 		    self.dragState.itemEntity = nil
 		    self.dragState.originParent = nil
 		    log("[InventoryUI] Drag ended")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ActivateDragVisual()
+		    if self.dragState.dragActivated then return end
+		    if self.dragState.itemEntity == nil then return end
+
+		    local itemEntity = self.dragState.itemEntity
+		    local itemComp = itemEntity.Item
+		    local inventory = self.Entity.Inventory
+
+		    if itemEntity.Parent ~= self.Entity then
+		        local itemUI = itemEntity.UITransformComponent
+		        local fromParent = itemEntity.Parent
+		        local fromParentUI = nil
+		        if fromParent ~= nil then
+		            fromParentUI = fromParent.UITransformComponent
+		        end
+		        local toParentUI = self.Entity.UITransformComponent
+		        if itemUI ~= nil and fromParentUI ~= nil and toParentUI ~= nil then
+		            local worldPos = _UILogic:LocalUIToWorldPosition(itemUI.anchoredPosition, fromParentUI)
+		            local screenPos = _UILogic:WorldToScreenPosition(worldPos)
+		            self.Entity:AttachChild(itemEntity)
+		            itemUI.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, toParentUI)
+		        else
+		            self.Entity:AttachChild(itemEntity)
+		        end
+		    end
+
+		    if itemComp ~= nil and itemComp:IsPlaced() and inventory ~= nil then
+		        inventory:RemoveItem(itemComp.itemId)
+		        self:RenderGrid()
+		    end
+
+		    self.dragState.dragActivated = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnRotateInput(KeyDownEvent event)
+		    if not self.dragState.isDragging then return end
+		    if self.dragState.itemEntity == nil then return end
+		    if event == nil then return end
+		    if _InputService:IsKeyPressed(KeyboardKey.Mouse0) == false then return end
+
+		    if event.key ~= KeyboardKey.R and event.key ~= KeyboardKey.Mouse1 then
+		        return
+		    end
+
+		    local itemComp = self.dragState.itemEntity.Item
+		    if itemComp == nil then return end
+
+		    itemComp:Rotate90Degrees()
+		    self.dragState.itemWidth = itemComp.width
+		    self.dragState.itemHeight = itemComp.height
+		    self.dragState.shapeCells = itemComp:GetShapeCells()
+
+		    local cursorPos = _InputService:GetCursorPosition()
+		    local result = self:ScreenPosToGridCell(cursorPos, self.dragState.itemWidth, self.dragState.itemHeight)
+		    if result.row > 0 and result.col > 0 then
+		        self:HighlightPlacement(result.row, result.col, self.dragState.shapeCells)
+		    else
+		        self:RenderGrid()
+		    end
 	end
 
 	@ExecSpace("ClientOnly")
