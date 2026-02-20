@@ -30,7 +30,7 @@ script DataManager extends Component
 	-- @ExecSpace("ServerOnly") 제거: 클라이언트에서도 실행되도록 변경
 	method void OnBeginPlay()
 		self:LoadAllTables()
-		log("[DataManager] 모든 데이터 테이블 로딩")
+		log("[DataManager] 모든 데이터 테이블 로딩 완료")
 	end
 
 	method void LoadAllTables()
@@ -154,8 +154,8 @@ script DataManager extends Component
 				data.id = id
 				data.type = ds:GetCell(i, "type") or "weapon"
 				data.name = ds:GetCell(i, "name") or ""
-				data.width = tonumber(ds:GetCell(i, "width")) or 1
-				data.height = tonumber(ds:GetCell(i, "height")) or 1
+				data.width = math.max(1, tonumber(ds:GetCell(i, "width")) or 1)
+				data.height = math.max(1, tonumber(ds:GetCell(i, "height")) or 1)
 				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
 				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
 				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0
