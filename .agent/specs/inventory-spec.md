@@ -158,14 +158,21 @@ graph TD
     B --> D[ScreenTouchReleaseEvent 연결]
     C --> E[OnDragMove: 커서 따라가기 + 하이라이트]
     D --> F[OnDragRelease: 마우스 놓기]
-    F --> G{유효한 셀?}
+    F --> G{유효한 인벤토리 셀?}
     G -->|Yes| H{CanPlace?}
-    G -->|No| I[ReturnToOrigin → spawnPosition]
-    H -->|Yes| J[PlaceItem + SnapToGrid]
-    H -->|No| I
+    G -->|No 가방 밖| S{상점 판매 구역인가?}
+    S -->|Yes 판매 구역| Sold[상점 판매 처리 및 파괴]
+    S -->|No 일반 바닥| Floor[ItemDisplayArea로 반환 및 터치 좌표에 고정]
+    H -->|Yes| J[Inventory:PlaceItem + SnapToGrid]
+    H -->|No 실패| Return[ReturnToOrigin: 실패 시 원위치]
     J --> K[EndDrag]
-    I --> K
+    Return --> K
+    Floor --> K
+    Sold --> K
 ```
+
+- **가방 외부 드롭 (자유 배치 반환)**: 가방 안에서 밖(ItemDisplayArea 영역)으로 드래그 앤 드롭을 할 경우, 아이템은 파괴되거나 인벤토리로 되돌아가지 않습니다. 대신 떨어뜨린 터치 좌표(마우스 위치)에 기반하여 `ItemDisplayArea` 자식으로 편입됩니다.
+- ⚠️ **주의**: 이때 기본 보상 획득 시에만 사용되는 `ArrangeItems()`(자동 가운데 정렬)를 호출하지 않습니다! 유저가 아이템을 뺀 그 위치 그대로 화면에 남아있게 되어, 유저만의 테트리스 임시 보관 구역으로 자유롭게 통제 가능합니다.
 
 ## 7. 미구현 항목
 
