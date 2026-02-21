@@ -67,23 +67,6 @@ script UIMain extends Component
 						return
 					end
 
-					local displayAreaComp = nil
-					local parentEntity = self.Entity.Parent
-					if parentEntity ~= nil then
-						local displayAreaEntity = parentEntity:GetChildByName("ItemDisplayArea", true)
-						if displayAreaEntity ~= nil then
-							displayAreaComp = displayAreaEntity.ItemDisplayArea
-						end
-					end
-					if displayAreaComp == nil then
-						local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
-						if displayAreaEntity ~= nil then
-							displayAreaComp = displayAreaEntity.ItemDisplayArea
-						end
-					end
-					if displayAreaComp ~= nil then
-						displayAreaComp:ClearAllItems()
-					end
 					self.gameManager:TriggerBattleStart()
 				end
 			end)

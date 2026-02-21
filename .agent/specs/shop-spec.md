@@ -38,29 +38,38 @@
 **UI 계층 구조도 (Workspace -> `ui` -> `UIGroup` 밑에 생성):**
 - **`ShopPanel`** (`SpriteGUIRendererComponent` 및 빈 스크립트 **`ShopUI`** 부착)
   - 기본 상태(Inspector): `Enable = false` (평소엔 무조건 꺼둠)
-  - **`BtnRefresh` (새로고침 버튼)**: (`ButtonComponent`, `SpriteGUIRendererComponent`)
-    - 주사위 아이콘과 "새로고침💰2" 텍스트 포함
-  - **`ItemList` (가로 진열대)**: 
-    - 상점 아이템 카드 5개가 나란히 진열되는 그룹. 비워둠.
-    - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
-      - 카드를 클릭해야 하므로 버튼 부착. 그 속에는 다음 3가지만 노출.
-      1. `이미지(Sprite)`: 아이템 사진.
-      2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
-      3. `이름(Text)`: 최하단 상품명.
+  - **`ItemList` (가로 진열대 - 동적 컨테이너)**: 
+    - 빈 그룹 엔티티. 이 아래에 자식으로 카드들이 생성됩니다.
+  - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
+    - ⚠️ **주의**: 이제 이 카드는 하드코딩으로 5개를 배치해 두는 것이 아닙니다. 메이커에서 이 템플릿 카드 **1개만** 유지하고 평소엔 안 보이게(`Enable=false`) 꺼 둡니다.
+    - 아이템 개수에 맞춰 코드가 이 템플릿을 **동적 복제(Clone)**하여 `ItemList` 아래에 삽입하고, X 좌표를 코드로 계산해 가로로 나열합니다.
+    1. `이미지(Sprite)`: 아이템 사진.
+    2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
+    3. `이름(Text)`: 최하단 상품명.
   - **`PlayerCoin` (기존 TxtPlayerGold 대체)**: 빈 객체 컨테이너. 내부에 코인 이미지(`ImgCoin` SpriteGUIRenderer)와 보유 골드 텍스트(`TxtPlayerCoin` TextComponent) 자식 개체를 포함합니다. (ShopUI 스크립트 연결 완료됨)
+  - **`TxtShopTier`**: 상점의 등급(레어~레전더리) 텍스트를 뿌려줄 엔티티. (생성 완료)
   - **`BtnCloseShop`**: (`ButtonComponent`) 상점 닫고 다음 스테이지(정비)로 넘어가는 닫기 버튼.
 
-### 2-2. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
+### 2-2. 상점 등급 (Shop Tier) 시스템 및 티어별 상품 풀
+상점은 열릴 때마다 4가지 등급 중 하나로 결정되며, **등급에 따라 정확히 정해진 품목 풀(Pool) 안에서만** 아이템 카드가 생성됩니다. (현재 '금의 원석' 등 구매 제한 수량은 기획 대기 중이므로 무조건 1개만 스폰된다고 가정)
+
+1. **`Rare` (레어 상점)** - 50% 확률
+   - 하급 무기 공격력 주문서, 장비 등급 주문서, 돼지고기
+2. **`Epic` (에픽 상점)** - 25% 확률
+   - 고급 무기 공격력 주문서, 장비 등급 주문서, 돼지고기, 금의 원석
+3. **`Unique` (유니크 상점)** - 15% 확률
+   - 고급 무기 공격력 주문서, 랜덤 무기 공격력 주문서, 장비 전용 마법 부여 주문서, 돼지고기, 금의 원석
+   *("장비 등급 주문서" 대신 "장비 전용 마법 부여 주문서" 임시 표기 시 유연하게 대처)*
+4. **`Legendary` (레전더리 상점)** - 10% 확률
+   - 고급 무기 공격력 주문서, 장비 등급 주문서, 장비 등급 확정 주문서, 돼지고기, 금의 원석
+
+### 2-3. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
 - 1. **등장(On)**: `GameManager`에서 보상을 모두 줍고 정비 종료를 눌렀을 때(`EndPreparation()`), `self.gamePhase = "Shop"`가 되면서 `ShopPanel` 엔티티의 `Enable = true`로 화면에 나타납니다.
-- 2. **세팅**: 켜지는 즉시 `ShopUI:OpenShop()`이 발동하며 무작위 5개의 아이템 카드가 `ItemList` 안에 렌더링 됩니다.
+- 2. **세팅**: 켜지는 즉시 `ShopUI:OpenShop()`이 발동하며 무작위 5개의 아이템 카드가 `ItemList` 안에 렌더링 되고, 상점 등급(`RollShopTier`)이 최초 부여됩니다.
 - 3. **퇴장(Off)**: 유저가 `BtnCloseShop` 버튼을 누르면, 상점 패널의 `Enable = false`로 꺼버린 뒤, `GameManager`에 신호를 보내 다음 스테이지(`currentStage + 1`)의 **정비(Preparation) 단계**로 사이클을 깔끔하게 다시 돌립니다!
 
-### 2-3. 새로고침 (Reroll) 로직 (`OnClickRefresh()`)
-- 유저가 좌측의 새로고침 버튼을 누를 때 발동.
-- 조건 판정: `playerManager.gold >= 2` (예: 새로고침 비용 2골드)
-- 지불 처리: `playerManager.gold -= 2`
-- 갱신 처리: 현재 진열된 모든 카드를 품절(초기화) 처리하고, 배열(`shopItems`)을 지운 뒤, 2-2번 항목의 `무작위 5개 뽑기 및 렌더링` 로직을 그대로 재차 실행합니다.
-
+### 2-3. 삭제된 단위 로직
+- 기존에 존재했던 "새로고침(Reroll)" 기능 및 버튼은 더 이상 사용하지 않으며 코드 및 구조에서 완전히 제거되었습니다.
 ---
 
 ## 3. 아이템 구매(Buy) 로직
@@ -106,20 +115,33 @@
 ### 6-1. DataManager.mlua (데이터 로드 및 파싱 정규화)
 - **`LoadItemTable()`**: `Data_Table - 아이템 - 장비 / 방어구 / 기타` 3개의 CSV로 분할된 테이블을 순환하며 모든 아이템 목록을 로드합니다.
 - **`NormalizeShapeMask(shapeMask)` 메서드**: `1,1,1` 또는 `1/1/1` 등 비정형 텍스트를 읽어 여백을 최적화한 뒤 `/"표를 구분자로` 포맷팅하여 메모리(ItemTable)에 저장합니다.
+- **특정 상점 아이템 런타임 가격(Price) 부여 로직 추가 (중요)**:
+  - 현재 CSV 컬럼 구조 자체를 건드리지 않더라도, `LoadItemTable`을 수행할 때 특정 아이템 이름(name)을 식별하여 메모리의 `itemData.price`에 아래 지정된 가격을 강제로 주입합니다.
+  - [장비 등급 주문서: 50], [하급 무기 공격력 주문서: 100], [고급 무기 공격력 주문서: 500], [랜덤 무기 공격력 주문서: 2000], [장비 등급 확정 주문서: 1500], [돼지고기: 150], [금의 원석: 500]
 
 ### 6-2. BattleManager.mlua & MonsterManager.mlua (상점용 골드 보상)
 - **`CollectRewards()`**: 죽은 몬스터 데이터 내부의 `rewardGold` 및 `goldDrop`을 합산합니다.
 - 승리 분기망에서 곧바로 `PlayerManager:AddGold(골드량)`를 호출하여 상점 구매재화 값을 즉각 연동합니다.
 
-### 6-3. ShopUI.mlua (UI 로직 및 아이템 비용 연동)
-- **`OpenShop()` & `GenerateShopItems()`**: 총 5개의 랜덤 카드를 표시합니다. 이때 `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
-- **`OnClickRefresh()`**: 유저가 수동 리롤 요청 시, 내 골드가 2 이상(`refreshCost`) 일 때 `SpendGold()`하고 진열 목록을 전체 갱신(Re-draw)합니다.
-- **`OnClickCard(index)`**: 골드가 충분하면 아이템을 구매하며, 성공하면 배열을 지우고 `ItemDisplayArea`에 카드 이미지를 스폰시킵니다.
-- **[이슈 트래킹]**: 간헐적으로 리롤 시 이전 아이템의 카드 이미지가 그대로 남아 이름과 불일치하는 "유령 스프라이트" 현상이 발견되었습니다. 현재 방어 로직(`ImageRUID` 명시적 초기화)을 넣었으나 엔진 이슈로 완화되지 않을 수 있으므로, **추후 전체 아이템 데이터에 모든 `imageRUID`가 채워진 상태에서 다시 한 번 버그 유무를 재테스트**해야 합니다.
+### 6-3. ShopUI.mlua (UI 동적 생성 및 카드 좌우 정렬 로직 구현)
+- **아이템 풀(Pool) 필터링 (중요)**: `GenerateShopItems()` 호출 시, 가장 먼저 현재 결정된 상점 등급(`self.currentShopTier`)에 따라 **명세서 2-2번에 기재된 품목(이름)들만** 배열로 추려냅니다.
+  - *팁: `string.find`나 일치 검사를 통해 `self.dataManager.ItemTable`에서 검색하여 매칭되는 아이템 데이터만 풀에 넣습니다.*
+  - *예시: 에픽 상점이라면 ["고급 무기 공격력 주문서", "장비 등급 주문서", "돼지고기", "금의 원석"] 이 정확한 풀입니다.*
+- **동적 카드 생성 및 수동 좌표 정렬 (Dynamic Spawning & Offset)**:
+  - MSW 시스템상 `HorizontalBoxLayoutGroup`이 없으므로 코드로 직접 좌표를 벌려주어야 합니다.
+  - 상점 등장 시 기존에 생성됐던 아이템 카드 클론들은 일괄 `Destroy()` 하거나 숨깁니다.
+  - 방금 추첨된 아이템 개수(`n`)만큼 `ItemCardTemplate` 엔티티를 부모(`ItemList`) 아래에 **`Clone()`**으로 복제 생성합니다.
+  - **좌표 연산**: 카드의 가로 크기(예: 150)와 여백(예: 20)을 고려하여 총 너비를 구하고, 첫 카드의 시작 지점을 잡은 뒤 루프를 돌며 직전 카드의 X좌표 + (너비+여백) 값으로 촘촘히 렌더링시킵니다.
+- **`OnClickCard(index)`**: 아이템 구매 성공 시, 구입한 대상 클론 UI 카드 엔티티 자체를 `Destroy()` 시키고, `self.shopItems` 배열에서 빼냅니다. 나머지 형제 카드들은 다시 좌표 연산(가운데 정렬) 렌더링을 태워 빈 공간을 채우며 정렬시킵니다.
 
 ### 6-4. InventoryUI.mlua (판매 구역 드래그 드롭)
 - **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.
 - **`SellItemById(itemId)`**: 아이템의 `price` 대조 후 50%의 환율(`GetSellPrice()`)을 계산해 골드로 환원하고 엔티티와 슬롯 정보를 완전 삭제합니다.
 
-### 6-5. Item.mlua (도형의 회전 및 그리드 연동)
-- **`Rotate90Degrees()`**: 유저가 회전(R 키 또는 우클릭) 시, 배열로 저장된 `shapeMatrix`를 90도 회전(전치/역순)시킵니다. 인벤토리 `CanPlace` 함수 호출 시에도 새로 바뀐 크기(가로세로 `width/height` 변환)에 대응합니다.
+### 6-5. 보상 아이템 자동 환전 (Auto-Sell Remaining Items)
+- **로직 개요**: 전투 승리 후 보상 상자에서 드랍된 아이템들 중, 인벤토리에 넣지 않고 필드에 남겨둔 채 '다음으로' 버튼을 누를 경우, 이 아이템들이 증발하는 대신 각각 **고정가 50 골드(Gold)**로 자동 환전됩니다.
+- **`SellRemainingItems()` 구현 지침**:
+  1. `GameManager`가 다음 페이즈(정비 탭 종료 등)로 넘어가기 직전에 `ItemDisplayArea`를 호출하여 화면 상에 스폰(`spawnedItems`)되어 있는 모든 아이템 엔티티 목록을 순회합니다.
+  2. 필드용 아이템 엔티티 개수 당 고정 **50 Gold**씩 곱하여 플레이어 재화(`PlayerManager.gold`)에 즉시 일괄 합산시킵니다 (기본 판매가 연동 해제, 무조건 50골드 고정).
+  3. 돈으로 치환된 보상용 아이템 엔티티들은 역순으로 순회하며 즉시 파괴(`Destroy()`)하고 배열을 완전히 비웁니다 (`self.spawnedItems = {}`).
+  4. 이후 상점(ShopUI)이 열릴 때 업데이트된 골드량이 정상적으로 반영(`UpdateGoldText()`)되도록 처리 흐름을 맞춥니다.
