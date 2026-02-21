@@ -16,6 +16,7 @@ property table cellEntities = {}
 property table dragState = {}
 property string itemTemplatePath = "/ui/UIGroup/ItemTemplate"
 property string shopPanelPath = "/ui/UIGroup/ShopPanel"
+property boolean isPanelVisible = true
 
 @ExecSpace("ClientOnly")
 method void OnBeginPlay()
@@ -119,24 +120,20 @@ method void RenderGrid()
             if cellEntity == nil then continue end
 
             local cellValue = inventory:GetCellValue(r, c)
-            local color = nil
-            if cellValue == -1 then
-                if showExpandable then
-                    color = self.colorExpandable
-                else
-                    color = self.colorInactive
-                end
-            elseif cellValue == 0 then
-                color = self.colorInactive
-            elseif cellValue == 1 then
-                color = self.colorEmpty
-            else
-                color = self.colorOccupied
-            end
+            local isVisible = (cellValue >= 1) or (showExpandable and cellValue == -1)
+
+            cellEntity:SetEnable(isVisible)
+            cellEntity:SetVisible(isVisible)
 
             local renderer = cellEntity.SpriteGUIRendererComponent
-            if renderer ~= nil and color ~= nil then
-                renderer.Color = Color(color.r, color.g, color.b, color.a)
+            if renderer ~= nil then
+                if isVisible == false then
+                    renderer.Color = Color(1.0, 1.0, 1.0, 0.0)
+                elseif cellValue == -1 and showExpandable then
+                    renderer.Color = Color(1.0, 1.0, 1.0, 0.5)
+                else
+                    renderer.Color = Color(1.0, 1.0, 1.0, 1.0)
+                end
             end
         end
     end
@@ -782,9 +779,10 @@ end
 
 @ExecSpace("ClientOnly")
 method void ToggleInventory()
-    local isVisible = self.Entity:GetVisible()
-    self.Entity:SetVisible(not isVisible)
-    if not isVisible then
+    self.isPanelVisible = not self.isPanelVisible
+    self.Entity:SetEnable(self.isPanelVisible)
+    self.Entity:SetVisible(self.isPanelVisible)
+    if self.isPanelVisible then
         self:RenderGrid()
     end
 end
