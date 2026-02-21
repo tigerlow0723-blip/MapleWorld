@@ -38,8 +38,6 @@
 **UI 계층 구조도 (Workspace -> `ui` -> `UIGroup` 밑에 생성):**
 - **`ShopPanel`** (`SpriteGUIRendererComponent` 및 빈 스크립트 **`ShopUI`** 부착)
   - 기본 상태(Inspector): `Enable = false` (평소엔 무조건 꺼둠)
-  - **`BtnRefresh` (새로고침 버튼)**: (`ButtonComponent`, `SpriteGUIRendererComponent`)
-    - 주사위 아이콘과 "새로고침💰2" 텍스트 포함
   - **`ItemList` (가로 진열대)**: 
     - 상점 아이템 카드 5개가 나란히 진열되는 그룹. 비워둠.
     - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
@@ -50,17 +48,22 @@
   - **`PlayerCoin` (기존 TxtPlayerGold 대체)**: 빈 객체 컨테이너. 내부에 코인 이미지(`ImgCoin` SpriteGUIRenderer)와 보유 골드 텍스트(`TxtPlayerCoin` TextComponent) 자식 개체를 포함합니다. (ShopUI 스크립트 연결 완료됨)
   - **`BtnCloseShop`**: (`ButtonComponent`) 상점 닫고 다음 스테이지(정비)로 넘어가는 닫기 버튼.
 
-### 2-2. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
+### 2-2. 상점 등급 (Shop Tier) 시스템
+상점은 열릴 때 또는 리롤될 때마다 4가지 등급 중 하나로 결정됩니다. 등급에 따라 추후 출현하는 아이템의 풀(Pool)이나 가치에 영향을 줄 수 있습니다.
+- **`Rare` (레어 상점)**: 50% 확률 (표시 텍스트: ★ 레어 상점 ★, 파란색)
+- **`Epic` (에픽 상점)**: 25% 확률 (표시 텍스트: ★★ 에픽 상점 ★★, 보라색)
+- **`Unique` (유니크 상점)**: 15% 확률 (표시 텍스트: ★★★ 유니크 상점 ★★★, 노란색)
+- **`Legendary` (레전더리 상점)**: 10% 확률 (표시 텍스트: ★★★★ 레전더리 상점 ★★★★, 초록색)
+
+**추가해야 할 UI**: `ShopPanel` 내부에 `TxtShopTier` (TextComponent) 엔티티.
+
+### 2-3. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
 - 1. **등장(On)**: `GameManager`에서 보상을 모두 줍고 정비 종료를 눌렀을 때(`EndPreparation()`), `self.gamePhase = "Shop"`가 되면서 `ShopPanel` 엔티티의 `Enable = true`로 화면에 나타납니다.
-- 2. **세팅**: 켜지는 즉시 `ShopUI:OpenShop()`이 발동하며 무작위 5개의 아이템 카드가 `ItemList` 안에 렌더링 됩니다.
+- 2. **세팅**: 켜지는 즉시 `ShopUI:OpenShop()`이 발동하며 무작위 5개의 아이템 카드가 `ItemList` 안에 렌더링 되고, 상점 등급(`RollShopTier`)이 최초 부여됩니다.
 - 3. **퇴장(Off)**: 유저가 `BtnCloseShop` 버튼을 누르면, 상점 패널의 `Enable = false`로 꺼버린 뒤, `GameManager`에 신호를 보내 다음 스테이지(`currentStage + 1`)의 **정비(Preparation) 단계**로 사이클을 깔끔하게 다시 돌립니다!
 
-### 2-3. 새로고침 (Reroll) 로직 (`OnClickRefresh()`)
-- 유저가 좌측의 새로고침 버튼을 누를 때 발동.
-- 조건 판정: `playerManager.gold >= 2` (예: 새로고침 비용 2골드)
-- 지불 처리: `playerManager.gold -= 2`
-- 갱신 처리: 현재 진열된 모든 카드를 품절(초기화) 처리하고, 배열(`shopItems`)을 지운 뒤, 2-2번 항목의 `무작위 5개 뽑기 및 렌더링` 로직을 그대로 재차 실행합니다.
-
+### 2-3. 삭제된 단위 로직
+- 기존에 존재했던 "새로고침(Reroll)" 기능 및 버튼은 더 이상 사용하지 않으며 코드 및 구조에서 완전히 제거되었습니다.
 ---
 
 ## 3. 아이템 구매(Buy) 로직
@@ -112,10 +115,9 @@
 - 승리 분기망에서 곧바로 `PlayerManager:AddGold(골드량)`를 호출하여 상점 구매재화 값을 즉각 연동합니다.
 
 ### 6-3. ShopUI.mlua (UI 로직 및 아이템 비용 연동)
-- **`OpenShop()` & `GenerateShopItems()`**: 총 5개의 랜덤 카드를 표시합니다. 이때 `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
-- **`OnClickRefresh()`**: 유저가 수동 리롤 요청 시, 내 골드가 2 이상(`refreshCost`) 일 때 `SpendGold()`하고 진열 목록을 전체 갱신(Re-draw)합니다.
+- **`OpenShop()` & `GenerateShopItems()`**: 상점 오픈 시 상점 등급(`RollShopTier`)을 랜덤 확정하고 무작위 5장의 카드를 진열합니다. `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
 - **`OnClickCard(index)`**: 골드가 충분하면 아이템을 구매하며, 성공하면 배열을 지우고 `ItemDisplayArea`에 카드 이미지를 스폰시킵니다.
-- **[이슈 트래킹]**: 간헐적으로 리롤 시 이전 아이템의 카드 이미지가 그대로 남아 이름과 불일치하는 "유령 스프라이트" 현상이 발견되었습니다. 현재 방어 로직(`ImageRUID` 명시적 초기화)을 넣었으나 엔진 이슈로 완화되지 않을 수 있으므로, **추후 전체 아이템 데이터에 모든 `imageRUID`가 채워진 상태에서 다시 한 번 버그 유무를 재테스트**해야 합니다.
+- **[이슈 트래킹]**: 간헐적으로 카드 생성 시 이전 아이템의 이미지가 그대로 남아 이름과 불일치하는 "유령 스프라이트" 현상이 있었습니다. (현재 이중 초기화(`RenderCard(cardEntity, nil)`) 방어 로직으로 완화 조치됨). 추후 데이터가 100% 매핑된 후 재확인 요망.
 
 ### 6-4. InventoryUI.mlua (판매 구역 드래그 드롭)
 - **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.

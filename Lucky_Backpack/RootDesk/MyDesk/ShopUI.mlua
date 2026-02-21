@@ -1,11 +1,12 @@
 ﻿@Component
 script ShopUI extends Component
 
-property string refreshButtonPath = "/ui/UIGroup/ShopPanel/BtnRefresh"
 property string closeButtonPath = "/ui/UIGroup/ShopPanel/BtnCloseShop"
 property string playerGoldTextPath = "/ui/UIGroup/ShopPanel/PlayerCoin/TxtPlayerCoin"
+property string shopTierTextPath = "/ui/UIGroup/ShopPanel/TxtShopTier"
 property string sellAreaPath = "/ui/UIGroup/ShopPanel/SellArea"
 property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
+property string currentShopTier = "Rare"
 
 property string card1Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1"
 property string card2Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_2"
@@ -13,7 +14,6 @@ property string card3Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_3"
 property string card4Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_4"
 property string card5Path = "/ui/UIGroup/ShopPanel/ItemList/ItemCard_5"
 
-property integer refreshCost = 2
 property table shopItems = {}
 
 property any gameManager = nil
@@ -22,10 +22,10 @@ property any playerManager = nil
 property any itemDisplayArea = nil
 
 property table cardEntities = {}
-property any refreshButton = nil
 property any closeButton = nil
 property any playerGoldText = nil
 property any sellAreaEntity = nil
+property any shopTierTextEntity = nil
 
 @ExecSpace("ClientOnly")
 method void OnBeginPlay()
@@ -54,10 +54,10 @@ end
 
 @ExecSpace("ClientOnly")
 method void ResolveUIReferences()
-    self.refreshButton = _EntityService:GetEntityByPath(self.refreshButtonPath)
     self.closeButton = _EntityService:GetEntityByPath(self.closeButtonPath)
     self.playerGoldText = _EntityService:GetEntityByPath(self.playerGoldTextPath)
     self.sellAreaEntity = _EntityService:GetEntityByPath(self.sellAreaPath)
+    self.shopTierTextEntity = _EntityService:GetEntityByPath(self.shopTierTextPath)
 
     self.cardEntities = {}
     local cardPaths = {self.card1Path, self.card2Path, self.card3Path, self.card4Path, self.card5Path}
@@ -69,12 +69,6 @@ end
 
 @ExecSpace("ClientOnly")
 method void ConnectEvents()
-    if self.refreshButton ~= nil then
-        self.refreshButton:ConnectEvent(ButtonClickEvent, function(event)
-            self:OnClickRefresh()
-        end)
-    end
-
     if self.closeButton ~= nil then
         self.closeButton:ConnectEvent(ButtonClickEvent, function(event)
             self:OnClickClose()
@@ -110,6 +104,8 @@ end
 
 @ExecSpace("ClientOnly")
 method void GenerateShopItems()
+    self:RollShopTier()
+
     -- 배열 명시적 초기화: 기존 흔적 완전 삭제
     if self.shopItems == nil then
         self.shopItems = {}
@@ -142,6 +138,49 @@ method void GenerateShopItems()
     end
 
     self:RenderShopItems()
+end
+
+@ExecSpace("ClientOnly")
+method void RollShopTier()
+    local rand = math.random(1, 100)
+    if rand <= 50 then
+        self.currentShopTier = "Rare"
+    elseif rand <= 75 then
+        self.currentShopTier = "Epic"
+    elseif rand <= 90 then
+        self.currentShopTier = "Unique"
+    else
+        self.currentShopTier = "Legendary"
+    end
+    
+    self:UpdateShopTierText()
+end
+
+@ExecSpace("ClientOnly")
+method void UpdateShopTierText()
+    if self.shopTierTextEntity == nil then
+        self.shopTierTextEntity = _EntityService:GetEntityByPath(self.shopTierTextPath)
+    end
+    
+    if self.shopTierTextEntity ~= nil and self.shopTierTextEntity.TextComponent ~= nil then
+        local displayName = ""
+        local fontColor = Color(1, 1, 1, 1)
+        if self.currentShopTier == "Rare" then
+            displayName = "★ 레어 상점 ★"
+            fontColor = Color(0.1, 0.5, 1.0, 1) -- Blue
+        elseif self.currentShopTier == "Epic" then
+            displayName = "★★ 에픽 상점 ★★"
+            fontColor = Color(0.6, 0.2, 0.8, 1) -- Purple
+        elseif self.currentShopTier == "Unique" then
+            displayName = "★★★ 유니크 상점 ★★★"
+            fontColor = Color(1.0, 0.8, 0.1, 1) -- Yellow
+        elseif self.currentShopTier == "Legendary" then
+            displayName = "★★★★ 레전더리 상점 ★★★★"
+            fontColor = Color(0.2, 0.8, 0.2, 1) -- Green
+        end
+        self.shopTierTextEntity.TextComponent.Text = displayName
+        self.shopTierTextEntity.TextComponent.FontColor = fontColor
+    end
 end
 
 @ExecSpace("ClientOnly")
@@ -271,22 +310,6 @@ method integer GetSellPrice(integer itemId)
         sellPrice = 1
     end
     return sellPrice
-end
-
-@ExecSpace("ClientOnly")
-method void OnClickRefresh()
-    if self.playerManager == nil then
-        return
-    end
-
-    local ok = self.playerManager:SpendGold(self.refreshCost)
-    if ok == false then
-        return
-    end
-
-    self:GenerateShopItems()
-    self:UpdateGoldText()
-    self:NotifyMainUI()
 end
 
 @ExecSpace("ClientOnly")
