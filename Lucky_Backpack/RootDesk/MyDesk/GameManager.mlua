@@ -126,6 +126,11 @@ script GameManager extends Component
 		
 		-- 珥덇린???꾨즺 ???먮룞 ?쒖옉 (?붾쾭洹몄슜)
 		-- ?ㅼ젣濡쒕뒗 吏곸뾽 ?좏깮 UI ???몄텧
+		local initBgFunc = function()
+			self:UpdateBackground()
+		end
+		_TimerService:SetTimerOnce(initBgFunc, 0.1)
+
 		local initFunc = function()
 			log("[GameManager] Auto-start timer executing. Attempting StartGame...")
 			self:StartGame("War")
@@ -184,6 +189,7 @@ script GameManager extends Component
 		-- (湲곕낯?곸쑝濡?Backpack Hero 諛⑹떆? 以鍮꾩떆媛꾩쓣 媛뽰뒿?덈떎)
 		-- ?먭? ?섏젙: 蹂댁긽李??꾩씠?????꾩슫 ?곹깭?쇰㈃ ?湲고빐???⑸땲??
 		-- self:ProceedToStage()
+		self:UpdateBackground()
 	end
 
 	method void ProceedToStage()
@@ -203,6 +209,20 @@ script GameManager extends Component
 			self:EnterBossBattle()
 		else
 			self:EnterBattle()
+		end
+		
+		self:UpdateBackground()
+	end
+
+	method void UpdateBackground()
+		if self.dataManager ~= nil then
+			local mapData = self.dataManager:GetMapData(self.currentStage)
+			if mapData ~= nil and mapData.bgRUID ~= "" and mapData.bgRUID ~= "NONE" then
+				if self.backgroundRenderer ~= nil then
+					self.backgroundRenderer:ChangeBackgroundByTemplateRUID(mapData.bgRUID)
+					log("[GameManager] Background changed for Stage " .. tostring(self.currentStage) .. " (RUID: " .. mapData.bgRUID .. ")")
+				end
+			end
 		end
 	end
 

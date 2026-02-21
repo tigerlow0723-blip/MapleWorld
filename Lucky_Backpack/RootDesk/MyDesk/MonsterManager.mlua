@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script MonsterManager extends Component
 
 	property table monsterList = {}
@@ -11,13 +11,17 @@ script MonsterManager extends Component
 
 	property any dataManager = nil
 	
-	-- 빈 모델 (스프라이트만 교체해서 사용)
+	-- 鍮?紐⑤뜽 (?ㅽ봽?쇱씠?몃쭔 援먯껜?댁꽌 ?ъ슜)
 	property string modelId = "model://maplestorymonster$17d15ed30cb74b25a3542fa71fb5b849" 
 
-	-- 마지막 행동 결과 (BattleManager에서 읽기용)
+	property Entity targetIndicator = nil
+	property string targetIndicatorPath = "/ui/UIGroup/TargetIndicator"
+	property string targetIndicatorImageRUID = ""
+
+	-- 留덉?留??됰룞 寃곌낵 (BattleManager?먯꽌 ?쎄린??
 	property number lastDamage = 0
 
-	property string lastStatus = "없음"
+	property string lastStatus = "?놁쓬"
 
 	property number lastDotDmg = 0
 
@@ -25,7 +29,7 @@ script MonsterManager extends Component
 
 	property boolean lastActionValid = false
 
-	-- 보상 결과
+	-- 蹂댁긽 寃곌낵
 	property integer lastRewardExp = 0
 
 	property integer lastRewardGold = 0
@@ -42,26 +46,26 @@ script MonsterManager extends Component
 		
 		local spawnInfo = dataMgr:GetSpawnInfo(stageId)
 		if spawnInfo == nil then
-			log_error("[MonsterManager] 스폰 정보 없음: stage " .. tostring(stageId))
+			log_error("[MonsterManager] ?ㅽ룿 ?뺣낫 ?놁쓬: stage " .. tostring(stageId))
 			return
 		end
 		
 		local poolMonsters = dataMgr:GetMonstersByPool(spawnInfo.poolId)
 		if #poolMonsters == 0 then
-			log_error("[MonsterManager] 풀에 몬스터 없음: pool " .. tostring(spawnInfo.poolId))
+			log_error("[MonsterManager] ???紐ъ뒪???놁쓬: pool " .. tostring(spawnInfo.poolId))
 			return
 		end
 		
-		-- 랜덤 몬스터 수 결정
+		-- ?쒕뜡 紐ъ뒪????寃곗젙
 		local count = math.random(spawnInfo.minMonsters, spawnInfo.maxMonsters)
-		log("[MonsterManager] 몬스터 " .. tostring(count) .. "마리 스폰 (pool: " .. tostring(spawnInfo.poolId) .. ")")
+		log("[MonsterManager] 紐ъ뒪??" .. tostring(count) .. "留덈━ ?ㅽ룿 (pool: " .. tostring(spawnInfo.poolId) .. ")")
 		
 		for i = 1, count do
-			-- 풀에서 랜덤 선택
+			-- ??먯꽌 ?쒕뜡 ?좏깮
 			local idx = math.random(1, #poolMonsters)
 			local template = poolMonsters[idx]
 		
-			-- 개체별 복사본 생성
+			-- 媛쒖껜蹂?蹂듭궗蹂??앹꽦
 			local monster = {}
 			monster.id = template.id
 			monster.name = template.name .. " #" .. tostring(i)
@@ -89,7 +93,7 @@ script MonsterManager extends Component
 		end
 	end
 
-	-- UIMain 참조 (클릭 이벤트 전달용)
+	-- UIMain 李몄“ (?대┃ ?대깽???꾨떖??
 	property any uiMain = nil
 	
 	method void Init(any ui)
@@ -103,16 +107,16 @@ script MonsterManager extends Component
 		self.currentBossId = bossId
 		self.currentBossPhase = 1
 		
-		-- 보스를 monsterList의 첫 엔트리로
+		-- 蹂댁뒪瑜?monsterList??泥??뷀듃由щ줈
 		local patterns = dataMgr:GetBossPatterns(bossId, 1)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] 보스 패턴 없음: " .. bossId)
+			log_error("[MonsterManager] 蹂댁뒪 ?⑦꽩 ?놁쓬: " .. bossId)
 			return
 		end
 		
 		local boss = {}
 		boss.id = bossId
-		boss.name = "보스 " .. bossId
+		boss.name = "蹂댁뒪 " .. bossId
 		boss.maxHP = 500
 		boss.currentHP = 500
 		boss.atk = 0
@@ -122,7 +126,7 @@ script MonsterManager extends Component
 		boss.isBoss = true
 		boss.isBoss = true
 		boss.dotEffects = {}
-		boss.modelID = "" -- 보스는 별도 로직이 없으면 모델ID 사용 안함? 일단 빈 문자열
+		boss.modelID = "" -- 蹂댁뒪??蹂꾨룄 濡쒖쭅???놁쑝硫?紐⑤뜽ID ?ъ슜 ?덊븿? ?쇰떒 鍮?臾몄옄??
 		-- boss.imageRUID logic was here, assuming boss spawns differently or needs update. 
 		-- For now, keep boss logic consistent if it used RUIDs from pattern. 
 		-- But plan says remove RUIDs. Let's assume bosses might use ModelID too or just keep their current logic if not broken.
@@ -135,7 +139,7 @@ script MonsterManager extends Component
 		self.monsterList[#self.monsterList + 1] = boss
 		
 		self:SpawnVisual(boss, 1, true)
-		log("[MonsterManager] 보스 스폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP))
+		log("[MonsterManager] 蹂댁뒪 ?ㅽ룿: " .. boss.name .. " HP:" .. tostring(boss.maxHP))
 	end
 
 	method table DamageMonster(integer index, number damage, number accuracy)
@@ -150,26 +154,26 @@ script MonsterManager extends Component
 		result.damage = 0
 		result.killed = false
 		
-		-- 명중 판정: accuracy vs 몬스터 회피
+		-- 紐낆쨷 ?먯젙: accuracy vs 紐ъ뒪???뚰뵾
 		local hitChance = accuracy - monster.dodge
 		local hitRoll = math.random(1, 100)
 		
 		if hitRoll > hitChance then
-			-- 빗나감
+			-- 鍮쀫굹媛?
 			result.hit = false
-			log("[MonsterManager] " .. monster.name .. " 공격 빗나감! (명중: " .. tostring(hitChance) .. "% 주사위: " .. tostring(hitRoll) .. ")")
+			log("[MonsterManager] " .. monster.name .. " 怨듦꺽 鍮쀫굹媛? (紐낆쨷: " .. tostring(hitChance) .. "% 二쇱궗?? " .. tostring(hitRoll) .. ")")
 			return result
 		end
 		
 		result.hit = true
 		
-		-- 방어력 적용
+		-- 諛⑹뼱???곸슜
 		local finalDmg = math.max(1, damage - monster.def)
 		monster.currentHP -= finalDmg
 		result.damage = finalDmg
 		
-		log("[MonsterManager] " .. monster.name .. " 피격! 데미지: " .. tostring(finalDmg) .. " 남은HP: " .. tostring(monster.currentHP))
-		-- [수정] 애니메이션 엔티티 ID 사용
+		log("[MonsterManager] " .. monster.name .. " ?쇨꺽! ?곕?吏: " .. tostring(finalDmg) .. " ?⑥?HP: " .. tostring(monster.currentHP))
+		-- [?섏젙] ?좊땲硫붿씠???뷀떚??ID ?ъ슜
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "HIT", 1.5)
@@ -178,24 +182,24 @@ script MonsterManager extends Component
 			monster.currentHP = 0
 			monster.alive = false
 			result.killed = true
-			log("[MonsterManager] " .. monster.name .. " 처치!")
+			log("[MonsterManager] " .. monster.name .. " 泥섏튂!")
 		
-			-- 보스 페이즈 전환 체크
+			-- 蹂댁뒪 ?섏씠利??꾪솚 泥댄겕
 			if monster.isBoss and self.currentBossPhase == 1 then
-				-- 페이즈 2로 전환 (체력 부활)
+				-- ?섏씠利?2濡??꾪솚 (泥대젰 遺??
 				self.currentBossPhase = 2
 				monster.alive = true
 				monster.maxHP = 700
 				monster.currentHP = 700
 				result.killed = false
-				log("[MonsterManager] 보스 페이즈 2 전환! HP 회복: " .. tostring(monster.maxHP))
+				log("[MonsterManager] 蹂댁뒪 ?섏씠利?2 ?꾪솚! HP ?뚮났: " .. tostring(monster.maxHP))
 			else
-				-- 일반 몬스터 또는 보스 최종 처치 시 엔티티 파괴
+				-- ?쇰컲 紐ъ뒪???먮뒗 蹂댁뒪 理쒖쥌 泥섏튂 ???뷀떚???뚭눼
 				if monster.entityId ~= nil then
 					local entity = _EntityService:GetEntity(monster.entityId)
 					if entity ~= nil then
 						entity:Destroy()
-						log("[MonsterManager] 엔티티 파괴 완료: " .. monster.entityId)
+						log("[MonsterManager] ?뷀떚???뚭눼 ?꾨즺: " .. monster.entityId)
 					end
 				end
 			end
@@ -218,12 +222,12 @@ script MonsterManager extends Component
 		
 		self.lastActionValid = true
 		self.lastDamage = totalDmg
-		self.lastStatus = "없음"
+		self.lastStatus = "?놁쓬"
 		self.lastDotDmg = 0
 		self.lastDotTurn = 0
 		
-		log("[MonsterManager] " .. monster.name .. " 기본 공격! 데미지: " .. tostring(totalDmg) .. " (" .. tostring(monster.atkCount) .. "회)")
-		-- [수정] 애니메이션 엔티티 ID 사용
+		log("[MonsterManager] " .. monster.name .. " 湲곕낯 怨듦꺽! ?곕?吏: " .. tostring(totalDmg) .. " (" .. tostring(monster.atkCount) .. "??")
+		-- [?섏젙] ?좊땲硫붿씠???뷀떚??ID ?ъ슜
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "ATTACK1", 2.0)
@@ -242,8 +246,8 @@ script MonsterManager extends Component
 		self.lastDotDmg = monster.dotDmg
 		self.lastDotTurn = monster.dotTurn
 		
-		log("[MonsterManager] " .. monster.name .. " 스킬 공격! 데미지: " .. tostring(monster.atk) .. " 상태이상: " .. monster.status)
-		-- [수정] 애니메이션 엔티티 ID 사용
+		log("[MonsterManager] " .. monster.name .. " ?ㅽ궗 怨듦꺽! ?곕?吏: " .. tostring(monster.atk) .. " ?곹깭?댁긽: " .. monster.status)
+		-- [?섏젙] ?좊땲硫붿씠???뷀떚??ID ?ъ슜
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
@@ -278,7 +282,7 @@ script MonsterManager extends Component
 		
 		local patterns = self.dataManager:GetBossPatterns(self.currentBossId, self.currentBossPhase)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] 보스 패턴 데이터 없음")
+			log_error("[MonsterManager] 蹂댁뒪 ?⑦꽩 ?곗씠???놁쓬")
 			self.lastActionValid = false
 			return
 		end
@@ -292,7 +296,7 @@ script MonsterManager extends Component
 		self.lastDotDmg = pattern.dotDmg
 		self.lastDotTurn = pattern.dotTurn
 		
-		log("[MonsterManager] 보스 패턴: " .. pattern.name .. " 데미지: " .. tostring(pattern.dmg) .. " 상태: " .. pattern.status)
+		log("[MonsterManager] 蹂댁뒪 ?⑦꽩: " .. pattern.name .. " ?곕?吏: " .. tostring(pattern.dmg) .. " ?곹깭: " .. pattern.status)
 	end
 
 	method integer GetAliveCount()
@@ -321,7 +325,7 @@ script MonsterManager extends Component
 		end
 		self.lastRewardExp = totalExp
 		self.lastRewardGold = totalGold
-		log("[MonsterManager] 전투 보상 - EXP: " .. tostring(totalExp) .. " Gold: " .. tostring(totalGold))
+		log("[MonsterManager] ?꾪닾 蹂댁긽 - EXP: " .. tostring(totalExp) .. " Gold: " .. tostring(totalGold))
 	end
 
 	method void ClearAll()
@@ -341,12 +345,12 @@ script MonsterManager extends Component
 	end
 
 	method void SpawnVisual(table monster, integer index, boolean isBoss)
-		-- 몬스터 위치 조정: 오른쪽(X > 0)에 배치
+		-- 紐ъ뒪???꾩튂 議곗젙: ?ㅻⅨ履?X > 0)??諛곗튂
 		-- index 1 -> x=7, index 2 -> x=9, index 3 -> x=11 ...
 		local xPos = 5 + (index - 1) * 2
-		if isBoss then xPos = 4 end -- 보스는 중앙에서 약간 오른쪽
+		if isBoss then xPos = 4 end -- 蹂댁뒪??以묒븰?먯꽌 ?쎄컙 ?ㅻⅨ履?
 		
-		-- ModelID가 있으면 그것을 사용, 없으면 기본 모델 사용
+		-- ModelID媛 ?덉쑝硫?洹멸쾬???ъ슜, ?놁쑝硫?湲곕낯 紐⑤뜽 ?ъ슜
 		local spawnModelId = self.modelId
 		if monster.modelID ~= nil and monster.modelID ~= "" then
 			spawnModelId = monster.modelID
@@ -356,7 +360,7 @@ script MonsterManager extends Component
 		
 		local entity = _SpawnService:SpawnByModelId(spawnModelId, "Monster_" .. tostring(index), Vector3(xPos, 0, 0), self.Entity.Parent)
 		if entity ~= nil then
-			-- 터치 컴포넌트 추가 (타겟팅용)
+			-- ?곗튂 而댄룷?뚰듃 異붽? (?寃잜똿??
 			local touch = entity.TouchReceiveComponent
 			if touch == nil then
 				entity:AddComponent("TouchReceiveComponent")
@@ -369,12 +373,12 @@ script MonsterManager extends Component
 				sprite.FlipX = false
 			end
 			
-			-- 터치 이벤트 연결
+			-- ?곗튂 ?대깽???곌껐
 			entity:ConnectEvent("TouchEvent", function(event)
 				self:OnMonsterTouch(index)
 			end)
 			
-			-- 몬스터 AI 및 이동 비활성화 (턴제 게임이므로 제자리 고정)
+			-- 紐ъ뒪??AI 諛??대룞 鍮꾪솢?깊솕 (?댁젣 寃뚯엫?대?濡??쒖옄由?怨좎젙)
 			local monsterComp = entity.MonsterComponent
 			if monsterComp ~= nil then monsterComp.Enable = false end
 			
@@ -384,7 +388,7 @@ script MonsterManager extends Component
 			local rigidComp = entity.RigidbodyComponent
 			-- if rigidComp ~= nil then rigidComp.Enable = false end
 			
-			-- [DEBUG-SAFE] 컴포넌트 목록 확인 (개별 체크)
+			-- [DEBUG-SAFE] 而댄룷?뚰듃 紐⑸줉 ?뺤씤 (媛쒕퀎 泥댄겕)
 			log("[DEBUG] Checking components on " .. entity.Name .. ":")
 			local c1 = entity.SpriteAnimPlayerComponent
 			local c2 = entity.AnimatorComponent
@@ -396,16 +400,16 @@ script MonsterManager extends Component
 			if c3 ~= nil then log(" - AvatarRendererComponent: OK") end
 			if c4 ~= nil then log(" - StateAnimationComponent: OK") end
 			
-			-- [DEBUG-FINAL] 모든 컴포넌트 출력 (Component Collection 사용)
+			-- [DEBUG-FINAL] 紐⑤뱺 而댄룷?뚰듃 異쒕젰 (Component Collection ?ъ슜)
 			log("[DEBUG] === Inspecting Entity: " .. entity.Name .. " ===")
 			local comps = entity.Components
 			if comps ~= nil then
 				local count = 0
-				-- ReadOnlyList 순회 (인덱스 1부터 시작)
-				-- MSW 리스트는 1-based index or 0-based? Lua is 1-based.
-				-- 안전하게 pairs 사용 가능한지 확인, 아니면 pcall로 접근.
-				-- 보통 ReadOnlyList는 pairs가 안될 수 있으므로, 숫자 인덱스로 시도.
-				-- 하지만 count를 모르므로 pairs 시도해보고, 안되면 pass.
+				-- ReadOnlyList ?쒗쉶 (?몃뜳??1遺???쒖옉)
+				-- MSW 由ъ뒪?몃뒗 1-based index or 0-based? Lua is 1-based.
+				-- ?덉쟾?섍쾶 pairs ?ъ슜 媛?ν븳吏 ?뺤씤, ?꾨땲硫?pcall濡??묎렐.
+				-- 蹂댄넻 ReadOnlyList??pairs媛 ?덈맆 ???덉쑝誘濡? ?レ옄 ?몃뜳?ㅻ줈 ?쒕룄.
+				-- ?섏?留?count瑜?紐⑤Ⅴ誘濡?pairs ?쒕룄?대낫怨? ?덈릺硫?pass.
 				-- Lua for loop: for comp in pairs(comps) -> error?
 				-- Try simple iteration if it is a table-like userdata.
 				-- If not, try GetComponents() API? There is no GetComponents API.
@@ -415,7 +419,7 @@ script MonsterManager extends Component
 				-- But I MUST know what's there.
 			end
 			
-			-- 안전한 확인: 알고 있는 모든 애니메이션 관련 컴포넌트 찔러보기
+			-- ?덉쟾???뺤씤: ?뚭퀬 ?덈뒗 紐⑤뱺 ?좊땲硫붿씠??愿??而댄룷?뚰듃 李붾윭蹂닿린
 			local animCandidates = {
 				"SpriteAnimPlayerComponent",
 				"AnimatorComponent",
@@ -423,7 +427,7 @@ script MonsterManager extends Component
 				"StateAnimationComponent",
 				"TweenLineComponent",
 				"EffectComponent",
-				"BeholderComponent" -- 가끔 쓰임
+				"BeholderComponent" -- 媛???곗엫
 			}
 			
 			for i, name in ipairs(animCandidates) do
@@ -431,7 +435,7 @@ script MonsterManager extends Component
 				if c ~= nil then log(" - Found on Root: " .. name) end
 			end
 			
-			-- 자식도 확인
+			-- ?먯떇???뺤씤
 			local children = entity.Children
 			if children ~= nil then
 				-- Children is ReadOnlyList.
@@ -445,26 +449,26 @@ script MonsterManager extends Component
 				-- No, that just gets components.
 			end
 			
-			-- [최종] 루트 엔티티에 SA, SR 모두 있음 (확인 완료)
+			-- [理쒖쥌] 猷⑦듃 ?뷀떚?곗뿉 SA, SR 紐⑤몢 ?덉쓬 (?뺤씤 ?꾨즺)
 			monster.animEntityId = entity.Id
-			log("[MonsterManager] 몬스터 스폰 완료: " .. monster.name)
+			log("[MonsterManager] 紐ъ뒪???ㅽ룿 ?꾨즺: " .. monster.name)
 		else
-			log("[ERROR] [MonsterManager] 모델 스폰 실패: " .. spawnModelId)
+			log("[ERROR] [MonsterManager] 紐⑤뜽 ?ㅽ룿 ?ㅽ뙣: " .. spawnModelId)
 		end
 	end
 
 	method void OnMonsterTouch(integer index)
-		log("[MonsterManager] 몬스터 터치됨: 인덱스 " .. tostring(index))
+		log("[MonsterManager] 紐ъ뒪???곗튂?? ?몃뜳??" .. tostring(index))
 		if self.uiMain ~= nil then
 			self.uiMain:OnClickMonster(index)
 		else
-			log("[WARNING] UI Main 연결 안됨")
+			log("[WARNING] UI Main ?곌껐 ?덈맖")
 		end
 	end
 
-	-- [최종] 클라이언트에서 SpriteRUID 교체로 애니메이션 제어
+	-- [理쒖쥌] ?대씪?댁뼵?몄뿉??SpriteRUID 援먯껜濡??좊땲硫붿씠???쒖뼱
 	method void PlayEntityState(string entityId, string stateName, number duration)
-		log("[PlayEntityState] 호출됨! entityId=" .. tostring(entityId) .. " state=" .. tostring(stateName))
+		log("[PlayEntityState] ?몄텧?? entityId=" .. tostring(entityId) .. " state=" .. tostring(stateName))
 		if entityId == nil or entityId == "" then return end
 		
 		local entity = _EntityService:GetEntity(entityId)
@@ -479,7 +483,7 @@ script MonsterManager extends Component
 		local sheet = stateAnim.ActionSheet
 		if sheet == nil then return end
 		
-		-- ActionSheet 키 매핑 (소문자)
+		-- ActionSheet ??留ㅽ븨 (?뚮Ц??
 		local sheetKey = "stand"
 		if stateName == "HIT" then
 			sheetKey = "hit"
@@ -505,12 +509,12 @@ script MonsterManager extends Component
 		end
 		
 		if targetRUID ~= nil and targetRUID ~= "" then
-			-- ★ 핵심: StateAnimationComponent를 비활성화해야 우리가 넣은 RUID를 덮어쓰지 않음
+			-- ???듭떖: StateAnimationComponent瑜?鍮꾪솢?깊솕?댁빞 ?곕━媛 ?ｌ? RUID瑜???뼱?곗? ?딆쓬
 			stateAnim.Enable = false
 			spriteRenderer.SpriteRUID = targetRUID
-			log("[PlayEntityState] ★ StateAnim 비활성화 + SpriteRUID 교체! " .. sheetKey .. " = " .. tostring(targetRUID))
+			log("[PlayEntityState] ??StateAnim 鍮꾪솢?깊솕 + SpriteRUID 援먯껜! " .. sheetKey .. " = " .. tostring(targetRUID))
 			
-			-- 일정 시간 후 stand로 복귀 + StateAnimationComponent 다시 활성화
+			-- ?쇱젙 ?쒓컙 ??stand濡?蹂듦? + StateAnimationComponent ?ㅼ떆 ?쒖꽦??
 			if duration > 0 and stateName ~= "DIE" then
 				_TimerService:SetTimerOnce(function()
 					pcall(function()
@@ -519,7 +523,7 @@ script MonsterManager extends Component
 							if standRUID ~= nil then
 								spriteRenderer.SpriteRUID = standRUID
 							end
-							-- StateAnimationComponent 다시 켜기
+							-- StateAnimationComponent ?ㅼ떆 耳쒓린
 							if stateAnim ~= nil then
 								stateAnim.Enable = true
 							end
@@ -527,17 +531,74 @@ script MonsterManager extends Component
 					end)
 				end, duration)
 			end
-			-- DIE 상태면 StateAnimationComponent는 꺼둔 채로 유지
+			-- DIE ?곹깭硫?StateAnimationComponent??爰쇰몦 梨꾨줈 ?좎?
 		else
-			log("[PlayEntityState] ✖ RUID를 못 찾음! key=" .. sheetKey)
+			log("[PlayEntityState] ??RUID瑜?紐?李얠쓬! key=" .. sheetKey)
 		end
 	end
 
-	method boolean IsValidMonster(integer index)
-		local monster = self.monsterList[index]
-		return monster ~= nil and monster.alive and monster.entityId ~= nil
+	@ExecSpace("ClientOnly")
+	method void UpdateTargetHighlight(integer targetIndex)
+		if not self:IsClient() then
+			return
+		end
+		-- ?寃??몃뵒耳?댄꽣 珥덇린??(???붿궡??
+		if self.targetIndicator == nil then
+			self.targetIndicator = _EntityService:GetEntityByPath(self.targetIndicatorPath)
+			if self.targetIndicator ~= nil then
+				-- If indicator is an image UI entity, allow runtime RUID binding from inspector.
+				local gui = self.targetIndicator.SpriteGUIRendererComponent
+				if gui ~= nil and self.targetIndicatorImageRUID ~= nil and self.targetIndicatorImageRUID ~= "" then
+					gui.ImageRUID = self.targetIndicatorImageRUID
+				end
+				self.targetIndicator.Enable = false
+			else
+				log_warning("[MonsterManager] TargetIndicator UI not found: " .. tostring(self.targetIndicatorPath))
+			end
+		end
+
+		local validTargetEntity = nil
+
+		for i = 1, #self.monsterList do
+			local monster = self.monsterList[i]
+			if monster ~= nil and monster.entityId ~= nil then
+				local entity = _EntityService:GetEntity(monster.entityId)
+				if entity ~= nil then
+					local spriteRenderer = entity.SpriteRendererComponent
+					if spriteRenderer ~= nil then
+						if i == targetIndex and monster.alive then
+							-- ?寃잙맂 紐ъ뒪?곕뒗 遺됱????댄듃瑜??쎄컙 二쇱뼱 媛뺤“
+							spriteRenderer.Color = Color(1, 0.4, 0.4, 1)
+							validTargetEntity = entity
+						else
+							-- ?좏깮?섏? ?딆? 紐ъ뒪?곕굹 二쎌? 紐ъ뒪?곕뒗 ?먮옒 ?됱긽?쇰줈 蹂듦뎄
+							spriteRenderer.Color = Color(1, 1, 1, 1)
+						end
+					end
+				end
+			end
+		end
+
+		-- ?몃뵒耳?댄꽣 ?꾩튂 ?낅뜲?댄듃
+		if self.targetIndicator ~= nil then
+			if validTargetEntity ~= nil then
+				-- 紐ъ뒪??癒몃━ ?꾩?(y + 1.2) ?꾩튂濡??대룞
+				local targetPos = validTargetEntity.TransformComponent.Position
+				local worldPos = Vector3(targetPos.x, targetPos.y + 1.2, 1)
+				if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
+					self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, worldPos, true)
+				else
+					self.targetIndicator.Enable = true
+					self.targetIndicator.TransformComponent.Position = worldPos
+				end
+			else
+				if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
+					self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, Vector3(0, 0, 0), false)
+				else
+					self.targetIndicator.Enable = false
+				end
+			end
+		end
 	end
-
-
 
 end

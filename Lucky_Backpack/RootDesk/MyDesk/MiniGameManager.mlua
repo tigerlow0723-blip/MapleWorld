@@ -79,7 +79,7 @@ script MiniGameManager extends Component
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
 			for i=1, #inv do
-				if inv[i].id == 79 then
+				if inv[i].id == 12 then
 					count = count + 1
 				end
 			end
@@ -92,7 +92,7 @@ script MiniGameManager extends Component
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
 			for i=1, #inv do
-				if inv[i].id == 80 then
+				if inv[i].id == 13 then
 					count = count + 1
 				end
 			end
@@ -123,7 +123,7 @@ script MiniGameManager extends Component
 			return
 		end
 		
-		self:ConsumeItem(79, 1)
+		self:ConsumeItem(12, 1)
 		
 		local result = math.random(1, 2)
 		local resultStr = ""
@@ -131,7 +131,7 @@ script MiniGameManager extends Component
 		
 		if choice == result then
 			log("[MiniGameManager] 결과: " .. resultStr .. "! 정답을 맞췄습니다! 순금괴 획득!")
-			local itemData = self.dataManager:GetItemData(80)
+			local itemData = self.dataManager:GetItemData(13)
 			if itemData ~= nil then
 				self.playerManager:AddItem(itemData)
 			end
@@ -149,7 +149,7 @@ script MiniGameManager extends Component
 		
 		local count = self:GetOreCount()
 		if count > 0 then
-			self:ConsumeItem(79, count)
+			self:ConsumeItem(12, count)
 			local totalGold = count * self.ORE_PRICE
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
 			log("[MiniGameManager] 황금 원석 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
@@ -167,7 +167,7 @@ script MiniGameManager extends Component
 		
 		local count = self:GetGoldBarCount()
 		if count > 0 then
-			self:ConsumeItem(80, count)
+			self:ConsumeItem(13, count)
 			local totalGold = count * self.GOLD_BAR_PRICE
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
 			log("[MiniGameManager] 순금괴 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
