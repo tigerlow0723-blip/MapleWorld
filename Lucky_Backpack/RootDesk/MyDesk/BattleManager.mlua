@@ -296,25 +296,35 @@ script BattleManager extends Component
 			self.monsterManager:MonsterAction(self.monsterTurnIndex)
 		end
 		
-		--
+		-- Handle Monster/Boss attack effects
 		if self.monsterManager.lastActionValid == true then
-			self.playerManager:TakeDamage(self.monsterManager.lastDamage)
-		
-			--
 			local statusName = self.monsterManager.lastStatus
-			if statusName ~= "none" and statusName ~= "none" then
-				local dotDmgVal = self.monsterManager.lastDotDmg
+			local effectValue = self.monsterManager.lastDamage -- percentage for HP percent skills
+			
+			if statusName == "hp_dmg" then
+				-- Fixed percentage damage of Player's Max HP
+				local maxHP = self.playerManager.maxHP or self.playerManager.hp
+				local dmg = math.floor(maxHP * (effectValue / 100.0))
+				self.playerManager:TakeDamage(dmg)
+			elseif statusName == "poison" then
+				-- Apply Poison DOT as fixed percentage of Max HP per turn
+				local maxHP = self.playerManager.maxHP or self.playerManager.hp
+				local dmgPerTurn = math.floor(maxHP * (effectValue / 100.0))
 				local dotTurnVal = self.monsterManager.lastDotTurn
-				if dotDmgVal > 0 then
+				
+				if dmgPerTurn > 0 then
 					local dot = {}
-					dot.status = statusName
-					dot.dmg = dotDmgVal
+					dot.status = "poison"
+					dot.dmg = dmgPerTurn
 					dot.remainTurn = dotTurnVal
 					self.playerDotEffects[#self.playerDotEffects + 1] = dot
-					log("[BattleManager] Status effect applied: " .. statusName .. " (Dmg: " .. tostring(dotDmgVal) .. " x " .. tostring(dotTurnVal) .. " turns)")
+					log("[BattleManager] 맹독 상태이상 부여: 매 턴 " .. tostring(dmgPerTurn) .. " 피해 (" .. tostring(dotTurnVal) .. "턴 남음)")
 				end
+			elseif statusName == "none" or statusName == nil then
+				-- Normal attack
+				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 			end
-		
+			
 			self:RefreshUI()
 
 			--
@@ -355,6 +365,11 @@ script BattleManager extends Component
 
 	method void OnMonsterTurnEnd()
 		log("[BattleManager] >>> Monster Turn End -> Player Turn Start <<<")
+		
+		-- Hide boss skill UI if it was shown during the attack
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+			self.gameManager.uiMain:ResetBossSkillUI()
+		end
 		
 		--
 		self.currentTurn = "Player"

@@ -7,6 +7,16 @@ script UIMain extends Component
 	property Entity txtHP = nil 
 	property Entity txtCost = nil 
 	
+	property Entity sliderBossHP = nil
+	property Entity txtBossHP = nil
+	property Entity uiBossInfoGroup = nil
+	
+	-- Boss Skill Roulette UI
+	property Entity uiBossSkill1 = nil  -- hp_dmg
+	property Entity uiBossSkill2 = nil  -- poison
+	property Entity uiBossSkill3 = nil  -- shield
+	property Entity uiBossSkill4 = nil  -- heal
+	
 	property Entity btnTurnEnd = nil
 	property Entity btnBattleStart = nil
 	property Entity txtStage = nil
@@ -42,6 +52,7 @@ script UIMain extends Component
 		self.playerManager = playerMgr
 		
 		self:ConnectEvents()
+		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
 		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
 		log("[UIMain] UI 초기화 완료")
 	end
@@ -193,6 +204,71 @@ script UIMain extends Component
 			end
 		end
 		
+		-- 3.5 보스 체력바 업데이트
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if monsterMgr.isBossBattle and self.uiBossInfoGroup ~= nil then
+				self.uiBossInfoGroup.Enable = true
+				-- Removed self:SetBossSkillUIEnable(true) here: skills should stay hidden until used
+				
+				-- 보스 리스트에서 보스 엔티티 찾기
+				local boss = nil
+				for i = 1, #monsterMgr.monsterList do
+					local m = monsterMgr.monsterList[i]
+					if m.isBoss and m.alive then
+						boss = m
+						break
+					end
+				end
+				
+				if boss ~= nil then
+					local maxTotalHP = boss.hpPhase1 + boss.hpPhase2 + boss.hpPhase3
+					local currentTotalHP = 0
+					
+					if monsterMgr.currentBossPhase == 1 then
+						currentTotalHP = boss.currentHP + boss.hpPhase2 + boss.hpPhase3
+					elseif monsterMgr.currentBossPhase == 2 then
+						currentTotalHP = boss.currentHP + boss.hpPhase3
+					elseif monsterMgr.currentBossPhase == 3 then
+						currentTotalHP = boss.currentHP
+					end
+					
+					if self.sliderBossHP ~= nil then
+						local slider = self.sliderBossHP.SliderComponent
+						if slider ~= nil then
+							if maxTotalHP > 0 then
+								slider.Value = currentTotalHP / maxTotalHP
+							else
+								slider.Value = 0
+							end
+						end
+					end
+					
+					if self.txtBossHP ~= nil then
+						local txt = self.txtBossHP.TextComponent
+						if txt ~= nil then
+							txt.Text = math.ceil(currentTotalHP) .. "/" .. math.ceil(maxTotalHP)
+						end
+					end
+				else
+					if self.uiBossInfoGroup ~= nil then
+						self.uiBossInfoGroup.Enable = false
+					end
+					self:SetBossSkillUIEnable(false)
+				end
+			else
+				if self.uiBossInfoGroup ~= nil then
+					self.uiBossInfoGroup.Enable = false
+				end
+				self:SetBossSkillUIEnable(false)
+			end
+		else
+			if self.uiBossInfoGroup ~= nil then
+				self.uiBossInfoGroup.Enable = false
+			end
+			self:SetBossSkillUIEnable(false)
+		end
+		
 		-- Button 가시성 제어 (Preparation vs Battle)
 		local phase = "None"
 		if self.gameManager ~= nil then
@@ -268,6 +344,52 @@ script UIMain extends Component
 		local worldTransform = indicator.TransformComponent
 		if worldTransform ~= nil then
 			worldTransform.Position = worldPos
+		end
+	end
+
+	method void UpdateBossSkillUI(string selectedType)
+		local skills = {
+			{entity = self.uiBossSkill1, skillType = "hp_dmg"},
+			{entity = self.uiBossSkill2, skillType = "poison"},
+			{entity = self.uiBossSkill3, skillType = "shield"},
+			{entity = self.uiBossSkill4, skillType = "heal"}
+		}
+		
+		for i = 1, #skills do
+			local skill = skills[i]
+			if skill.entity ~= nil then
+				local img = skill.entity.SpriteGUIRendererComponent
+				if img ~= nil then
+					if skill.skillType == selectedType then
+						-- Show and highlight only the selected skill
+						skill.entity.Enable = true
+						img.Color = Color(1, 1, 1, 1)
+					else
+						-- Hide all other skills completely
+						skill.entity.Enable = false
+					end
+				end
+			end
+		end
+		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
+	end
+	
+	method void ResetBossSkillUI()
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
+		for i = 1, #entities do
+			if entities[i] ~= nil then
+				-- Hide all skill icons completely when boss is not using a skill
+				entities[i].Enable = false
+			end
+		end
+	end
+	
+	method void SetBossSkillUIEnable(boolean enable)
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
+		for i = 1, #entities do
+			if entities[i] ~= nil then
+				entities[i].Enable = enable
+			end
 		end
 	end
 

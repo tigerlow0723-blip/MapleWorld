@@ -716,7 +716,7 @@
           "@components": [
             {
               "@type": "MOD.Core.BackgroundComponent",
-              "TemplateRUID": "00ead9d81740487e8098ba5b44b83107",
+              "TemplateRUID": "77f119d8cd024e079d9f3357a8163b75",
               "Type": 1,
               "Enable": true
             }
@@ -833,7 +833,19 @@
             },
             {
               "@type": "script.MonsterManager",
-              "Enable": true
+              "Enable": true,
+              "bossSpawnPoint": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "60fda896-473b-4a54-a3f7-2aaad4fa628e",
+                "Version2": false
+              },
+              "monsterSpawnArea": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "1bfe0cfe-1fcc-4d66-86ab-acbef6274553",
+                "Version2": false
+              }
             },
             {
               "@type": "script.PlayerManager",
@@ -877,6 +889,48 @@
                 "tempEntityId": null,
                 "IsRelative": false,
                 "EntityId": "eef9e622-198d-4493-8950-24004b6cdd0d",
+                "Version2": false
+              },
+              "sliderBossHP": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "59cb98e1-d338-48ef-a91b-7a8faeef1a15",
+                "Version2": false
+              },
+              "txtBossHP": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "ee5d9b5a-6dd0-4571-b382-0a08e8b39e02",
+                "Version2": false
+              },
+              "uiBossInfoGroup": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "0436dc89-b227-4820-854a-67cd55d2620a",
+                "Version2": false
+              },
+              "uiBossSkill1": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "30c89844-149f-4f0b-b074-ad3073d81aee",
+                "Version2": false
+              },
+              "uiBossSkill2": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "240b4929-9578-4fe5-a158-2d821220631d",
+                "Version2": false
+              },
+              "uiBossSkill3": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "6604f8f2-74e6-477d-a424-e718faedf318",
+                "Version2": false
+              },
+              "uiBossSkill4": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "96b3e94d-e2a1-496f-993c-487873f12e40",
                 "Version2": false
               },
               "btnTurnEnd": {
@@ -2025,8 +2079,8 @@
             {
               "@type": "MOD.Core.TransformComponent",
               "Position": {
-                "x": 0.0978138447,
-                "y": -1.23545063,
+                "x": -3.73028183,
+                "y": -1.22976494,
                 "z": 999.998047
               },
               "QuaternionRotation": {
@@ -2036,8 +2090,8 @@
                 "w": 1.0
               },
               "Scale": {
-                "x": 1.0,
-                "y": 1.0,
+                "x": 1.5160929,
+                "y": 0.897103548,
                 "z": 1.0
               },
               "Enable": true
@@ -2054,6 +2108,127 @@
             },
             {
               "@type": "MOD.Core.SpawnLocationComponent",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "60fda896-473b-4a54-a3f7-2aaad4fa628e",
+        "path": "/maps/map01/boss_x_y",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "boss_x_y",
+          "path": "/maps/map01/boss_x_y",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 5,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "60fda896-473b-4a54-a3f7-2aaad4fa628e",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 777.5565,
+                "y": -92.96405
+              },
+              "OffsetMin": {
+                "x": 554.001343,
+                "y": -394.770721
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 223.555115,
+                "y": 301.806671
+              },
+              "UIMode": 2,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 2.996005,
+                "y": -1.09740317
+              },
+              "Position": {
+                "x": 2.996005,
+                "y": -1.09740317,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "1bfe0cfe-1fcc-4d66-86ab-acbef6274553",
+        "path": "/maps/map01/monsterarea",
+        "componentNames": "MOD.Core.TransformComponent",
+        "jsonString": {
+          "name": "monsterarea",
+          "path": "/maps/map01/monsterarea",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 6,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "mapempty",
+            "sub_entity_id": null,
+            "root_entity_id": "1bfe0cfe-1fcc-4d66-86ab-acbef6274553",
+            "replaced_model_id": null
+          },
+          "modelId": "mapempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 3.32005882,
+                "y": 0.01644258,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 3.850292,
+                "y": 4.865772,
+                "z": 1.0
+              },
               "Enable": true
             }
           ],

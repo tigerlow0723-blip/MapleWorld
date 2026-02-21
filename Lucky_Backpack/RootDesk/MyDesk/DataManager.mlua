@@ -5,6 +5,8 @@ script DataManager extends Component
 
 	property table BossTable = {}
 
+	property table BossBasicTable = {}
+
 	property table SpawnTable = {}
 
 	property table ItemTable = {}
@@ -410,31 +412,54 @@ script DataManager extends Component
 	end
 
 	method void LoadBossTable()
-		local ds = self:GetDataSet("Data_Table - 보스")
-		if ds == nil then return end
-		local rowCount = ds:GetRowCount()
-		for i = 1, rowCount do
-			local bossId = ds:GetCell(i, "boss_id")
-			if bossId ~= nil and bossId ~= "" then
-				local phase = tonumber(ds:GetCell(i, "phase")) or 1
-				local key = bossId .. "_" .. tostring(phase)
-				if self.BossTable[key] == nil then
-					self.BossTable[key] = {}
+		-- 1) 보스 기본 정보 로드
+		local dsBasic = self:GetDataSet("Data_Table - 보스")
+		if dsBasic ~= nil then
+			local rowCount = dsBasic:GetRowCount()
+			for i = 1, rowCount do
+				local bossId = dsBasic:GetCell(i, "boss_id")
+				if bossId ~= nil and bossId ~= "" then
+					local data = {}
+					data.id = bossId
+					data.hpPhase1 = tonumber(dsBasic:GetCell(i, "hp_phase1")) or 500
+					data.hpPhase2 = tonumber(dsBasic:GetCell(i, "hp_phase2")) or 500
+					data.hpPhase3 = tonumber(dsBasic:GetCell(i, "hp_phase3")) or 500
+					data.modelPhase1 = dsBasic:GetCell(i, "model_phase1") or ""
+					data.modelPhase2 = dsBasic:GetCell(i, "model_phase2") or ""
+					data.modelPhase3 = dsBasic:GetCell(i, "model_phase3") or ""
+					
+					self.BossBasicTable[bossId] = data
 				end
-				local pattern = {}
-				pattern.name = ds:GetCell(i, "name") or ""
-				pattern.dmgType = tonumber(ds:GetCell(i, "dmg_type")) or 0
-				pattern.dmg = tonumber(ds:GetCell(i, "dmg")) or 0
-				pattern.status = ds:GetCell(i, "status") or "none"
-				pattern.dotDmg = tonumber(ds:GetCell(i, "dot_DMG")) or 0
-				pattern.dotTurn = tonumber(ds:GetCell(i, "dot_turn")) or 0
-				pattern.ruid = ds:GetCell(i, "RUID") or ""
-				pattern.patternRuid = ds:GetCell(i, "Patten_RUID") or ""
-				local patterns = self.BossTable[key]
-				patterns[#patterns + 1] = pattern
 			end
 		end
-		log("[DataManager]    ")
+
+		-- 2) 보스 패턴 정보 로드
+		local dsPattern = self:GetDataSet("Data_Table - 보스패턴")
+		if dsPattern ~= nil then
+			local rowCount = dsPattern:GetRowCount()
+			for i = 1, rowCount do
+				local bossId = dsPattern:GetCell(i, "boss_id")
+				if bossId ~= nil and bossId ~= "" then
+					local phase = tonumber(dsPattern:GetCell(i, "phase")) or 1
+					local key = bossId .. "_" .. tostring(phase)
+					if self.BossTable[key] == nil then
+						self.BossTable[key] = {}
+					end
+					
+					local pattern = {}
+					pattern.name = dsPattern:GetCell(i, "name") or ""
+					pattern.effectType = dsPattern:GetCell(i, "effect_type") or "hp_dmg"
+					pattern.effectValue = tonumber(dsPattern:GetCell(i, "effect_value")) or 0
+					pattern.turn = tonumber(dsPattern:GetCell(i, "turn")) or 0
+					pattern.patternRuid = dsPattern:GetCell(i, "Patten_RUID") or ""
+					
+					local patterns = self.BossTable[key]
+					patterns[#patterns + 1] = pattern
+				end
+			end
+		end
+		
+		log("[DataManager] 보스 시트 및 패턴 로드 완료")
 	end
 
 	method void LoadSpawnTable()
@@ -780,6 +805,10 @@ script DataManager extends Component
 	method table GetBossPatterns(string bossId, integer phase)
 		local key = bossId .. "_" .. tostring(phase)
 		return self.BossTable[key]
+	end
+
+	method table GetBossBasicData(string bossId)
+		return self.BossBasicTable[bossId]
 	end
 
 	method string GetRandomNodeType()
