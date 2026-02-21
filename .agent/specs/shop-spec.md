@@ -115,6 +115,9 @@
 ### 6-1. DataManager.mlua (데이터 로드 및 파싱 정규화)
 - **`LoadItemTable()`**: `Data_Table - 아이템 - 장비 / 방어구 / 기타` 3개의 CSV로 분할된 테이블을 순환하며 모든 아이템 목록을 로드합니다.
 - **`NormalizeShapeMask(shapeMask)` 메서드**: `1,1,1` 또는 `1/1/1` 등 비정형 텍스트를 읽어 여백을 최적화한 뒤 `/"표를 구분자로` 포맷팅하여 메모리(ItemTable)에 저장합니다.
+- **특정 상점 아이템 런타임 가격(Price) 부여 로직 추가 (중요)**:
+  - 현재 CSV 컬럼 구조 자체를 건드리지 않더라도, `LoadItemTable`을 수행할 때 특정 아이템 이름(name)을 식별하여 메모리의 `itemData.price`에 아래 지정된 가격을 강제로 주입합니다.
+  - [장비 등급 주문서: 50], [하급 무기 공격력 주문서: 100], [고급 무기 공격력 주문서: 500], [랜덤 무기 공격력 주문서: 2000], [장비 등급 확정 주문서: 1500], [돼지고기: 150], [금의 원석: 500]
 
 ### 6-2. BattleManager.mlua & MonsterManager.mlua (상점용 골드 보상)
 - **`CollectRewards()`**: 죽은 몬스터 데이터 내부의 `rewardGold` 및 `goldDrop`을 합산합니다.

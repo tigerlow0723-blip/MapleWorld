@@ -173,13 +173,38 @@ script DataManager extends Component
 			return headers
 		end
 
-		if tableName == "Data_Table - 아이템 - 방어구" or tableName == "Data_Table - 아이템 - 기타" then
+		if tableName == "Data_Table - 아이템 - 방어구" then
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
 			headers["width"] = true
 			headers["height"] = true
 			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+
+		if tableName == "Data_Table - 아이템 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
@@ -460,7 +485,7 @@ script DataManager extends Component
 						if hasCol(colName) == false then
 							return nil
 						end
-						return ds:GetCell(i, colName)
+						return self:TryGetCell(ds, i, colName)
 					end
 
 					local function getString(colA, colB)
