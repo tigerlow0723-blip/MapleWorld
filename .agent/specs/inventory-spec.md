@@ -42,7 +42,7 @@ Backpack Hero 스타일의 그리드 기반 인벤토리 시스템.
 **Property**:
 | 이름 | 타입 | 설명 |
 |------|------|------|
-| `grid` | `table` | 6×6 2D 배열. 0=비활성, 1=빈칸, itemId=배치됨 |
+| `grid` | `table` | 6×6 2D 배열. `-1`=확장 가능(잠김), `0`=비활성(벽), `1`=빈칸(활성), `itemId`=배치됨 |
 | `currentWidth` | `integer` | 현재 활성 너비 (초기 3) |
 | `currentHeight` | `integer` | 현재 활성 높이 (초기 3) |
 | `maxWidth` | `integer` | 최대 너비 (6) |
@@ -54,7 +54,7 @@ Backpack Hero 스타일의 그리드 기반 인벤토리 시스템.
 | 시그니처 | ExecSpace | 설명 |
 |----------|-----------|------|
 | `void OnBeginPlay()` | ClientOnly | InitGrid 호출 |
-| `void InitGrid()` | ClientOnly | 중앙 기준 currentW×currentH 활성화 |
+| `void InitGrid()` | ClientOnly | 정중앙 기준 `currentW×currentH`(초기 3x3)만 `1`로 활성화, 그 외곽은 `-1`(확장가능) 또는 `0`(완전벽) 처리 |
 | `integer GetCellValue(integer r, integer c)` | - | 셀 값 반환 |
 | `boolean CanPlace(integer r, integer c, integer w, integer h)` | - | 배치 가능 여부 |
 | `void PlaceItem(integer r, integer c, integer itemId, integer w, integer h)` | - | 아이템 배치 |
@@ -114,7 +114,7 @@ Backpack Hero 스타일의 그리드 기반 인벤토리 시스템.
 |----------|-----------|------|
 | `void OnBeginPlay()` | ClientOnly | 초기화 |
 | `void CollectCellEntities()` | ClientOnly | GridContainer에서 Cell 엔티티 수집 |
-| `void RenderGrid()` | ClientOnly | 그리드 색상 렌더링 |
+| `void RenderGrid()` | ClientOnly | 그리드 상태별 렌더링 (비활성 셀 `Enable=false`, 활성 셀 색상 덮어쓰기 제거 및 RUID 원본 노출) |
 | `void StartDrag(Entity itemEntity)` | ClientOnly | 드래그 시작 |
 | `void OnDragMove(ScreenTouchHoldEvent event)` | ClientOnly | 드래그 중 이동 |
 | `void OnDragRelease(ScreenTouchReleaseEvent event)` | ClientOnly | 마우스 놓기 → 배치 시도 |
@@ -124,10 +124,13 @@ Backpack Hero 스타일의 그리드 기반 인벤토리 시스템.
 | `void SnapItemToGrid(Entity, integer r, integer c, integer w, integer h)` | ClientOnly | 아이템을 셀에 스냅 |
 | `table ScreenPosToGridCell(Vector2 screenPos, integer w, integer h)` | ClientOnly | 스크린 좌표 → 시작 셀 |
 | `void HighlightPlacement(integer r, integer c, integer w, integer h)` | ClientOnly | 배치 미리보기 |
+| `void ToggleInventory()` | ClientOnly | 인벤토리 창 열기/닫기 토글 |
 
----
-
-## 5. 데이터 테이블
+**UI 렌더링 개편 지침 (UI Overhaul)**:
+- 기존에는 `RenderGrid()`에서 0, 1, -1 상태에 따라 파란색/회색 등으로 `SpriteGUIRendererComponent.Color`를 덮어씌웠으나, 이를 폐기함.
+- **원본 이미지 노출**: 활성화된 셀(0초과, 1)의 경우 색상 덧칠을 하지 않고, 메이커의 RUID 원본 이미지가 보이도록 `Color(1,1,1,1)`을 적용함.
+- **초기 3x3 외 잠긴 셀 숨김**: 해금되지 않은 비활성 셀(상태값 `-1` 또는 `0`)은 화면에서 아예 보이지 않도록 `Enable = false` (또는 `Visible = false`) 처리함.
+- **확장 힌트(반투명 노출)**: "인벤토리 확장권"(`expand` 타입)을 드래그 중인 상태(`dragState.isDragging == true` && `itemType == "expand"`)일 때만, **확장 가능한 인접 셀(`-1`)에 한해서** `Enable = true` 및 반투명(`Color(1,1,1,0.5)`)으로 노출시켜 유저에게 힌트를 제공함. `0`(완전벽)인 셀은 여전히 숨김 유지.
 
 ### ItemTable.csv
 ```csv
