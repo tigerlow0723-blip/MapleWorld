@@ -52,6 +52,10 @@ script BattleManager extends Component
 		self.battleState = "Battle"
 		self.playerDotEffects = {}
 		
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+			self.gameManager.uiMain.targetMonsterIdx = 0
+		end
+		
 		log("========================================")
 		log("[BattleManager] === Battle Start! Stage " .. tostring(stageId) .. " ===")
 		log("========================================")
