@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script GameManager extends Component
 
 	property integer currentStage = 1
@@ -16,25 +16,31 @@ script GameManager extends Component
 	property any itemManager = nil
 
 	property any rewardManager = nil
-	property any miniGameManager = nil
-	property any itemDisplayArea = nil
-	property Entity rewardChestEntity = nil
-	property string shopPanelPath = "/ui/UIGroup/ShopPanel"
-	
-	property BackgroundComponent backgroundRenderer = nil --
-	
-	property Entity uiMainEntity = nil --
-	property any uiMain = nil --
 
-	property table pendingRewards = {} --
-	property string gamePhase = "None" --
+	property any miniGameManager = nil
+
+	property any itemDisplayArea = nil
+
+	property Entity rewardChestEntity = nil
+
+	property string shopPanelPath = "/ui/UIGroup/ShopPanel"
+
+	property BackgroundComponent backgroundRenderer = nil
+
+	property Entity uiMainEntity = nil
+
+	property any uiMain = nil
+
+	property table pendingRewards = {}
+
+	property string gamePhase = "None"
 
 	property boolean canEndPreparation = false
 
 	method void OnInitialize()
 		log("[GameManager] OnInitialize executed (Console check: Server/Client)")
 		
---
+		--
 		if self.uiMainEntity ~= nil then
 			self.uiMain = self.uiMainEntity.UIMain
 			if self.uiMain ~= nil then
@@ -48,25 +54,24 @@ script GameManager extends Component
 		end
 	end
 
---
 	method void OnBeginPlay()
 		log("========================================")
 		log("[GameManager] Main backpack logic start")
 		log("========================================")
-
---
+		
+		--
 		if self:IsClient() then
 			local player = _UserService.LocalPlayer
 			if player ~= nil then
 				local moveComp = player.MovementComponent
 						
---
+		--
 				local controller = player.PlayerControllerComponent
 				if controller ~= nil then
 					controller.Enable = false
 				end
 				
---
+		--
 				local sprite = player.SpriteRendererComponent
 				if sprite ~= nil then
 					sprite.FlipX = true
@@ -74,7 +79,7 @@ script GameManager extends Component
 			end
 		end
 		
---
+		--
 		self.dataManager = self.Entity.DataManager
 		self.playerManager = self.Entity.PlayerManager
 		self.monsterManager = self.Entity.MonsterManager
@@ -96,12 +101,12 @@ script GameManager extends Component
 			end
 		end
 		
---
+		--
 		self.battleManager:SetManagers(self.dataManager, self.playerManager, self.monsterManager, self.itemManager, self.rewardManager)
 		
 		if self.uiMain ~= nil then
 			self.uiMain:InitializeUI(self, self.battleManager, self.playerManager)
---
+		--
 			self.monsterManager:Init(self.uiMain)
 			if self.miniGameManager ~= nil then
 				self.miniGameManager:Init(self, self.playerManager, self.dataManager, self.uiMain)
@@ -116,21 +121,21 @@ script GameManager extends Component
 			self.rewardChestEntity:SetEnable(false)
 		end
 		
---
---
+		--
+		--
 		self.rewardManager:SetManagers(
 			self.dataManager,
 			self.playerManager,
 			self.itemManager
 		)
 		
---
---
+		--
+		--
 		local initBgFunc = function()
 			self:UpdateBackground()
 		end
 		_TimerService:SetTimerOnce(initBgFunc, 0.1)
-
+		
 		local initFunc = function()
 			log("[GameManager] Auto-start timer executing. Attempting StartGame...")
 			self:StartGame("War")
@@ -144,16 +149,16 @@ script GameManager extends Component
 		self.gameState = "Playing"
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
-		self.currentStage = 10
+		self.currentStage = 1
 		
---
+		--
 		if self.playerManager == nil then
 			log("[ERROR] [GameManager] PlayerManager is nil. Check component connection.")
 			return
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		
---
+		--
 		local startWeapon = self.dataManager:GetItemData(1)
 		if startWeapon == nil or startWeapon.type ~= "weapon" then
 			startWeapon = self.dataManager:GetItemData(1001)
@@ -177,18 +182,18 @@ script GameManager extends Component
 		
 		log("[GameManager] Start item distribution complete")
 		
---
+		--
 		if self.uiMain ~= nil then 
 			self.uiMain:UpdateUI() 
 		end
-
---
---
---
---
---
---
---
+		
+		--
+		--
+		--
+		--
+		--
+		--
+		--
 		self:UpdateBackground()
 	end
 
@@ -202,7 +207,7 @@ script GameManager extends Component
 		log("[GameManager] Proceeding to Stage " .. tostring(self.currentStage))
 		log("========================================")
 		
---
+		--
 		if self.currentStage == 5 then
 			self:EnterMiniGameShop()
 		elseif self.currentStage == 10 then
@@ -228,7 +233,7 @@ script GameManager extends Component
 
 	method void EnterBattle()
 		log("[GameManager] Enter battle prep (Stage " .. tostring(self.currentStage) .. ")")
---
+		--
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
 		
@@ -253,7 +258,7 @@ script GameManager extends Component
 		self.gamePhase = "Battle"
 		self.canEndPreparation = false
 		log("[GameManager] Battle Start button clicked! Spawning monsters and starting battle.")
-
+		
 		if self.itemDisplayArea == nil then
 			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
 			if displayAreaEntity ~= nil then
@@ -319,24 +324,34 @@ script GameManager extends Component
 		end
 	end
 
---
---
---
-
 	method void OnBattleVictory()
 		log("[GameManager] === Battle Victory! Enter Preparation Phase ===")
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
-		
---
-		self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
-		log("[GameManager] Reward items " .. tostring(#self.pendingRewards) .. " dropped!")
+		self.pendingRewards = {}
 		
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)
 			log("[GameManager] Reward chest appeared.")
 		else
 			if self.itemDisplayArea ~= nil then
+				-- Fallback path when chest entity is missing.
+				self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
+				log("[GameManager] Reward items " .. tostring(#self.pendingRewards) .. " dropped!")
+				local rewardSummary = ""
+				for i = 1, #self.pendingRewards do
+					local reward = self.pendingRewards[i]
+					if reward ~= nil then
+						local rewardId = reward.id or -1
+						local rewardName = reward.name or "unknown"
+						local rewardType = reward.type or "unknown"
+						if i > 1 then
+							rewardSummary = rewardSummary .. " | "
+						end
+						rewardSummary = rewardSummary .. "index=" .. tostring(i - 1) .. ",id=" .. tostring(rewardId) .. ",name=" .. tostring(rewardName) .. ",type=" .. tostring(rewardType)
+					end
+				end
+				log("[RewardLog][GameManager] pending_rewards index=-1 id=-1 name=pending_rewards type=mixed count=" .. tostring(#self.pendingRewards) .. " items=" .. rewardSummary)
 				self.itemDisplayArea:DisplayItems(self.pendingRewards)
 				log("[GameManager] No reward chest entity, displaying on UI directly.")
 			end
@@ -344,18 +359,17 @@ script GameManager extends Component
 		
 		log("[GameManager] Please sort inventory and check chest rewards.")
 		
---
+		--
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
 	end
 
---
 	method void EndPreparation()
 		if self.gamePhase ~= "Preparation" then return end
 		if self.canEndPreparation ~= true then return end
 		self.canEndPreparation = false
-
+		
 		self:SellRemainingItems()
 		self.pendingRewards = {}
 		log("[GameManager] Preparation complete.")
@@ -387,13 +401,13 @@ script GameManager extends Component
 			shopPanel:SetEnable(false)
 			shopPanel:SetVisible(false)
 		end
-
+		
 		self.currentStage += 1
 		if self.currentStage > 10 then
 			self:GameClear()
 			return
 		end
-
+		
 		self:ProceedToStage()
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
@@ -401,7 +415,7 @@ script GameManager extends Component
 	end
 
 	method void ShowRandomShopNPC()
---
+		--
 		local roll = math.random(1, 100)
 		local grade = "Rare"
 		if roll <= 5 then
@@ -418,7 +432,7 @@ script GameManager extends Component
 		log("[GameManager] Shop NPC Appeared! Grade: " .. grade)
 		log("========================================")
 		
---
+		--
 		local itemCount = 3
 		if grade == "Epic" then
 			itemCount = 4
@@ -428,14 +442,14 @@ script GameManager extends Component
 			itemCount = 5
 		end
 		
---
+		--
 		local shopItems = self.itemManager:GenerateDropItems(self.currentStage, itemCount, self.dataManager)
 		log("[GameManager] Shop items " .. tostring(#shopItems) .. " displayed (" .. grade .. ")")
 		for i = 1, #shopItems do
 			log("[GameManager]  [" .. tostring(i) .. "] " .. self.itemManager:GetItemDescription(shopItems[i]))
 		end
 		
---
+		--
 		local doubleMoneyRoll = math.random(1, 100)
 		if doubleMoneyRoll <= 30 then
 			log("[GameManager] Special choice appeared!")
@@ -445,15 +459,15 @@ script GameManager extends Component
 				currentGold = self.playerManager.gold or 0
 			end
 			log("[GameManager]  [B] Double Money (Current Gold: " .. tostring(currentGold) .. " -> " .. tostring(currentGold * 2) .. ")")
---
---
+		--
+		--
 			log("[GameManager] (Debug: Auto-select store)")
 		else
 			log("[GameManager] Can only use shop (" .. grade .. " grade)")
 		end
 		
---
---
+		--
+		--
 		local nextFunc = function()
 			self:OnStageComplete()
 		end
@@ -477,12 +491,12 @@ script GameManager extends Component
 		self.currentStage += 1
 		log("[GameManager] Proceeding to Stage " .. tostring(self.currentStage))
 		
---
+		--
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
 		
---
+		--
 		self:ProceedToStage()
 	end
 
@@ -501,7 +515,3 @@ script GameManager extends Component
 	end
 
 end
-
-
-
-

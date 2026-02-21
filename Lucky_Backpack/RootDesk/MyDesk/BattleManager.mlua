@@ -401,10 +401,7 @@ script BattleManager extends Component
 				self.playerManager:LevelUp()
 			end
 		
-			--
-			if self.rewardManager ~= nil then
-				self.rewardManager:GenerateRewards(self.currentStage, self.dataManager)
-			end
+			-- Reward item generation is handled by RewardChest flow only.
 		else
 			log("[BattleManager] Defeat")
 		end

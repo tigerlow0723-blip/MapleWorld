@@ -64,7 +64,21 @@ script ItemDisplayArea extends Component
 	method void GenerateRandomItems(integer count)
 		self:ClearAllItems()
 
-		local selectableItemIds = {}
+		local expandItemIds = {}
+		local normalItemIds = {}
+		local function hasValidSprite(itemData)
+			if itemData == nil then
+				return false
+			end
+			local ruid = itemData.imageRUID
+			if ruid == nil or ruid == "" then
+				ruid = itemData.spriteRUID
+			end
+			if ruid == nil or ruid == "" or ruid == "NONE" then
+				return false
+			end
+			return true
+		end
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		local dataManager = nil
 		if gameSystem ~= nil then
@@ -73,27 +87,74 @@ script ItemDisplayArea extends Component
 
 		if dataManager ~= nil then
 			for itemId, itemData in pairs(dataManager.ItemTable) do
-				if itemData ~= nil and itemData.type ~= "expand" then
-					selectableItemIds[#selectableItemIds + 1] = itemId
+				if itemData ~= nil then
+					local itemType = itemData.type or ""
+					local itemName = itemData.name or ""
+					if itemType == "expand" then
+						if hasValidSprite(itemData) then
+							expandItemIds[#expandItemIds + 1] = itemId
+						end
+					else
+						local isGoldOre = false
+						if string.find(itemName, "금의 원석", 1, true) ~= nil then
+							isGoldOre = true
+						end
+						if string.find(itemName, "금괴", 1, true) ~= nil then
+							isGoldOre = true
+						end
+						if isGoldOre == false and hasValidSprite(itemData) then
+							normalItemIds[#normalItemIds + 1] = itemId
+						end
+					end
 				end
 			end
 		end
 
-		if #selectableItemIds == 0 then
-			log_warning("[ItemDisplayArea] No selectable item data")
+		if #expandItemIds == 0 then
+			log_warning("[ItemDisplayArea] No expand item found in item table.")
+			log_warning("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=none type=expand count=0 reason=expand_pool_empty")
 			return
 		end
 
-		local spawnCount = count
-		if spawnCount > #selectableItemIds then
-			spawnCount = #selectableItemIds
+		local spawnItemIds = {}
+
+		local expandCount = math.random(1, 3)
+		for i = 1, expandCount do
+			local pick = math.random(1, #expandItemIds)
+			local selectedId = expandItemIds[pick]
+			spawnItemIds[#spawnItemIds + 1] = selectedId
 		end
 
-		for i = 1, spawnCount do
-			local randomIndex = math.random(1, #selectableItemIds)
-			local itemId = selectableItemIds[randomIndex]
-			self:CreateItemEntity(itemId, i - 1)
-			table.remove(selectableItemIds, randomIndex)
+		local normalPickCount = 3
+		if normalPickCount > #normalItemIds then
+			normalPickCount = #normalItemIds
+		end
+
+		for i = 1, normalPickCount do
+			local randomIndex = math.random(1, #normalItemIds)
+			local itemId = normalItemIds[randomIndex]
+			spawnItemIds[#spawnItemIds + 1] = itemId
+			table.remove(normalItemIds, randomIndex)
+		end
+
+		log("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=reward_selected type=mixed count=" .. tostring(#spawnItemIds) .. " expand_count=" .. tostring(expandCount))
+		for i = 1, #spawnItemIds do
+			local plannedId = spawnItemIds[i]
+			local plannedData = nil
+			if dataManager ~= nil and dataManager.ItemTable ~= nil then
+				plannedData = dataManager.ItemTable[plannedId]
+			end
+			local plannedName = "unknown"
+			local plannedType = "unknown"
+			if plannedData ~= nil then
+				plannedName = plannedData.name or plannedName
+				plannedType = plannedData.type or plannedType
+			end
+			log("[RewardLog][ItemDisplayArea] reward_selected_item index=" .. tostring(i - 1) .. " id=" .. tostring(plannedId) .. " name=" .. tostring(plannedName) .. " type=" .. tostring(plannedType))
+		end
+
+		for i = 1, #spawnItemIds do
+			self:CreateItemEntity(spawnItemIds[i], i - 1)
 		end
 
 		self:ArrangeItems()
@@ -104,11 +165,13 @@ script ItemDisplayArea extends Component
 		local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
 		if templateEntity == nil then
 			log_warning("[ItemDisplayArea] Item template not found: " .. self.itemTemplatePath)
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=template_missing")
 			return nil
 		end
 
 		local itemEntity = templateEntity:Clone("RewardItem_" .. index)
 		if itemEntity == nil then
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=clone_failed")
 			return nil
 		end
 
@@ -122,6 +185,13 @@ script ItemDisplayArea extends Component
 			itemComp.inventoryUIPath = self.inventoryUIPath
 			itemComp:InitFromTable(itemId)
 
+			local itemName = itemComp.itemName or "unknown"
+			local itemType = itemComp.itemType or "unknown"
+			local spriteValid = false
+			if itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+				spriteValid = true
+			end
+
 			local renderer = itemEntity.SpriteGUIRendererComponent
 			if renderer ~= nil then
 				renderer.Color = Color(1, 1, 1, 1)
@@ -129,8 +199,14 @@ script ItemDisplayArea extends Component
 					renderer.ImageRUID = itemComp.spriteRUID
 				else
 					log_warning("[ItemDisplayArea] Missing spriteRUID for itemId=" .. tostring(itemId))
+					log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=" .. tostring(itemName) .. " type=" .. tostring(itemType) .. " reason=sprite_missing")
+					itemEntity:Destroy()
+					return nil
 				end
 			end
+			-- Success path is intentionally quiet to keep reward logs one-shot per chest.
+		else
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=item_component_missing")
 		end
 
 		table.insert(self.spawnedItems, itemEntity)
@@ -178,12 +254,20 @@ script ItemDisplayArea extends Component
 		self:ClearAllItems()
 		self.Entity:SetEnable(true)
 		self.Entity:SetVisible(true)
+		local summary = ""
 
 		for i = 1, #itemDataList do
 			if itemDataList[i] ~= nil and itemDataList[i].id ~= nil then
+				local itemName = itemDataList[i].name or "unknown"
+				local itemType = itemDataList[i].type or "unknown"
+				if i > 1 then
+					summary = summary .. " | "
+				end
+				summary = summary .. "index=" .. tostring(i - 1) .. ",id=" .. tostring(itemDataList[i].id) .. ",name=" .. tostring(itemName) .. ",type=" .. tostring(itemType)
 				self:CreateItemEntity(itemDataList[i].id, i - 1)
 			end
 		end
+		log("[RewardLog][ItemDisplayArea] display_items index=-1 id=-1 name=display_items type=mixed count=" .. tostring(#itemDataList) .. " items=" .. summary)
 
 		self:ArrangeItems()
 	end
