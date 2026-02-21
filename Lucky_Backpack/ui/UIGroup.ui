@@ -5995,7 +5995,7 @@
           "name": "BtnRefresh",
           "path": "/ui/UIGroup/ShopPanel/BtnRefresh",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 0,
@@ -7224,13 +7224,13 @@
       },
       {
         "id": "21ab30a7-5760-4893-b352-a7dce5976bd4",
-        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1",
+        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.ButtonComponent",
         "jsonString": {
-          "name": "ItemCard_1",
-          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1",
+          "name": "ItemCardTemplate",
+          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 0,
@@ -7259,11 +7259,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": -380.0,
-                "y": 150.0
+                "y": 25.0000763
               },
               "OffsetMin": {
                 "x": -580.0,
-                "y": -150.0
+                "y": -274.999939
               },
               "Pivot": {
                 "x": 0.5,
@@ -7277,11 +7277,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": -480.0,
-                "y": 0.0
+                "y": -124.999924
               },
               "Position": {
-                "x": -480.0,
-                "y": 0.0,
+                "x": 120.0,
+                "y": -174.999924,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7357,11 +7357,11 @@
       },
       {
         "id": "24edfd12-0c33-49c8-84c5-c62b51117214",
-        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/Img",
+        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/Img",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
         "jsonString": {
           "name": "Img",
-          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/Img",
+          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/Img",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -7442,11 +7442,11 @@
       },
       {
         "id": "ae9c1ddd-c5a1-435c-9343-c94faa1c2e48",
-        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/TxtName",
+        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/TxtName",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
         "jsonString": {
           "name": "TxtName",
-          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/TxtName",
+          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/TxtName",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -7531,11 +7531,11 @@
       },
       {
         "id": "04ef4776-866a-4379-9fc7-cea84e940c21",
-        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/TxtPrice",
+        "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/TxtPrice",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
         "jsonString": {
           "name": "TxtPrice",
-          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_1/TxtPrice",
+          "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate/TxtPrice",
           "nameEditable": true,
           "enable": true,
           "visible": true,
@@ -7626,8 +7626,8 @@
           "name": "ItemCard_2",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_2",
           "nameEditable": true,
-          "enable": true,
-          "visible": true,
+          "enable": false,
+          "visible": false,
           "localize": true,
           "displayOrder": 1,
           "pathConstraints": "/////",
@@ -7655,11 +7655,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": -140.0,
-                "y": 150.0
+                "y": 25.0000763
               },
               "OffsetMin": {
                 "x": -340.0,
-                "y": -150.0
+                "y": -274.999939
               },
               "Pivot": {
                 "x": 0.5,
@@ -7673,11 +7673,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": -240.0,
-                "y": 0.0
+                "y": -124.999924
               },
               "Position": {
-                "x": -240.0,
-                "y": 0.0,
+                "x": 360.0,
+                "y": -174.999924,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -8019,8 +8019,8 @@
           "name": "ItemCard_3",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_3",
           "nameEditable": true,
-          "enable": true,
-          "visible": true,
+          "enable": false,
+          "visible": false,
           "localize": true,
           "displayOrder": 2,
           "pathConstraints": "/////",
@@ -8048,11 +8048,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 100.0,
-                "y": 150.0
+                "y": 25.0000763
               },
               "OffsetMin": {
                 "x": -100.0,
-                "y": -150.0
+                "y": -274.999939
               },
               "Pivot": {
                 "x": 0.5,
@@ -8066,11 +8066,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 0.0,
-                "y": 0.0
+                "y": -124.999924
               },
               "Position": {
-                "x": 0.0,
-                "y": 0.0,
+                "x": 600.0,
+                "y": -174.999924,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -8412,8 +8412,8 @@
           "name": "ItemCard_4",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_4",
           "nameEditable": true,
-          "enable": true,
-          "visible": true,
+          "enable": false,
+          "visible": false,
           "localize": true,
           "displayOrder": 3,
           "pathConstraints": "/////",
@@ -8441,11 +8441,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 340.0,
-                "y": 150.0
+                "y": 25.0000763
               },
               "OffsetMin": {
                 "x": 140.0,
-                "y": -150.0
+                "y": -274.999939
               },
               "Pivot": {
                 "x": 0.5,
@@ -8459,11 +8459,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 240.0,
-                "y": 0.0
+                "y": -124.999924
               },
               "Position": {
-                "x": 240.0,
-                "y": 0.0,
+                "x": 840.0,
+                "y": -174.999924,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -8805,8 +8805,8 @@
           "name": "ItemCard_5",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCard_5",
           "nameEditable": true,
-          "enable": true,
-          "visible": true,
+          "enable": false,
+          "visible": false,
           "localize": true,
           "displayOrder": 4,
           "pathConstraints": "/////",
@@ -8834,11 +8834,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 580.0,
-                "y": 150.0
+                "y": 25.0000763
               },
               "OffsetMin": {
                 "x": 380.0,
-                "y": -150.0
+                "y": -274.999939
               },
               "Pivot": {
                 "x": 0.5,
@@ -8852,11 +8852,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 480.0,
-                "y": 0.0
+                "y": -124.999924
               },
               "Position": {
-                "x": 480.0,
-                "y": 0.0,
+                "x": 1080.0,
+                "y": -174.999924,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -9175,6 +9175,94 @@
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "58efced1-fe44-46e3-abac-9dd51a43ef5e",
+        "path": "/ui/UIGroup/ShopPanel/TxtShopTier",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtShopTier",
+          "path": "/ui/UIGroup/ShopPanel/TxtShopTier",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 5,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uitext",
+            "sub_entity_id": null,
+            "root_entity_id": "58efced1-fe44-46e3-abac-9dd51a43ef5e",
+            "replaced_model_id": null
+          },
+          "modelId": "uitext",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -328.5293,
+                "y": 413.075
+              },
+              "OffsetMin": {
+                "x": -612.0083,
+                "y": 313.075
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 283.478973,
+                "y": 100.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -470.2688,
+                "y": 363.075
+              },
+              "Position": {
+                "x": -470.2688,
+                "y": 363.075,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
               "Enable": true
             },
             {

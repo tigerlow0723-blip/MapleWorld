@@ -38,24 +38,30 @@
 **UI 계층 구조도 (Workspace -> `ui` -> `UIGroup` 밑에 생성):**
 - **`ShopPanel`** (`SpriteGUIRendererComponent` 및 빈 스크립트 **`ShopUI`** 부착)
   - 기본 상태(Inspector): `Enable = false` (평소엔 무조건 꺼둠)
-  - **`ItemList` (가로 진열대)**: 
-    - 상점 아이템 카드 5개가 나란히 진열되는 그룹. 비워둠.
-    - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
-      - 카드를 클릭해야 하므로 버튼 부착. 그 속에는 다음 3가지만 노출.
-      1. `이미지(Sprite)`: 아이템 사진.
-      2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
-      3. `이름(Text)`: 최하단 상품명.
+  - **`ItemList` (가로 진열대 - 동적 컨테이너)**: 
+    - 빈 그룹 엔티티. 이 아래에 자식으로 카드들이 생성됩니다.
+  - **상품 카드 템플릿 (`ItemCardTemplate`)**: (`ButtonComponent`, `UITransformComponent`)
+    - ⚠️ **주의**: 이제 이 카드는 하드코딩으로 5개를 배치해 두는 것이 아닙니다. 메이커에서 이 템플릿 카드 **1개만** 유지하고 평소엔 안 보이게(`Enable=false`) 꺼 둡니다.
+    - 아이템 개수에 맞춰 코드가 이 템플릿을 **동적 복제(Clone)**하여 `ItemList` 아래에 삽입하고, X 좌표를 코드로 계산해 가로로 나열합니다.
+    1. `이미지(Sprite)`: 아이템 사진.
+    2. `가격(Text)`: 이미지 아래 코인 아이콘 + 판매가.
+    3. `이름(Text)`: 최하단 상품명.
   - **`PlayerCoin` (기존 TxtPlayerGold 대체)**: 빈 객체 컨테이너. 내부에 코인 이미지(`ImgCoin` SpriteGUIRenderer)와 보유 골드 텍스트(`TxtPlayerCoin` TextComponent) 자식 개체를 포함합니다. (ShopUI 스크립트 연결 완료됨)
+  - **`TxtShopTier`**: 상점의 등급(레어~레전더리) 텍스트를 뿌려줄 엔티티. (생성 완료)
   - **`BtnCloseShop`**: (`ButtonComponent`) 상점 닫고 다음 스테이지(정비)로 넘어가는 닫기 버튼.
 
-### 2-2. 상점 등급 (Shop Tier) 시스템
-상점은 열릴 때 또는 리롤될 때마다 4가지 등급 중 하나로 결정됩니다. 등급에 따라 추후 출현하는 아이템의 풀(Pool)이나 가치에 영향을 줄 수 있습니다.
-- **`Rare` (레어 상점)**: 50% 확률 (표시 텍스트: ★ 레어 상점 ★, 파란색)
-- **`Epic` (에픽 상점)**: 25% 확률 (표시 텍스트: ★★ 에픽 상점 ★★, 보라색)
-- **`Unique` (유니크 상점)**: 15% 확률 (표시 텍스트: ★★★ 유니크 상점 ★★★, 노란색)
-- **`Legendary` (레전더리 상점)**: 10% 확률 (표시 텍스트: ★★★★ 레전더리 상점 ★★★★, 초록색)
+### 2-2. 상점 등급 (Shop Tier) 시스템 및 티어별 상품 풀
+상점은 열릴 때마다 4가지 등급 중 하나로 결정되며, **등급에 따라 정확히 정해진 품목 풀(Pool) 안에서만** 아이템 카드가 생성됩니다. (현재 '금의 원석' 등 구매 제한 수량은 기획 대기 중이므로 무조건 1개만 스폰된다고 가정)
 
-**추가해야 할 UI**: `ShopPanel` 내부에 `TxtShopTier` (TextComponent) 엔티티.
+1. **`Rare` (레어 상점)** - 50% 확률
+   - 하급 무기 공격력 주문서, 장비 등급 주문서, 돼지고기
+2. **`Epic` (에픽 상점)** - 25% 확률
+   - 고급 무기 공격력 주문서, 장비 등급 주문서, 돼지고기, 금의 원석
+3. **`Unique` (유니크 상점)** - 15% 확률
+   - 고급 무기 공격력 주문서, 랜덤 무기 공격력 주문서, 장비 전용 마법 부여 주문서, 돼지고기, 금의 원석
+   *("장비 등급 주문서" 대신 "장비 전용 마법 부여 주문서" 임시 표기 시 유연하게 대처)*
+4. **`Legendary` (레전더리 상점)** - 10% 확률
+   - 고급 무기 공격력 주문서, 장비 등급 주문서, 장비 등급 확정 주문서, 돼지고기, 금의 원석
 
 ### 2-3. 상점 노출 타이밍과 로직 (`GameManager.mlua` & `ShopUI.mlua` 연계)
 - 1. **등장(On)**: `GameManager`에서 보상을 모두 줍고 정비 종료를 눌렀을 때(`EndPreparation()`), `self.gamePhase = "Shop"`가 되면서 `ShopPanel` 엔티티의 `Enable = true`로 화면에 나타납니다.
@@ -114,10 +120,16 @@
 - **`CollectRewards()`**: 죽은 몬스터 데이터 내부의 `rewardGold` 및 `goldDrop`을 합산합니다.
 - 승리 분기망에서 곧바로 `PlayerManager:AddGold(골드량)`를 호출하여 상점 구매재화 값을 즉각 연동합니다.
 
-### 6-3. ShopUI.mlua (UI 로직 및 아이템 비용 연동)
-- **`OpenShop()` & `GenerateShopItems()`**: 상점 오픈 시 상점 등급(`RollShopTier`)을 랜덤 확정하고 무작위 5장의 카드를 진열합니다. `price`가 없으면 `cost`를 대체 가격으로 활용합니다 (`GetItemPrice()`).
-- **`OnClickCard(index)`**: 골드가 충분하면 아이템을 구매하며, 성공하면 배열을 지우고 `ItemDisplayArea`에 카드 이미지를 스폰시킵니다.
-- **[이슈 트래킹]**: 간헐적으로 카드 생성 시 이전 아이템의 이미지가 그대로 남아 이름과 불일치하는 "유령 스프라이트" 현상이 있었습니다. (현재 이중 초기화(`RenderCard(cardEntity, nil)`) 방어 로직으로 완화 조치됨). 추후 데이터가 100% 매핑된 후 재확인 요망.
+### 6-3. ShopUI.mlua (UI 동적 생성 및 카드 좌우 정렬 로직 구현)
+- **아이템 풀(Pool) 필터링 (중요)**: `GenerateShopItems()` 호출 시, 가장 먼저 현재 결정된 상점 등급(`self.currentShopTier`)에 따라 **명세서 2-2번에 기재된 품목(이름)들만** 배열로 추려냅니다.
+  - *팁: `string.find`나 일치 검사를 통해 `self.dataManager.ItemTable`에서 검색하여 매칭되는 아이템 데이터만 풀에 넣습니다.*
+  - *예시: 에픽 상점이라면 ["고급 무기 공격력 주문서", "장비 등급 주문서", "돼지고기", "금의 원석"] 이 정확한 풀입니다.*
+- **동적 카드 생성 및 수동 좌표 정렬 (Dynamic Spawning & Offset)**:
+  - MSW 시스템상 `HorizontalBoxLayoutGroup`이 없으므로 코드로 직접 좌표를 벌려주어야 합니다.
+  - 상점 등장 시 기존에 생성됐던 아이템 카드 클론들은 일괄 `Destroy()` 하거나 숨깁니다.
+  - 방금 추첨된 아이템 개수(`n`)만큼 `ItemCardTemplate` 엔티티를 부모(`ItemList`) 아래에 **`Clone()`**으로 복제 생성합니다.
+  - **좌표 연산**: 카드의 가로 크기(예: 150)와 여백(예: 20)을 고려하여 총 너비를 구하고, 첫 카드의 시작 지점을 잡은 뒤 루프를 돌며 직전 카드의 X좌표 + (너비+여백) 값으로 촘촘히 렌더링시킵니다.
+- **`OnClickCard(index)`**: 아이템 구매 성공 시, 구입한 대상 클론 UI 카드 엔티티 자체를 `Destroy()` 시키고, `self.shopItems` 배열에서 빼냅니다. 나머지 형제 카드들은 다시 좌표 연산(가운데 정렬) 렌더링을 태워 빈 공간을 채우며 정렬시킵니다.
 
 ### 6-4. InventoryUI.mlua (판매 구역 드래그 드롭)
 - **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.
