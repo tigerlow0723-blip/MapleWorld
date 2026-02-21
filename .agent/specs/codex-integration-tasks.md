@@ -88,9 +88,21 @@
 
 ---
 
+## 작업 6: ItemDisplayArea.mlua (보상 아이템 확정 스폰 혼합 룰 개편)
+### 파일 위치 반경
+`Lucky_Backpack/RootDesk/MyDesk/ItemDisplayArea.mlua`
+### 작업 상세 (상세명세 2절 수정본 참고)
+- 기존의 무작위 5개 생성 로직이었던 `GenerateRandomItems(count)` 메서드 내부 로직을 다음과 같이 전면 개편합니다.
+- **1. 확장 아이템 추첨**: `DataManager`의 전체 ItemTable에서 `type == "expand"` 인벤토리 확장권을 식별하여, 무작위 확률로 **1개 ~ 3개** 사이로 추첨해 스폰 대기 배열에 넣습니다. (매 판 최소 1개의 확장은 보장되어야 합니다!)
+- **2. 일반 아이템 추첨**: `expand` 타입과 `금의 원석(또는 금괴 등 이름 내포)` 명칭을 제외한 순수 무기/방어구/소모품 풀을 추립니다. 이 풀 안에서 **중복을 허용하지 않고 오직 무작위 3개**만 뽑아 스폰 대기 배열에 추가합니다.
+- 추출된 최소 4개 ~ 6개의 아이템에 대해 `CreateItemEntity`를 순회 호출하여 생성하고, 직후 `ArrangeItems()` 배열 정렬을 태웁니다.
+
+---
+
 ## 작업 순서 요약
 1. **작업 1**: `DataManager` 수정하여 아이템 기본 테이블 적재 시 price 하드코딩 데이터 주입
 2. **작업 2**: `ItemDisplayArea` 와 `GameManager` 에 남은 전리품 50골드 환전 처리 로직 삽입
 3. **작업 3**: `ShopUI` 에 상점 티어 롤링 단계 및 X좌표 수학적 보간 동적 렌더링 카드 스크립트 작성
 4. **작업 4**: `InventoryUI` 에 상점 진열대에 드롭 시 아이템 판매(`TrySellDrop`) 처리 구현
 5. **작업 5**: `InventoryUI` 외부 드롭 시 아이템을 `ItemDisplayArea`로 반환(`AddReturnedItem`) 하는 로직 연결
+6. **작업 6**: `ItemDisplayArea` 보상 지급 룰 개편 (가방 확장권 1~3개 확정 지급 + 일반 랜덤 3개 지급)

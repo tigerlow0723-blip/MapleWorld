@@ -54,11 +54,10 @@
 #### GenerateRandomItems (ClientOnly)
 - **파라미터**: count (integer)
 - **동작**:
-  1. 기존 진열 아이템이 있으면 전부 Destroy
-  2. ItemTable.csv에서 expand 타입을 제외한 아이템 ID 목록 수집
-  3. 그 중 count개를 **중복 없이** 랜덤 선택 (선택된 아이템은 목록에서 제거). count가 목록 수보다 크면 가능한 만큼만 생성
-  4. 각 아이템에 대해 CreateItemEntity 호출
-  5. 생성된 아이템들을 세로 물결 배치로 정렬 (ArrangeItems 호출)
+  2. **확장 아이템 추첨**: `ItemTable`에서 `expand` 타입(인벤토리 확장권)을 무작위로 **1개 ~ 3개** 사이로 추첨하여 스폰 대기 배열에 넣습니다.
+  3. **일반 아이템 추첨**: 전체 아이템 중 **`expand` 타입과 `금의 원석(또는 금괴)` 항목을 완전히 제외**한 나머지 풀(Pool)에서 **중복 없이 무작위로 3개**를 선택하여 대기 배열에 추가합니다.
+  4. 도합 최소 4개 ~ 최대 6개의 아이템 엔티티에 대해 직렬로 `CreateItemEntity`를 호출하여 생성합니다.
+  5. 생성된 아이템들을 세로 물결 배치로 정렬 (`ArrangeItems` 호출)
 
 #### CreateItemEntity (ClientOnly)
 - **파라미터**: itemId (integer), index (integer)
