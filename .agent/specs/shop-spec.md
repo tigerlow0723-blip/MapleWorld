@@ -138,5 +138,10 @@
 - **`TrySellDrop(touchPoint)`**: 화면 터치 후 놓을 때 상점이 열려 있고(`GameManager.gamePhase == "Shop"`), 좌표 영역이 판매 구역(`SellArea`) 안(`IsInSellArea`)일 경우 `SellItemById(itemId)`를 실행합니다.
 - **`SellItemById(itemId)`**: 아이템의 `price` 대조 후 50%의 환율(`GetSellPrice()`)을 계산해 골드로 환원하고 엔티티와 슬롯 정보를 완전 삭제합니다.
 
-### 6-5. Item.mlua (도형의 회전 및 그리드 연동)
-- **`Rotate90Degrees()`**: 유저가 회전(R 키 또는 우클릭) 시, 배열로 저장된 `shapeMatrix`를 90도 회전(전치/역순)시킵니다. 인벤토리 `CanPlace` 함수 호출 시에도 새로 바뀐 크기(가로세로 `width/height` 변환)에 대응합니다.
+### 6-5. 보상 아이템 자동 환전 (Auto-Sell Remaining Items)
+- **로직 개요**: 전투 승리 후 보상 상자에서 드랍된 아이템들 중, 인벤토리에 넣지 않고 필드에 남겨둔 채 '다음으로' 버튼을 누를 경우, 이 아이템들이 증발하는 대신 각각 **고정가 50 골드(Gold)**로 자동 환전됩니다.
+- **`SellRemainingItems()` 구현 지침**:
+  1. `GameManager`가 다음 페이즈(정비 탭 종료 등)로 넘어가기 직전에 `ItemDisplayArea`를 호출하여 화면 상에 스폰(`spawnedItems`)되어 있는 모든 아이템 엔티티 목록을 순회합니다.
+  2. 필드용 아이템 엔티티 개수 당 고정 **50 Gold**씩 곱하여 플레이어 재화(`PlayerManager.gold`)에 즉시 일괄 합산시킵니다 (기본 판매가 연동 해제, 무조건 50골드 고정).
+  3. 돈으로 치환된 보상용 아이템 엔티티들은 역순으로 순회하며 즉시 파괴(`Destroy()`)하고 배열을 완전히 비웁니다 (`self.spawnedItems = {}`).
+  4. 이후 상점(ShopUI)이 열릴 때 업데이트된 골드량이 정상적으로 반영(`UpdateGoldText()`)되도록 처리 흐름을 맞춥니다.

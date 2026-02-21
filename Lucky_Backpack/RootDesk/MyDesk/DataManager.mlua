@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script DataManager extends Component
 
 	property table MonsterTable = {}
@@ -24,13 +24,13 @@ script DataManager extends Component
 	property table SpecialEventTable = {}
 
 	method void OnInitialize()
-		log("[DataManager] 초기화(OnInitialize) 실행됨 (콘솔 탭 확인: Server/Client)")
+		log("[DataManager] (OnInitialize)  (  : Server/Client)")
 	end
 
-	-- @ExecSpace("ServerOnly") 제거: 클라이언트에서도 실행되도록 변경
+--
 	method void OnBeginPlay()
 		self:LoadAllTables()
-		log("[DataManager] 모든 데이터 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method void LoadAllTables()
@@ -46,13 +46,13 @@ script DataManager extends Component
 		self:LoadStageWeightTable()
 		self:LoadSpecialEventTable()
 		
-		log("[DataManager] 모든 데이터 테이블 로딩 시도 완료.")
+		log("[DataManager]      .")
 	end
 
 	method any GetDataSet(string tableName)
 		local ds = _DataService:GetTable(tableName)
 		if ds == nil then
-			log("[ERROR] [DataManager] 데이터셋을 찾을 수 없습니다: " .. tableName)
+			log("[ERROR] [DataManager]    : " .. tableName)
 			return nil
 		end
 		return ds
@@ -389,7 +389,7 @@ script DataManager extends Component
 				data.patternId = ds:GetCell(i, "patternId") or ""
 				data.patternProb = tonumber(ds:GetCell(i, "patternProb")) or 50
 				data.atkCount = tonumber(ds:GetCell(i, "atkCount")) or 1
-				data.status = ds:GetCell(i, "status") or "없음"
+				data.status = ds:GetCell(i, "status") or "none"
 				data.dotDmg = tonumber(ds:GetCell(i, "dotDmg")) or 0
 				data.dotTurn = tonumber(ds:GetCell(i, "dotTurn")) or 0
 				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
@@ -403,9 +403,9 @@ script DataManager extends Component
 		for _ in pairs(self.MonsterTable) do count = count + 1 end
 		
 		if count == 0 then
-			log("[ERROR] [DataManager] 몬스터 테이블이 비어있습니다! CSV를 확인하세요.")
+			log("[ERROR] [DataManager]   ! CSV .")
 		else
-			log("[DataManager] 몬스터 " .. tostring(count) .. " 종 로딩 완료")
+			log("[DataManager]  " .. tostring(count) .. "   ")
 		end
 	end
 
@@ -434,7 +434,7 @@ script DataManager extends Component
 				patterns[#patterns + 1] = pattern
 			end
 		end
-		log("[DataManager] 보스 테이블 로딩 완료")
+		log("[DataManager]    ")
 	end
 
 	method void LoadSpawnTable()
@@ -452,7 +452,7 @@ script DataManager extends Component
 				self.SpawnTable[stageId] = data
 			end
 		end
-		log("[DataManager] 스폰 테이블 로딩 완료")
+		log("[DataManager]    ")
 	end
 
 	method void LoadItemTable()
@@ -573,7 +573,7 @@ script DataManager extends Component
 			end
 		end
 
-		log("[DataManager] 아이템 " .. tostring(loadedCount) .. " 개 로딩")
+		log("[DataManager]  " .. tostring(loadedCount) .. "  ")
 	end
 
 	method void LoadBaseStatTable()
@@ -595,7 +595,7 @@ script DataManager extends Component
 				self.BaseStatTable[classId] = data
 			end
 		end
-		log("[DataManager] 기본 스탯 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method void LoadLevelStatTable()
@@ -613,7 +613,7 @@ script DataManager extends Component
 				self.LevelStatTable[classId] = data
 			end
 		end
-		log("[DataManager] 렙당 스탯 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method void LoadSkillTable()
@@ -638,7 +638,7 @@ script DataManager extends Component
 				self.SkillTable[id] = data
 			end
 		end
-		log("[DataManager] 스킬 테이블 로딩 완료")
+		log("[DataManager]    ")
 	end
 
 	method void LoadCorrectionTable()
@@ -658,14 +658,14 @@ script DataManager extends Component
 				self.CorrectionTable[lv] = data
 			end
 		end
-		log("[DataManager] 보정 스탯 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method void LoadMapTable()
 		local ds = self:GetDataSet("Data_Table - 맵 매니저")
 		if ds == nil then return end
 		local rowCount = ds:GetRowCount()
-		log("[DEBUG-MAP] LoadMapTable 시작. RowCount: " .. tostring(rowCount))
+		log("[DEBUG-MAP] LoadMapTable . RowCount: " .. tostring(rowCount))
 		local count = 0
 		for i = 1, rowCount do
 			local stageId = tonumber(ds:GetCell(i, "stage_id")) or 0
@@ -683,9 +683,9 @@ script DataManager extends Component
 			end
 		end
 		if count == 0 then
-			log("[ERROR] [DataManager] 맵 매니저 테이블이 비어있습니다! CSV를 확인하세요.")
+			log("[ERROR] [DataManager]    ! CSV .")
 		else
-			log("[DataManager] 맵 매니저 테이블 로딩 완료. 개수: " .. tostring(count))
+			log("[DataManager]     . : " .. tostring(count))
 		end
 	end
 
@@ -702,7 +702,7 @@ script DataManager extends Component
 				self.StageWeightTable[#self.StageWeightTable + 1] = data
 			end
 		end
-		log("[DataManager] 스테이지 확률 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method void LoadSpecialEventTable()
@@ -722,7 +722,7 @@ script DataManager extends Component
 				self.SpecialEventTable[#self.SpecialEventTable + 1] = data
 			end
 		end
-		log("[DataManager] 특별 이벤트 테이블 로딩 완료")
+		log("[DataManager]     ")
 	end
 
 	method table GetMonsterData(string monsterId)
