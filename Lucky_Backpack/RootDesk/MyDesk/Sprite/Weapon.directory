@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "directory://c3bd2ffc7c5b48a290ad2739e2438166",
+  "EntryKey": "directory://40735989bbae44c5affc018950d64536",
   "ContentType": "x-mod/directory",
   "Content": "",
   "Usage": 0,
@@ -13,8 +13,8 @@
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "entry_id": "directory://c3bd2ffc7c5b48a290ad2739e2438166",
-      "name": "Sprite",
+      "entry_id": "directory://40735989bbae44c5affc018950d64536",
+      "name": "Weapon",
       "lock": false,
       "folding": false,
       "nameEditable": true

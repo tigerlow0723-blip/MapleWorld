@@ -895,7 +895,7 @@
       {
         "id": "9270858f-5913-4e55-a3c5-846fa1138c6e",
         "path": "/ui/UIGroup/InventoryPanel",
-        "componentNames": "MOD.Core.UITransformComponent,script.Inventory,script.InventoryUI",
+        "componentNames": "MOD.Core.UITransformComponent,script.Inventory,script.InventoryUI,MOD.Core.SpriteGUIRendererComponent",
         "jsonString": {
           "name": "InventoryPanel",
           "path": "/ui/UIGroup/InventoryPanel",
@@ -928,30 +928,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 120.5012,
-                "y": 309.0182
+                "x": 329.1458,
+                "y": 468.8075
               },
               "OffsetMin": {
-                "x": 20.5011978,
-                "y": 209.018188
+                "x": -320.8542,
+                "y": -181.1925
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
-                "y": 100.0
+                "x": 650.0,
+                "y": 650.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 70.5012,
-                "y": 259.0182
+                "x": 4.14579964,
+                "y": 143.8075
               },
               "Position": {
-                "x": 70.5012,
-                "y": 259.0182,
+                "x": 4.14579964,
+                "y": 143.8075,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -970,6 +970,14 @@
               "@type": "script.InventoryUI",
               "Enable": true,
               "gridContainerPath": "/ui/UIGroup/InventoryPanel/GridContainer"
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "a412d0f96d0343cd900afa10c05adbd0"
+              },
+              "OverrideSorting": false,
+              "Enable": true
             }
           ],
           "@version": 1
@@ -1012,11 +1020,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 50.0,
-                "y": 50.0
+                "y": 30.0
               },
               "OffsetMin": {
                 "x": -50.0,
-                "y": -50.0
+                "y": -70.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -1030,11 +1038,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 0.0,
-                "y": 0.0
+                "y": -20.0
               },
               "Position": {
                 "x": 0.0,
-                "y": 0.0,
+                "y": -20.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
