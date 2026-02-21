@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "userdataset://ebf7b473-433b-479d-af04-2e2a09d9ffff",
+  "EntryKey": "userdataset://0cb9a1e4-cb8c-4c72-ad3d-cce353c3fdff",
   "ContentType": "x-mod/userdataset",
   "Content": "",
   "Usage": 0,
@@ -13,8 +13,8 @@
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "name": "Data_Table - 보스",
-      "id": "ebf7b473-433b-479d-af04-2e2a09d9ffff",
+      "name": "Data_Table - 보스패턴",
+      "id": "0cb9a1e4-cb8c-4c72-ad3d-cce353c3fdff",
       "serveronly": false,
       "syncDataSetWebUrl": "",
       "dynamicloading": 0

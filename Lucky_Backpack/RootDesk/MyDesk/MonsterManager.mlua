@@ -7,6 +7,12 @@ script MonsterManager extends Component
 
 	property string currentBossId = ""
 
+	-- Boss spawn position entity
+	property Entity bossSpawnPoint = nil
+
+	-- Monster spawn area entity (position = center, Scale X = width)
+	property Entity monsterSpawnArea = nil
+
 	property integer currentBossPhase = 1
 
 	property any dataManager = nil
@@ -88,7 +94,7 @@ script MonsterManager extends Component
 		
 			self.monsterList[#self.monsterList + 1] = monster
 			
-			self:SpawnVisual(monster, i, false)
+			self:SpawnVisual(monster, i, false, count)
 			log("[MonsterManager]  > " .. monster.name .. " HP:" .. tostring(monster.currentHP) .. " ATK:" .. tostring(monster.atk))
 		end
 	end
@@ -107,39 +113,47 @@ script MonsterManager extends Component
 		self.currentBossId = bossId
 		self.currentBossPhase = 1
 		
-		--
+		local basicData = dataMgr:GetBossBasicData(bossId)
+		if basicData == nil then
+			log_error("[MonsterManager] 보스 기본 데이터를 찾을 수 없습니다: " .. bossId)
+			return
+		end
+		
 		local patterns = dataMgr:GetBossPatterns(bossId, 1)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] " .. bossId)
+			log_error("[MonsterManager] 보스 패턴을 찾을 수 없습니다: " .. bossId)
 			return
 		end
 		
 		local boss = {}
 		boss.id = bossId
 		boss.name = "Boss " .. bossId
-		boss.maxHP = 500
-		boss.currentHP = 500
+		boss.maxHP = basicData.hpPhase1
+		boss.currentHP = basicData.hpPhase1
 		boss.atk = 0
 		boss.def = 10
 		boss.dodge = 0
 		boss.alive = true
 		boss.isBoss = true
-		boss.isBoss = true
+		
+		-- Phase HP information
+		boss.hpPhase1 = basicData.hpPhase1
+		boss.hpPhase2 = basicData.hpPhase2
+		boss.hpPhase3 = basicData.hpPhase3
+		
+		-- Phase Model information
+		boss.modelPhase1 = basicData.modelPhase1 or ""
+		boss.modelPhase2 = basicData.modelPhase2 or ""
+		boss.modelPhase3 = basicData.modelPhase3 or ""
+		
 		boss.dotEffects = {}
-		boss.modelID = "" --
-		-- boss.imageRUID logic was here, assuming boss spawns differently or needs update. 
-		-- For now, keep boss logic consistent if it used RUIDs from pattern. 
-		-- But plan says remove RUIDs. Let's assume bosses might use ModelID too or just keep their current logic if not broken.
-		-- Actually, `SpawnBoss` uses `SpawnVisual` too. Let's set modelID if available in pattern or use default.
-		-- But pattern table structure in DataManager wasn't changed to have ModelID. 
-		-- User only asked for MonsterList CSV change.
-		-- I will comment out RUID lines for now to avoid errors, leaving Boss as is (using default model if no ID).
-		-- boss.imageRUID = patterns[1].ruid or ""
+		boss.shieldActive = false
+		boss.modelID = boss.modelPhase1
 		
 		self.monsterList[#self.monsterList + 1] = boss
 		
-		self:SpawnVisual(boss, 1, true)
-		log("[MonsterManager] " .. boss.name .. " HP:" .. tostring(boss.maxHP))
+		self:SpawnVisual(boss, 1, true, 1)
+		log("[MonsterManager] 보스 스폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP) .. " Phase: 1")
 	end
 
 	method table DamageMonster(integer index, number damage, number accuracy)
@@ -167,7 +181,15 @@ script MonsterManager extends Component
 		
 		result.hit = true
 		
-		--
+		-- Absolute Shield check
+		if monster.isBoss and monster.shieldActive then
+			result.hit = false
+			result.damage = 0
+			monster.shieldActive = false
+			log("[MonsterManager] 보스의 절대방어가 플레이어의 공격을 막아냈습니다!")
+			return result
+		end
+		
 		local finalDmg = math.max(1, damage - monster.def)
 		monster.currentHP -= finalDmg
 		result.damage = finalDmg
@@ -184,17 +206,48 @@ script MonsterManager extends Component
 			result.killed = true
 			log("[MonsterManager] " .. monster.name .. " defeated!")
 		
-			--
-			if monster.isBoss and self.currentBossPhase == 1 then
-				--
-				self.currentBossPhase = 2
-				monster.alive = true
-				monster.maxHP = 700
-				monster.currentHP = 700
-				result.killed = false
-				log("[MonsterManager] " .. tostring(monster.maxHP))
+			-- Phase Transition
+			if monster.isBoss then
+				local oldEntityId = monster.entityId
+				local nextPhase = self.currentBossPhase + 1
+				
+				if nextPhase <= 3 then
+					self.currentBossPhase = nextPhase
+					monster.alive = true
+					
+					if nextPhase == 2 then
+						monster.maxHP = monster.hpPhase2
+						monster.modelID = monster.modelPhase2
+					elseif nextPhase == 3 then
+						monster.maxHP = monster.hpPhase3
+						monster.modelID = monster.modelPhase3
+					end
+					
+					monster.currentHP = monster.maxHP
+					result.killed = false
+					log("[MonsterManager] 보스가 " .. tostring(nextPhase) .. "페이즈에 돌입했습니다! HP: " .. tostring(monster.maxHP))
+					
+					-- Destroy old model and spawn the new one
+					if oldEntityId ~= nil then
+						local oldEntity = _EntityService:GetEntity(oldEntityId)
+						if oldEntity ~= nil then
+							oldEntity:Destroy()
+						end
+					end
+					
+					self:SpawnVisual(monster, 1, true)
+				else
+					-- Boss Dead (Phase 3 defeated)
+					if oldEntityId ~= nil then
+						local entity = _EntityService:GetEntity(oldEntityId)
+						if entity ~= nil then
+							entity:Destroy()
+							log("[MonsterManager] " .. oldEntityId)
+						end
+					end
+				end
 			else
-				--
+				-- Normal Monster Dead
 				if monster.entityId ~= nil then
 					local entity = _EntityService:GetEntity(monster.entityId)
 					if entity ~= nil then
@@ -260,6 +313,12 @@ script MonsterManager extends Component
 			return
 		end
 		
+		if monster.isBoss then
+			-- Boss should not be called with MonsterAction in normal ways, but just in case, redirect.
+			self:BossAction()
+			return
+		end
+		
 		local roll = math.random(1, 100)
 		if roll <= 50 then
 			self:MonsterBasicAttack(index)
@@ -282,7 +341,7 @@ script MonsterManager extends Component
 		
 		local patterns = self.dataManager:GetBossPatterns(self.currentBossId, self.currentBossPhase)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] ")
+			log_error("[MonsterManager] 보스 패턴이 없습니다.")
 			self.lastActionValid = false
 			return
 		end
@@ -291,12 +350,32 @@ script MonsterManager extends Component
 		local pattern = patterns[patternIdx]
 		
 		self.lastActionValid = true
-		self.lastDamage = pattern.dmg
-		self.lastStatus = pattern.status
-		self.lastDotDmg = pattern.dotDmg
-		self.lastDotTurn = pattern.dotTurn
 		
-		log("[MonsterManager] " .. pattern.name .. "[MonsterManager] " .. tostring(pattern.dmg) .. "[MonsterManager] " .. pattern.status)
+		-- Use our property fields to pass skill details to BattleManager
+		self.lastStatus = pattern.effectType  -- 'hp_dmg', 'poison', 'shield', 'heal'
+		self.lastDamage = pattern.effectValue -- percentage or value
+		self.lastDotTurn = pattern.turn -- turns for poison, or 1 for shield
+		
+		log("[MonsterManager] 보스스킬 발동: " .. pattern.name .. " [타입: " .. self.lastStatus .. "] (밸류:" .. tostring(self.lastDamage) .. ")")
+		
+		-- 보스 자신 대상 스킬 처리 (shield, heal)
+		if self.lastStatus == "shield" then
+			boss.shieldActive = true
+			log("[MonsterManager] 보스가 절대방어를 펼쳤습니다!")
+		elseif self.lastStatus == "heal" then
+			local healAmount = math.floor(boss.maxHP * (self.lastDamage / 100.0))
+			boss.currentHP = math.min(boss.maxHP, boss.currentHP + healAmount)
+			log("[MonsterManager] 보스가 체력을 " .. tostring(healAmount) .. " 회복했습니다! (현재 HP: " .. tostring(boss.currentHP) .. ")")
+		end
+		
+		-- Update Boss Skill UI highlight
+		if self.uiMain ~= nil and self.uiMain.UpdateBossSkillUI ~= nil then
+			self.uiMain:UpdateBossSkillUI(self.lastStatus)
+		end
+		
+		local animTargetId = boss.animEntityId
+		if animTargetId == nil then animTargetId = boss.entityId end
+		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
 	end
 
 	method integer GetAliveCount()
@@ -344,11 +423,36 @@ script MonsterManager extends Component
 		self.currentBossPhase = 1
 	end
 
-	method void SpawnVisual(table monster, integer index, boolean isBoss)
+	method void SpawnVisual(table monster, integer index, boolean isBoss, integer totalCount)
 		--
 		-- index 1 -> x=7, index 2 -> x=9, index 3 -> x=11 ...
 		local xPos = 5 + (index - 1) * 2
-		if isBoss then xPos = 4 end --
+		local yPos = 0
+		
+		log("[MonsterManager] SpawnVisual: index=" .. tostring(index) .. " isBoss=" .. tostring(isBoss) .. " monsterSpawnArea=" .. tostring(self.monsterSpawnArea) .. " areaWidth=" .. tostring(self.monsterSpawnAreaWidth))
+		if isBoss and self.bossSpawnPoint ~= nil then
+			local spawnPos = self.bossSpawnPoint.TransformComponent.Position
+			xPos = spawnPos.x
+			yPos = spawnPos.y
+			log("[MonsterManager] Boss spawn at entity position: X=" .. tostring(xPos) .. " Y=" .. tostring(yPos))
+		elseif not isBoss and self.monsterSpawnArea ~= nil then
+			local areaPos = self.monsterSpawnArea.TransformComponent.WorldPosition
+			local areaWidth = self.monsterSpawnArea.TransformComponent.Scale.x
+			
+			log("[MonsterManager] Area debug: areaX=" .. tostring(areaPos.x) .. " width=" .. tostring(areaWidth) .. " total=" .. tostring(totalCount) .. " index=" .. tostring(index))
+			
+			local leftEdge = areaPos.x - (areaWidth / 2)
+			
+			if totalCount <= 1 then
+				xPos = areaPos.x
+			else
+				-- Divide the area into 'totalCount' slots and place each monster in the center of its slot
+				local slotWidth = areaWidth / totalCount
+				xPos = leftEdge + (slotWidth / 2) + ((index - 1) * slotWidth)
+			end
+			yPos = areaPos.y
+			log("[MonsterManager] Monster " .. tostring(index) .. " spawn: X=" .. tostring(xPos) .. " Y=" .. tostring(yPos) .. " width=" .. tostring(areaWidth))
+		end
 		
 		--
 		local spawnModelId = self.modelId
@@ -358,7 +462,7 @@ script MonsterManager extends Component
 		
 		log("[DEBUG-MON] Spawning Visual: Index=" .. tostring(index) .. " ModelID=" .. tostring(spawnModelId))
 		
-		local entity = _SpawnService:SpawnByModelId(spawnModelId, "Monster_" .. tostring(index), Vector3(xPos, 0, 0), self.Entity.Parent)
+		local entity = _SpawnService:SpawnByModelId(spawnModelId, "Monster_" .. tostring(index), Vector3(xPos, yPos, 0), self.Entity.Parent)
 		if entity ~= nil then
 			--
 			local touch = entity.TouchReceiveComponent
@@ -371,6 +475,7 @@ script MonsterManager extends Component
 			local sprite = entity.SpriteRendererComponent
 			if sprite ~= nil then
 				sprite.FlipX = false
+				sprite.OrderInLayer = 10
 			end
 			
 			--
