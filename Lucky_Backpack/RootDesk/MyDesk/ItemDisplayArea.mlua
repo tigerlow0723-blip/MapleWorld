@@ -198,5 +198,82 @@ script ItemDisplayArea extends Component
 		end
 	end
 
+	@ExecSpace("ClientOnly")
+	method void AddReturnedItem(Entity itemEntity, Vector2 dropPosition)
+		if itemEntity == nil or not isvalid(itemEntity) then
+			return
+		end
+
+		self.Entity:SetEnable(true)
+		self.Entity:SetVisible(true)
+
+		if itemEntity.Parent ~= self.Entity then
+			self.Entity:AttachChild(itemEntity)
+		end
+
+		local uiTransform = itemEntity.UITransformComponent
+		local areaUI = self.Entity.UITransformComponent
+		if uiTransform ~= nil and areaUI ~= nil and dropPosition ~= nil then
+			local localPos = _UILogic:ScreenToLocalUIPosition(dropPosition, areaUI)
+			uiTransform.anchoredPosition = localPos
+
+			local itemComp = itemEntity.Item
+			if itemComp ~= nil then
+				itemComp.spawnPosition = {x = localPos.x, y = localPos.y}
+				itemComp:ClearGridPosition()
+			end
+		end
+
+		itemEntity:SetEnable(true)
+		itemEntity:SetVisible(true)
+
+		local exists = false
+		for i = 1, #self.spawnedItems do
+			if self.spawnedItems[i] == itemEntity then
+				exists = true
+				break
+			end
+		end
+		if exists == false then
+			table.insert(self.spawnedItems, itemEntity)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SellRemainingItems()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local playerManager = nil
+		if gameSystem ~= nil then
+			playerManager = gameSystem.PlayerManager
+		end
+
+		local soldCount = 0
+		for i = #self.spawnedItems, 1, -1 do
+			local itemEntity = self.spawnedItems[i]
+			if itemEntity ~= nil and isvalid(itemEntity) then
+				local shouldSell = false
+				if itemEntity.Parent == self.Entity then
+					local itemComp = itemEntity.Item
+					if itemComp == nil or itemComp:IsPlaced() == false then
+						shouldSell = true
+					end
+				end
+
+				if shouldSell then
+					itemEntity:Destroy()
+					soldCount += 1
+				end
+			end
+			table.remove(self.spawnedItems, i)
+		end
+		self.spawnedItems = {}
+
+		local totalGold = soldCount * 50
+		if totalGold > 0 and playerManager ~= nil then
+			playerManager:AddGold(totalGold)
+		end
+		log("[ItemDisplayArea] Auto-sell completed. Count=" .. tostring(soldCount) .. " Gold=" .. tostring(totalGold))
+	end
+
 end
 

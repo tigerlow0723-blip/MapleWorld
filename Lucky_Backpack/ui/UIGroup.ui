@@ -1129,6 +1129,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "Enable": true
             }
@@ -1208,6 +1211,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1288,6 +1294,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1368,6 +1377,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1448,6 +1460,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1528,6 +1543,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1608,6 +1626,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1688,6 +1709,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1768,6 +1792,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1848,6 +1875,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -1928,6 +1958,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2008,6 +2041,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2088,6 +2124,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2168,6 +2207,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2248,6 +2290,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2328,6 +2373,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2408,6 +2456,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2488,6 +2539,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2568,6 +2622,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2648,6 +2705,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2728,6 +2788,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2808,6 +2871,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2888,6 +2954,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -2968,6 +3037,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3048,6 +3120,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3128,6 +3203,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3208,6 +3286,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3288,6 +3369,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3368,6 +3452,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3448,6 +3535,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3528,6 +3618,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3608,6 +3701,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3688,6 +3784,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3768,6 +3867,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3848,6 +3950,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
@@ -3928,6 +4033,9 @@
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "2860136c06ab075439721c027de365af"
+              },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
               "Enable": true
