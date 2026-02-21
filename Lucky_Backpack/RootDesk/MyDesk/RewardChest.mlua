@@ -20,15 +20,18 @@ script RewardChest extends Component
 
 	@ExecSpace("ClientOnly")
 	method void SpawnItems()
+		    log("[RewardLog][RewardChest] trigger index=-1 id=-1 name=spawn_items type=random count=" .. tostring(self.itemCount))
 		    local displayAreaEntity = _EntityService:GetEntityByPath(self.displayAreaPath)
 		    if displayAreaEntity == nil then
 		        log_warning("[RewardChest] ItemDisplayArea entity not found: " .. self.displayAreaPath)
+		        log_warning("[RewardLog][RewardChest] trigger_failed index=-1 id=-1 name=display_area_missing type=random reason=entity_not_found")
 		        return
 		    end
 		
 		    local displayArea = displayAreaEntity.ItemDisplayArea
 		    if displayArea == nil then
 		        log_warning("[RewardChest] ItemDisplayArea component not found")
+		        log_warning("[RewardLog][RewardChest] trigger_failed index=-1 id=-1 name=display_area_missing type=random reason=component_not_found")
 		        return
 		    end
 			
