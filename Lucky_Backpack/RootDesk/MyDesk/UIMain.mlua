@@ -162,6 +162,11 @@ script UIMain extends Component
 	method void UpdateUI()
 		if self.playerManager == nil then return end
 		
+		-- 타겟 강조 갱신 (몬스터가 죽거나 스테이지가 바뀌었을 때 등을 대비)
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+		end
+		
 		-- 1. HP 게이지 업데이트
 		if self.sliderHP ~= nil then
 			local maxHP = self.playerManager.maxHP
@@ -236,14 +241,51 @@ script UIMain extends Component
 		end
 	end
 	
-	-- 몬스터가 클릭되었을 때 호출되는 함수
 	method void OnClickMonster(integer monsterIndex)
 		-- 타겟 설정
 		self.targetMonsterIdx = monsterIndex
 		log("[UI] 타겟 설정됨: 몬스터 " .. tostring(monsterIndex))
 		
-		-- TODO: 타겟 표시 UI 갱신 (선택된 몬스터 강조 등)
+		-- 타겟 표시 시각적 효과 갱신
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+		end
+		
 		self:UpdateUI()
+	end
+	
+	@ExecSpace("ClientOnly")
+	method void UpdateTargetIndicatorPosition(Entity indicator, Vector3 worldPos, boolean visible)
+		if indicator == nil then
+			return
+		end
+		
+		if visible ~= true then
+			indicator.Enable = false
+			return
+		end
+		
+		indicator.Enable = true
+		
+		local uiTransform = indicator.UITransformComponent
+		if uiTransform ~= nil then
+			local parent = indicator.Parent
+			local parentUI = nil
+			if parent ~= nil then
+				parentUI = parent.UITransformComponent
+			end
+			
+			if parentUI ~= nil then
+				local screenPos = _UILogic:WorldToScreenPosition(Vector2(worldPos.x, worldPos.y))
+				uiTransform.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+				return
+			end
+		end
+		
+		local worldTransform = indicator.TransformComponent
+		if worldTransform ~= nil then
+			worldTransform.Position = worldPos
+		end
 	end
 
 end

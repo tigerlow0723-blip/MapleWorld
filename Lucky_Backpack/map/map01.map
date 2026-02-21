@@ -716,7 +716,7 @@
           "@components": [
             {
               "@type": "MOD.Core.BackgroundComponent",
-              "TemplateRUID": "0022a6927f0440218c70ceabe879ecba",
+              "TemplateRUID": "00ead9d81740487e8098ba5b44b83107",
               "Type": 1,
               "Enable": true
             }
