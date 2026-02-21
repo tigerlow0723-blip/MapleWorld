@@ -1,4 +1,4 @@
-@Logic
+﻿@Logic
 script UIPopup extends Logic
 
 	property TextComponent message = "3606e39d-32de-427e-8d23-b38af810a3b4"

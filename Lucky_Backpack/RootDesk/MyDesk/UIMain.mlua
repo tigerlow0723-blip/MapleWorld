@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script UIMain extends Component
 
 	-- Slider (게이지 바) - Entity로 변경 (드래그 편의성)
@@ -272,3 +272,4 @@ script UIMain extends Component
 	end
 
 end
+

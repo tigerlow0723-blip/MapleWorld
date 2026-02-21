@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script MiniGameManager extends Component
 
 	property any gameManager = nil
@@ -181,3 +181,4 @@ script MiniGameManager extends Component
 	end
 
 end
+

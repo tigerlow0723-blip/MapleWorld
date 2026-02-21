@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://61cf6d0e5f324e748439011731580555",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/61cf6d0e5f324e748439011731580555/639072651252228174",
+      "upload_hash": "0EE11140F2425B74900F1A88D15AF9BDCC12561B978BFD139B25E74D5AB84BD5",
+      "name": "데비존의 모자",
+      "resource_guid": "61cf6d0e5f324e748439011731580555",
+      "resource_version": "699983653201639d5a98eaa3"
+    }
+  }
+}

@@ -199,3 +199,4 @@ script ItemDisplayArea extends Component
 	end
 
 end
+

@@ -1,5 +1,5 @@
 ﻿id,type,name,width,height,cost,atk,min_atk,max_atk,atkPercent,accPercent,critRate,critDmg,hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask
-2001,armor,파란색 머리띠,2,1,2,0,,,0,0,0,0,0,0,5,1,기본 레어 방어구,5640eb09571f4be49a46d219c3cf3386,11
+2001,armor,머리 위에 떡 두개,2,1,2,0,,,0,0,0,0,0,0,5,1,기본 레어 방어구,25d5c0376df1457cba72126b65bffc7b,11
 2002,armor,갈색 삿갓,2,1,2,0,,,0,0,0,0,0,0,10,0,기본 에픽 방어구,226a2cbcb6dc42be9ea5851a269570ba,11
-2003,armor,설빙의 투구,2,1,2,0,,,0,0,0,0,0,0,15,0,기본 유니크 방어구,1cbb4e3ee8c2493d93a32cee1e0f9abd,11
-2004,armor,데비존의 모자,2,1,2,0,,,0,0,0,0,0,0,20,0,기본 레전더리 방어구,fe7967e786724b73bb88cf93ff2155f0,11
+2003,armor,설빙의 투구,2,1,2,0,,,0,0,0,0,0,0,15,0,기본 유니크 방어구,27900cefed2f4c809ce9945cd8383efa,11
+2004,armor,데비존의 모자,2,1,2,0,,,0,0,0,0,0,0,20,0,기본 레전더리 방어구,61cf6d0e5f324e748439011731580555,11

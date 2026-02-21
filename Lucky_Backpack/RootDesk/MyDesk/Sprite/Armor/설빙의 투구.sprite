@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://27900cefed2f4c809ce9945cd8383efa",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/27900cefed2f4c809ce9945cd8383efa/639072651252129756",
+      "upload_hash": "5DC1C0CC9791E5ADDF9B2FDF9A690CF5E95BEA86A4FD6BD70E42200C41265846",
+      "name": "설빙의 투구",
+      "resource_guid": "27900cefed2f4c809ce9945cd8383efa",
+      "resource_version": "69998365c20404cce164a6b7"
+    }
+  }
+}

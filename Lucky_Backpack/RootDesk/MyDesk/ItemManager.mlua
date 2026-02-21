@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script ItemManager extends Component
 
 	property any dataManager = nil
@@ -169,3 +169,4 @@ script ItemManager extends Component
 	end
 
 end
+
