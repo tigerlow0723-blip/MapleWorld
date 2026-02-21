@@ -378,38 +378,7 @@ script GameManager extends Component
 			log("[GameManager] Auto-sell skipped: ItemDisplayArea is nil.")
 			return
 		end
-		if self.itemDisplayArea.spawnedItems == nil then
-			self.itemDisplayArea.spawnedItems = {}
-			log("[GameManager] Auto-sell skipped: spawnedItems was nil.")
-			return
-		end
-
-		local soldCount = 0
-
-		for i = #self.itemDisplayArea.spawnedItems, 1, -1 do
-			local itemEntity = self.itemDisplayArea.spawnedItems[i]
-			if itemEntity ~= nil and isvalid(itemEntity) then
-				local shouldSell = true
-				local itemComp = itemEntity.Item
-				if itemComp ~= nil then
-					-- Sell only items not placed in inventory grid.
-					shouldSell = (itemComp:IsPlaced() == false)
-				end
-
-				if shouldSell then
-					soldCount += 1
-					itemEntity:Destroy()
-				end
-			end
-			table.remove(self.itemDisplayArea.spawnedItems, i)
-		end
-		self.itemDisplayArea.spawnedItems = {}
-
-		local autoSellGold = soldCount * 50
-		if autoSellGold > 0 and self.playerManager ~= nil then
-			self.playerManager:AddGold(autoSellGold)
-		end
-		log("[GameManager] Auto-sell result. Count=" .. tostring(soldCount) .. ", Gold=" .. tostring(autoSellGold))
+		self.itemDisplayArea:SellRemainingItems()
 	end
 
 	method void CloseShop()

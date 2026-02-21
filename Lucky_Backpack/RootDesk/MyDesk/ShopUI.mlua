@@ -528,8 +528,13 @@ method void OnClickCard(integer index)
             self.itemDisplayArea.Entity:SetVisible(true)
         end
         local nextIndex = #self.itemDisplayArea.spawnedItems
-        self.itemDisplayArea:CreateItemEntity(itemData.id, nextIndex)
-        self.itemDisplayArea:ArrangeItems()
+        local spawned = self.itemDisplayArea:CreateItemEntity(itemData.id, nextIndex)
+        if spawned ~= nil and spawned.UITransformComponent ~= nil then
+            spawned.UITransformComponent.anchoredPosition = Vector2(0, 100)
+            if spawned.Item ~= nil then
+                spawned.Item.spawnPosition = {x = 0, y = 100}
+            end
+        end
     end
 
     self.shopItems[index] = nil
