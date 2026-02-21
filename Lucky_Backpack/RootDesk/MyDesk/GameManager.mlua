@@ -144,7 +144,7 @@ script GameManager extends Component
 		self.gameState = "Playing"
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
-		self.currentStage = 1
+		self.currentStage = 10
 		
 --
 		if self.playerManager == nil then
