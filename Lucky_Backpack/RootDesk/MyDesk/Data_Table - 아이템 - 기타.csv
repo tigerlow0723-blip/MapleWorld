@@ -1,4 +1,4 @@
-id,type,name,width,height,cost,atk,min_atk,max_atk,atkPercent,accPercent,critRate,critDmg,hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask,price
+﻿id,type,name,width,height,cost,atk,min_atk,max_atk,atkPercent,accPercent,critRate,critDmg,hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask,price
 1,expand,인벤토리 확장,0,0,0,0,0,0,0,0,0,0,0,0,0,0,인벤토리 확장,,1,
 2,consumable,빨간 물약,0,0,1,0,0,0,0,0,0,0,50,0,0,1,기본 레어 회복 물약,323920d2805d4ec1aa85eca9e3e1cab2,1,
 3,consumable,하얀 물약,0,0,1,0,0,0,0,0,0,0,75,0,0,0,기본 에픽 회복 물약,b8254e6cd0ba4b82b160e2f2c2cfd72a,1,

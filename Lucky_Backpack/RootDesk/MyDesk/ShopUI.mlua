@@ -270,22 +270,26 @@ end
 
 @ExecSpace("ClientOnly")
 method void ClearRenderedCards()
-    if self.cardEntities == nil then
+    if self.cardEntities == nil or type(self.cardEntities) ~= "table" then
         self.cardEntities = {}
         return
     end
 
-    for i = #self.cardEntities, 1, -1 do
-        local cardEntity = self.cardEntities[i]
+    for _, cardEntity in pairs(self.cardEntities) do
         if cardEntity ~= nil and isvalid(cardEntity) then
             cardEntity:Destroy()
         end
-        table.remove(self.cardEntities, i)
     end
+    self.cardEntities = {}
 end
 
 @ExecSpace("ClientOnly")
 method void ArrangeItemCards()
+    if self.cardEntities == nil or type(self.cardEntities) ~= "table" then
+        self.cardEntities = {}
+        return
+    end
+
     local cardCount = #self.cardEntities
     if cardCount <= 0 then
         return
