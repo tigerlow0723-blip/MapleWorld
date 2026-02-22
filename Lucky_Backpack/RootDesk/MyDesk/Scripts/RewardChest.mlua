@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script RewardChest extends Component
 
 	property string displayAreaPath = ""
@@ -45,4 +45,3 @@ script RewardChest extends Component
 	end
 
 end
-

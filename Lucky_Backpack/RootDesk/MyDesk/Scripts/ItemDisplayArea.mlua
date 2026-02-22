@@ -1,18 +1,23 @@
-﻿@Component
+@Component
 script ItemDisplayArea extends Component
 
 	property string inventoryUIPath = ""
+
 	property integer slotSize = 80
+
 	property integer verticalSpacing = 100
+
 	property integer horizontalOffset = 40
+
 	property table spawnedItems = {}
+
 	property string itemTemplatePath = ""
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		self.Entity:SetEnable(false)
 		self.Entity:SetVisible(false)
-
+		
 		local children = self.Entity.Children
 		if children ~= nil then
 			for i = 1, #children do
@@ -46,14 +51,14 @@ script ItemDisplayArea extends Component
 		if gameSystem ~= nil then
 			dataManager = gameSystem.DataManager
 		end
-
+		
 		if dataManager ~= nil then
 			local firstItem = dataManager:GetItemData(1)
 			if firstItem == nil or firstItem.type ~= "weapon" then
 				tutorialIds = {1001, 1002, 1003, 1004, 1005}
 			end
 		end
-
+		
 		for i = 1, #tutorialIds do
 			self:CreateItemEntity(tutorialIds[i], i - 1)
 		end
@@ -63,7 +68,7 @@ script ItemDisplayArea extends Component
 	@ExecSpace("ClientOnly")
 	method void GenerateRandomItems(integer count)
 		self:ClearAllItems()
-
+		
 		local expandItemIds = {}
 		local normalItemIds = {}
 		local function hasValidSprite(itemData)
@@ -84,7 +89,7 @@ script ItemDisplayArea extends Component
 		if gameSystem ~= nil then
 			dataManager = gameSystem.DataManager
 		end
-
+		
 		if dataManager ~= nil then
 			for itemId, itemData in pairs(dataManager.ItemTable) do
 				if itemData ~= nil then
@@ -109,34 +114,34 @@ script ItemDisplayArea extends Component
 				end
 			end
 		end
-
+		
 		if #expandItemIds == 0 then
 			log_warning("[ItemDisplayArea] No expand item found in item table.")
 			log_warning("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=none type=expand count=0 reason=expand_pool_empty")
 			return
 		end
-
+		
 		local spawnItemIds = {}
-
+		
 		local expandCount = math.random(1, 3)
 		for i = 1, expandCount do
 			local pick = math.random(1, #expandItemIds)
 			local selectedId = expandItemIds[pick]
 			spawnItemIds[#spawnItemIds + 1] = selectedId
 		end
-
+		
 		local normalPickCount = 3
 		if normalPickCount > #normalItemIds then
 			normalPickCount = #normalItemIds
 		end
-
+		
 		for i = 1, normalPickCount do
 			local randomIndex = math.random(1, #normalItemIds)
 			local itemId = normalItemIds[randomIndex]
 			spawnItemIds[#spawnItemIds + 1] = itemId
 			table.remove(normalItemIds, randomIndex)
 		end
-
+		
 		log("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=reward_selected type=mixed count=" .. tostring(#spawnItemIds) .. " expand_count=" .. tostring(expandCount))
 		for i = 1, #spawnItemIds do
 			local plannedId = spawnItemIds[i]
@@ -152,11 +157,11 @@ script ItemDisplayArea extends Component
 			end
 			log("[RewardLog][ItemDisplayArea] reward_selected_item index=" .. tostring(i - 1) .. " id=" .. tostring(plannedId) .. " name=" .. tostring(plannedName) .. " type=" .. tostring(plannedType))
 		end
-
+		
 		for i = 1, #spawnItemIds do
 			self:CreateItemEntity(spawnItemIds[i], i - 1)
 		end
-
+		
 		self:ArrangeItems()
 	end
 
@@ -168,30 +173,30 @@ script ItemDisplayArea extends Component
 			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=template_missing")
 			return nil
 		end
-
+		
 		local itemEntity = templateEntity:Clone("RewardItem_" .. index)
 		if itemEntity == nil then
 			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=clone_failed")
 			return nil
 		end
-
+		
 		self.Entity:AttachChild(itemEntity)
 		itemEntity:SetEnable(true)
 		itemEntity:SetVisible(true)
-
+		
 		local itemComp = itemEntity.Item
 		if itemComp ~= nil then
 			itemComp.itemId = itemId
 			itemComp.inventoryUIPath = self.inventoryUIPath
 			itemComp:InitFromTable(itemId)
-
+		
 			local itemName = itemComp.itemName or "unknown"
 			local itemType = itemComp.itemType or "unknown"
 			local spriteValid = false
 			if itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
 				spriteValid = true
 			end
-
+		
 			local renderer = itemEntity.SpriteGUIRendererComponent
 			if renderer ~= nil then
 				renderer.Color = Color(1, 1, 1, 1)
@@ -208,7 +213,7 @@ script ItemDisplayArea extends Component
 		else
 			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=item_component_missing")
 		end
-
+		
 		table.insert(self.spawnedItems, itemEntity)
 		return itemEntity
 	end
@@ -219,29 +224,29 @@ script ItemDisplayArea extends Component
 		if itemCount <= 0 then
 			return
 		end
-
+		
 		local totalHeight = (itemCount - 1) * self.verticalSpacing
 		local startY = totalHeight * 0.5
-
+		
 		for i, itemEntity in ipairs(self.spawnedItems) do
 			if itemEntity == nil or not isvalid(itemEntity) then
 				continue
 			end
-
+		
 			local uiTransform = itemEntity.UITransformComponent
 			if uiTransform == nil then
 				continue
 			end
-
+		
 			local index = i - 1
 			local posY = startY - (index * self.verticalSpacing)
 			local posX = self.horizontalOffset
 			if index % 2 == 0 then
 				posX = -self.horizontalOffset
 			end
-
+		
 			uiTransform.anchoredPosition = Vector2(posX, posY)
-
+		
 			local itemComp = itemEntity.Item
 			if itemComp ~= nil then
 				itemComp.spawnPosition = {x = posX, y = posY}
@@ -255,7 +260,7 @@ script ItemDisplayArea extends Component
 		self.Entity:SetEnable(true)
 		self.Entity:SetVisible(true)
 		local summary = ""
-
+		
 		for i = 1, #itemDataList do
 			if itemDataList[i] ~= nil and itemDataList[i].id ~= nil then
 				local itemName = itemDataList[i].name or "unknown"
@@ -268,7 +273,7 @@ script ItemDisplayArea extends Component
 			end
 		end
 		log("[RewardLog][ItemDisplayArea] display_items index=-1 id=-1 name=display_items type=mixed count=" .. tostring(#itemDataList) .. " items=" .. summary)
-
+		
 		self:ArrangeItems()
 	end
 
@@ -287,30 +292,30 @@ script ItemDisplayArea extends Component
 		if itemEntity == nil or not isvalid(itemEntity) then
 			return
 		end
-
+		
 		self.Entity:SetEnable(true)
 		self.Entity:SetVisible(true)
-
+		
 		if itemEntity.Parent ~= self.Entity then
 			self.Entity:AttachChild(itemEntity)
 		end
-
+		
 		local uiTransform = itemEntity.UITransformComponent
 		local areaUI = self.Entity.UITransformComponent
 		if uiTransform ~= nil and areaUI ~= nil and dropPosition ~= nil then
 			local localPos = _UILogic:ScreenToLocalUIPosition(dropPosition, areaUI)
 			uiTransform.anchoredPosition = localPos
-
+		
 			local itemComp = itemEntity.Item
 			if itemComp ~= nil then
 				itemComp.spawnPosition = {x = localPos.x, y = localPos.y}
 				itemComp:ClearGridPosition()
 			end
 		end
-
+		
 		itemEntity:SetEnable(true)
 		itemEntity:SetVisible(true)
-
+		
 		local exists = false
 		for i = 1, #self.spawnedItems do
 			if self.spawnedItems[i] == itemEntity then
@@ -330,7 +335,7 @@ script ItemDisplayArea extends Component
 		if gameSystem ~= nil then
 			playerManager = gameSystem.PlayerManager
 		end
-
+		
 		local soldCount = 0
 		for i = #self.spawnedItems, 1, -1 do
 			local itemEntity = self.spawnedItems[i]
@@ -342,7 +347,7 @@ script ItemDisplayArea extends Component
 						shouldSell = true
 					end
 				end
-
+		
 				if shouldSell then
 					itemEntity:Destroy()
 					soldCount += 1
@@ -351,7 +356,7 @@ script ItemDisplayArea extends Component
 			table.remove(self.spawnedItems, i)
 		end
 		self.spawnedItems = {}
-
+		
 		local totalGold = soldCount * 50
 		if totalGold > 0 and playerManager ~= nil then
 			playerManager:AddGold(totalGold)
@@ -360,4 +365,3 @@ script ItemDisplayArea extends Component
 	end
 
 end
-

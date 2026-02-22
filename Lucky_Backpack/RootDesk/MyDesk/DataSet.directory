@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "directory://78ad5d72a163480ab1ac76e0e290657c",
+  "EntryKey": "directory://02de626a1127447a92280ae9315a85b6",
   "ContentType": "x-mod/directory",
   "Content": "",
   "Usage": 0,
@@ -13,8 +13,8 @@
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "entry_id": "directory://78ad5d72a163480ab1ac76e0e290657c",
-      "name": "Script",
+      "entry_id": "directory://02de626a1127447a92280ae9315a85b6",
+      "name": "DataSet",
       "lock": false,
       "folding": false,
       "nameEditable": true

@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script PlayerManager extends Component
 
 	property string classId = "War"
@@ -22,9 +22,13 @@ script PlayerManager extends Component
 	property number baseCritDmg = 0
 
 	property number atk = 0
+
 	property number acc = 0
+
 	property number critRate = 0
+
 	property number critDmg = 0
+
 	property integer gold = 0
 
 	property table inventory = {}
@@ -36,26 +40,27 @@ script PlayerManager extends Component
 	property string skillName = ""
 
 	property any dataManager = nil
+
 	property any inventoryComp = nil
 
 	method any ResolveInventoryComp()
 		if self.inventoryComp ~= nil then
 			return self.inventoryComp
 		end
-
+		
 		self.inventoryComp = self.Entity.Inventory
 		if self.inventoryComp ~= nil then
 			return self.inventoryComp
 		end
-
+		
 		local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
 		if invUIEntity ~= nil then
 			self.inventoryComp = invUIEntity.Inventory
 		end
-
+		
 		return self.inventoryComp
 	end
-	--
+
 	method void OnBeginPlay()
 		self.inventoryComp = self:ResolveInventoryComp()
 		if self.inventoryComp == nil then
@@ -91,10 +96,10 @@ script PlayerManager extends Component
 		self.gold = 0
 		self.inventory = {}
 		self.buffList = {}
-
+		
 		self.inventoryComp = self:ResolveInventoryComp()
-
-
+		
+		
 		if self.inventoryComp ~= nil then
 			self.inventoryComp:InitGrid()
 		end
@@ -425,7 +430,7 @@ script PlayerManager extends Component
 					rowText = rowText .. ch
 				end
 			end
-
+		
 			if rowText ~= "" then
 				for colIndex = 1, string.len(rowText) do
 					if string.sub(rowText, colIndex, colIndex) == "1" then
@@ -434,7 +439,7 @@ script PlayerManager extends Component
 				end
 			end
 		end
-
+		
 		if #shapeCells == 0 then
 			local width = itemData.width or 1
 			local height = itemData.height or 1
@@ -444,14 +449,14 @@ script PlayerManager extends Component
 				end
 			end
 		end
-
+		
 		return shapeCells
 	end
 
 	method void AddItem(table itemData)
 		self.inventoryComp = self:ResolveInventoryComp()
-
-
+		
+		
 		if self.inventoryComp ~= nil then
 			local width = itemData.width or 1
 			local height = itemData.height or 1
@@ -483,7 +488,7 @@ script PlayerManager extends Component
 				log_warning("[PlayerManager] No space to place item in inventory: " .. tostring(itemData.id))
 			end
 		end
-
+		
 		log("[PlayerManager] Item added: " .. (itemData.name or tostring(itemData.id)))
 	end
 
@@ -550,4 +555,3 @@ script PlayerManager extends Component
 	end
 
 end
-

@@ -1,50 +1,66 @@
-﻿@Component
+@Component
 script UIMain extends Component
 
-	-- Slider (게이지 바) - Entity로 변경 (드래그 편의성)
 	property Entity sliderHP = nil
+
 	property Entity sliderCost = nil
-	property Entity txtHP = nil 
-	property Entity txtCost = nil 
-	
+
+	property Entity txtHP = nil
+
+	property Entity txtCost = nil
+
 	property Entity sliderBossHP = nil
+
 	property Entity txtBossHP = nil
+
 	property Entity uiBossInfoGroup = nil
-	
-	-- Boss Skill Roulette UI
-	property Entity uiBossSkill1 = nil  -- hp_dmg
-	property Entity uiBossSkill2 = nil  -- poison
-	property Entity uiBossSkill3 = nil  -- shield
-	property Entity uiBossSkill4 = nil  -- heal
-	
+
+	property Entity uiBossSkill1 = nil
+
+	property Entity uiBossSkill2 = nil
+
+	property Entity uiBossSkill3 = nil
+
+	property Entity uiBossSkill4 = nil
+
 	property Entity btnTurnEnd = nil
+
 	property Entity btnBattleStart = nil
+
 	property Entity txtStage = nil
-	
+
 	property Entity uiStage5_1 = nil
+
 	property Entity uiStage5_2 = nil
+
 	property Entity uiStage5_3 = nil
-	
-	-- 미니게임 버튼들
+
 	property Entity btnPlayOddEven = nil
+
 	property Entity btnEnterShop = nil
+
 	property Entity btnExitMiniGame = nil
-	
+
 	property Entity btnOdd = nil
+
 	property Entity btnEven = nil
+
 	property Entity btnBackFromPlay = nil
-	
+
 	property Entity btnSellAllOre = nil
+
 	property Entity btnSellAllGoldBar = nil
+
 	property Entity btnBackFromShop = nil
-	
+
 	property any gameManager = nil
+
 	property any battleManager = nil
+
 	property any playerManager = nil
-	
-	property integer targetMonsterIdx = 0 -- 선택된 몬스터 타겟 인덱스
-	
-	
+
+	property integer targetMonsterIdx = 0
+
 	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
 		log("[UIMain] InitializeUI 호출됨")
 		self.gameManager = gameMgr
@@ -56,7 +72,7 @@ script UIMain extends Component
 		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
 		log("[UIMain] UI 초기화 완료")
 	end
-	
+
 	method void ConnectEvents()
 		-- 턴 종료 버튼
 		if self.btnTurnEnd ~= nil then
@@ -68,7 +84,7 @@ script UIMain extends Component
 				self:UpdateUI()
 			end)
 		end
-
+		
 		-- 전투 시작 버튼
 		if self.btnBattleStart ~= nil then
 			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
@@ -77,7 +93,7 @@ script UIMain extends Component
 						self.gameManager:EndPreparation()
 						return
 					end
-
+		
 					self.gameManager:TriggerBattleStart()
 				end
 			end)
@@ -152,7 +168,7 @@ script UIMain extends Component
 			end)
 		end
 	end
-	
+
 	method void UpdateUI()
 		if self.playerManager == nil then return end
 		
@@ -299,7 +315,7 @@ script UIMain extends Component
 			if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
 		end
 	end
-	
+
 	method void OnClickMonster(integer monsterIndex)
 		-- 타겟 설정
 		self.targetMonsterIdx = monsterIndex
@@ -312,7 +328,7 @@ script UIMain extends Component
 		
 		self:UpdateUI()
 	end
-	
+
 	@ExecSpace("ClientOnly")
 	method void UpdateTargetIndicatorPosition(Entity indicator, Vector3 worldPos, boolean visible)
 		if indicator == nil then
@@ -373,7 +389,7 @@ script UIMain extends Component
 		end
 		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
 	end
-	
+
 	method void ResetBossSkillUI()
 		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
 		for i = 1, #entities do
@@ -383,7 +399,7 @@ script UIMain extends Component
 			end
 		end
 	end
-	
+
 	method void SetBossSkillUIEnable(boolean enable)
 		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
 		for i = 1, #entities do
@@ -394,4 +410,3 @@ script UIMain extends Component
 	end
 
 end
-

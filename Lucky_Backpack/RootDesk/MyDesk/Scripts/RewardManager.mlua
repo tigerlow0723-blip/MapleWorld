@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script RewardManager extends Component
 
 	property table droppedItems = {}

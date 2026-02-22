@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script UIMyInfoSimple extends Component
 
 	property TextComponent myName = nil

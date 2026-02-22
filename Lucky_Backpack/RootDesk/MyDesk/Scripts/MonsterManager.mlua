@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script MonsterManager extends Component
 
 	property table monsterList = {}
@@ -7,24 +7,22 @@ script MonsterManager extends Component
 
 	property string currentBossId = ""
 
-	-- Boss spawn position entity
 	property Entity bossSpawnPoint = nil
 
-	-- Monster spawn area entity (position = center, Scale X = width)
 	property Entity monsterSpawnArea = nil
 
 	property integer currentBossPhase = 1
 
 	property any dataManager = nil
-	
-	--
-	property string modelId = "model://maplestorymonster$17d15ed30cb74b25a3542fa71fb5b849" 
+
+	property string modelId = "model://maplestorymonster$17d15ed30cb74b25a3542fa71fb5b849"
 
 	property Entity targetIndicator = nil
+
 	property string targetIndicatorPath = "/ui/UIGroup/TargetIndicator"
+
 	property string targetIndicatorImageRUID = ""
 
-	--
 	property number lastDamage = 0
 
 	property string lastStatus = "none"
@@ -35,10 +33,11 @@ script MonsterManager extends Component
 
 	property boolean lastActionValid = false
 
-	-- reward result
 	property integer lastRewardExp = 0
 
 	property integer lastRewardGold = 0
+
+	property any uiMain = nil
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
@@ -99,9 +98,6 @@ script MonsterManager extends Component
 		end
 	end
 
-	--
-	property any uiMain = nil
-	
 	method void Init(any ui)
 		self.uiMain = ui
 	end
@@ -571,7 +567,6 @@ script MonsterManager extends Component
 		end
 	end
 
-	--
 	method void PlayEntityState(string entityId, string stateName, number duration)
 		log("[MonsterManager] " .. tostring(entityId) .. " state=" .. tostring(stateName))
 		if entityId == nil or entityId == "" then return end
@@ -661,9 +656,9 @@ script MonsterManager extends Component
 				log_warning("[MonsterManager] TargetIndicator UI not found: " .. tostring(self.targetIndicatorPath))
 			end
 		end
-
+		
 		local validTargetEntity = nil
-
+		
 		for i = 1, #self.monsterList do
 			local monster = self.monsterList[i]
 			if monster ~= nil and monster.entityId ~= nil then
@@ -683,7 +678,7 @@ script MonsterManager extends Component
 				end
 			end
 		end
-
+		
 		--
 		if self.targetIndicator ~= nil then
 			if validTargetEntity ~= nil then
