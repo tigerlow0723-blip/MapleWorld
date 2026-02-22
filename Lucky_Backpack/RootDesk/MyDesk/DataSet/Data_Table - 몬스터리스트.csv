@@ -1,7 +1,14 @@
 ﻿ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,goldDrop,ModelID
-M_01,독버섯,1,50,8,2,5,POISON,50,1,독,5,3,10,5,5,model://maplestorymonster$8dd319b680f54ce590bc63b47b80cfb8
-M_02,좀비,1,80,10,5,0,MULTI,50,2,없음,0,0,15,10,10,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54
-M_03,화염술사,2,60,12,1,10,BURN,50,1,화상,8,2,20,15,15,model://maplestorymonster$6cd4eacefeb14836a002d48b112db1cb
-M_04,얼음골렘,2,100,9,8,0,FREEZE,50,1,빙결,0,1,25,20,20,
-M_05,다크나이트,3,120,14,6,15,DARK,50,1,암흑,6,2,30,25,25,
-M_06,화산거북,4,150,16,10,5,BURN,50,1,화상,10,3,40,30,30,
+M_01,주니어 페페,1,200,5,,,POISON,100,,,5,4,,,,model://maplestorymonster$bdbbdecb893949cd88891b9175106efd
+M_02,페페,2,1000,75,,,,,,,,,,,,model://maplestorymonster$fb25f77230494175ab4347e6aeebb3d6
+M_03,주니어 예티,2,1000,75,,,,,,,,,,,,model://maplestorymonster$9cd5951048484659809808d24d02466b
+M_04,예티와 페페,3,2500,150,,,,,,,,,,,,model://maplestorymonster$ad6ae7c07af5413b91527816483d3847
+M_05,화이트팽,4,2000,70,,,,,,,,,,,,model://maplestorymonster$39405e66974e476c9057585e93932d22
+M_06,헥터,4,3000,100,,,,,,,,,,,,model://maplestorymonster$75e189978d3041649e0332d1451baf49
+M_07,웨어울프,6,7500,75,,,MULTI,50,2,,,,,,,model://maplestorymonster$1a1dcf27010e4a0389f1a10d63a06f74
+M_08,쿨리좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54
+M_09,마이너좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$70813aa4bbd34dd484b7e6e01edd9271
+M_10,플라이좀비,7,1500,250,,,,,,,,,,,,model://maplestorymonster$ff92a83b36034ce5962e4f4a958fab81
+M_11,파이어독,8,10000,75,,,,,,,,,,,,model://maplestorymonster$6dd6bf3d231b42abb58581cb22bd5057
+M_12,파이어봄,8,2500,350,,,,,,,,,,,,model://maplestorymonster$53731fb2333b412385d3085483328d43
+M_13,쿠스코,9,20000,200,,,,,,,,,,,,model://maplestorymonster$6f278d2646d54928ac52da6eb51d1612
