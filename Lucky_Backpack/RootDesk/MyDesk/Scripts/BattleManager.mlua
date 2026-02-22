@@ -1,4 +1,4 @@
-@Component
+Ôªø@Component
 script BattleManager extends Component
 
 	property string currentTurn = "None"
@@ -254,7 +254,6 @@ script BattleManager extends Component
 			self:EndBattle("Victory")
 		end
 	end
-
 	method void EndPlayerTurn()
 		if self.currentTurn ~= "Player" then
 			return
@@ -263,23 +262,21 @@ script BattleManager extends Component
 		log("[BattleManager] >>> Player Turn End -> Monster Turn Start <<<")
 		self.currentTurn = "Monster"
 		
-		--
-		self:ProcessPlayerDots()
-		
-		--
-		self.playerManager:TickBuffs()
-		
-		--
-		self.monsterTurnIndex = 0
-		self:ExecuteNextMonsterAction()
+		self:ProcessPlayerDots(function()
+			if self.playerManager.isDead == true then
+				return
+			end
+			
+			self.playerManager:TickBuffs()
+			self.monsterTurnIndex = 0
+			self:ExecuteNextMonsterAction()
+		end)
 	end
-
 	method void ExecuteNextMonsterAction()
 		self.monsterTurnIndex += 1
 		
 		local monsterList = self.monsterManager.monsterList
 		
-		--
 		while self.monsterTurnIndex <= #monsterList do
 			local monster = monsterList[self.monsterTurnIndex]
 			if monster ~= nil and monster.alive == true then
@@ -288,34 +285,37 @@ script BattleManager extends Component
 			self.monsterTurnIndex += 1
 		end
 		
-		--
 		if self.monsterTurnIndex > #monsterList then
 			self:OnMonsterTurnEnd()
 			return
 		end
 		
-		--
 		if self.monsterManager.isBossBattle then
 			self.monsterManager:BossAction()
 		else
 			self.monsterManager:MonsterAction(self.monsterTurnIndex)
 		end
 		
-		-- Handle Monster/Boss attack effects
+		local function queueNext()
+			local nextFunc = function()
+				self:ExecuteNextMonsterAction()
+			end
+			self.monsterTurnTimerId = _TimerService:SetTimerOnce(nextFunc, 1.0)
+		end
+		
 		if self.monsterManager.lastActionValid == true then
 			local statusName = self.monsterManager.lastStatus
-			local effectValue = self.monsterManager.lastDamage -- percentage for HP percent skills
-			-- Normalize monster status text from data tables.
-			if statusName == "µ∂" then
+			local effectValue = self.monsterManager.lastDamage
+			
+			if statusName == "ÎèÖ" then
 				statusName = "poison"
-			elseif statusName == "æ¯¿Ω" then
+			elseif statusName == "ÏóÜÏùå" then
 				statusName = "none"
 			elseif statusName ~= nil then
 				statusName = string.lower(statusName)
 			end
 			
 			if statusName == "hp_dmg" then
-				-- Fixed percentage damage of Player's Max HP
 				local maxHP = self.playerManager.maxHP or self.playerManager.hp
 				local dmg = math.floor(maxHP * (effectValue / 100.0))
 				self.playerManager:TakeDamage(dmg)
@@ -344,33 +344,52 @@ script BattleManager extends Component
 						log("[BattleManager] Monster poison applied: " .. tostring(dmgPerTurn) .. " x " .. tostring(dotTurnVal) .. " turns")
 					end
 				end
+			elseif statusName == "multi" then
+				local hitCount = self.monsterManager.lastHitCount or 1
+				if hitCount <= 0 then hitCount = 1 end
+				local oneHitDamage = self.monsterManager.lastDamage or 0
+				local hitIndex = 0
+				
+				local hitFunc = nil
+				hitFunc = function()
+					hitIndex += 1
+					self.playerManager:TakeDamage(oneHitDamage)
+					self:RefreshUI()
+					
+					if self.playerManager.isDead == true then
+						self:EndBattle("Defeat")
+						return
+					end
+					
+					if hitIndex < hitCount then
+						_TimerService:SetTimerOnce(hitFunc, 0.12)
+					else
+						queueNext()
+					end
+				end
+				
+				hitFunc()
+				return
 			elseif statusName == "none" or statusName == nil then
-				-- Normal attack
 				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 			else
-				-- Unknown status from data: still apply base damage so attacks are not skipped.
 				log_warning("[BattleManager] Unknown monster status: " .. tostring(self.monsterManager.lastStatus) .. ", fallback to normal damage")
 				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 			end
 			
 			self:RefreshUI()
-		
-			--
 			if self.playerManager.isDead == true then
 				self:EndBattle("Defeat")
 				return
 			end
 		end
 		
-		--
-		local nextFunc = function()
-			self:ExecuteNextMonsterAction()
-		end
-		self.monsterTurnTimerId = _TimerService:SetTimerOnce(nextFunc, 1.0)
+		queueNext()
 	end
-
-	method void ProcessPlayerDots()
+	method void ProcessPlayerDots(any onDone)
+		local hits = {}
 		local newDots = {}
+		
 		for i = 1, #self.playerDotEffects do
 			local dot = self.playerDotEffects[i]
 			if dot ~= nil and dot.remainTurn > 0 then
@@ -384,9 +403,12 @@ script BattleManager extends Component
 				end
 				
 				if appliedDmg > 0 then
-					self.playerManager:TakeDamage(appliedDmg)
-					log("[BattleManager] DoT damage: " .. dot.status .. " " .. tostring(appliedDmg))
+					hits[#hits + 1] = {
+						status = dot.status,
+						dmg = appliedDmg
+					}
 				end
+				
 				dot.remainTurn -= 1
 				if dot.remainTurn > 0 then
 					newDots[#newDots + 1] = dot
@@ -395,11 +417,44 @@ script BattleManager extends Component
 				end
 			end
 		end
+		
 		self.playerDotEffects = newDots
 		
-		if self.playerManager.isDead == true then
-			self:EndBattle("Defeat")
+		if #hits == 0 then
+			if self.playerManager.isDead == true then
+				self:EndBattle("Defeat")
+				return
+			end
+			if onDone ~= nil then onDone() end
+			return
 		end
+		
+		local hitIndex = 0
+		local applyNext = nil
+		applyNext = function()
+			hitIndex += 1
+			if hitIndex > #hits then
+				if self.playerManager.isDead == true then
+					self:EndBattle("Defeat")
+					return
+				end
+				if onDone ~= nil then onDone() end
+				return
+			end
+			
+			local h = hits[hitIndex]
+			self.playerManager:TakeDamage(h.dmg)
+			log("[BattleManager] DoT damage: " .. tostring(h.status) .. " " .. tostring(h.dmg) .. " (" .. tostring(hitIndex) .. "/" .. tostring(#hits) .. ")")
+			
+			if self.playerManager.isDead == true then
+				self:EndBattle("Defeat")
+				return
+			end
+			
+			_TimerService:SetTimerOnce(applyNext, 0.08)
+		end
+		
+		applyNext()
 	end
 
 	method void OnMonsterTurnEnd()

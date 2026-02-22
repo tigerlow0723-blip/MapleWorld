@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script MonsterManager extends Component
 
 	property table monsterList = {}
@@ -24,6 +24,8 @@ script MonsterManager extends Component
 	property string targetIndicatorImageRUID = ""
 
 	property number lastDamage = 0
+
+	property integer lastHitCount = 1
 
 	property string lastStatus = "none"
 
@@ -113,13 +115,13 @@ script MonsterManager extends Component
 		
 		local basicData = dataMgr:GetBossBasicData(bossId)
 		if basicData == nil then
-			log_error("[MonsterManager] 보스 기본 ?�이?��? 찾을 ???�습?�다: " .. bossId)
+			log_error("[MonsterManager] 보스 기본 ?�이?��? 찾을 ???�습?�다: " .. bossId)
 			return
 		end
 		
 		local patterns = dataMgr:GetBossPatterns(bossId, 1)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] 보스 ?�턴??찾을 ???�습?�다: " .. bossId)
+			log_error("[MonsterManager] 보스 ?�턴??찾을 ???�습?�다: " .. bossId)
 			return
 		end
 		
@@ -153,7 +155,7 @@ script MonsterManager extends Component
 		self.monsterList[#self.monsterList + 1] = boss
 		
 		self:SpawnVisual(boss, 1, true, 1)
-		log("[MonsterManager] 보스 ?�폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP) .. " Phase: 1")
+		log("[MonsterManager] 보스 ?�폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP) .. " Phase: 1")
 	end
 
 	method table DamageMonster(integer index, number damage, number accuracy)
@@ -186,7 +188,7 @@ script MonsterManager extends Component
 			result.hit = false
 			result.damage = 0
 			monster.shieldActive = false
-			log("[MonsterManager] 보스???��?방어가 ?�레?�어??공격??막아?�습?�다!")
+			log("[MonsterManager] 보스???��?방어가 ?�레?�어??공격??막아?�습?�다!")
 			return result
 		end
 		
@@ -230,7 +232,7 @@ script MonsterManager extends Component
 					
 					monster.currentHP = monster.maxHP
 					result.killed = false
-					log("[MonsterManager] 보스가 " .. tostring(nextPhase) .. "?�이즈에 ?�입?�습?�다! HP: " .. tostring(monster.maxHP))
+					log("[MonsterManager] 보스가 " .. tostring(nextPhase) .. "?�이즈에 ?�입?�습?�다! HP: " .. tostring(monster.maxHP))
 					
 					-- Destroy old model and spawn the new one
 					if oldEntityId ~= nil then
@@ -303,7 +305,6 @@ script MonsterManager extends Component
 			log_warning("[MonsterManager] HitComponent not found on monster: " .. tostring(targetEntityId))
 		end
 	end
-
 	method void MonsterBasicAttack(integer index)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
@@ -311,24 +312,17 @@ script MonsterManager extends Component
 			return
 		end
 		
-		local totalDmg = 0
-		for h = 1, monster.atkCount do
-			totalDmg += monster.atk
-		end
-		
 		self.lastActionValid = true
-		self.lastDamage = totalDmg
+		self.lastDamage = monster.atk or 0
+		self.lastHitCount = 1
 		self.lastStatus = "none"
 		self.lastDotDmg = 0
 		self.lastDotTurn = 0
 		
-		log("[MonsterManager] " .. monster.name .. "[MonsterManager] " .. tostring(totalDmg) .. " (" .. tostring(monster.atkCount) .. "[MonsterManager] ")
-		--
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "ATTACK1", 2.0)
 	end
-
 	method void MonsterSkillAttack(integer index)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
@@ -337,26 +331,44 @@ script MonsterManager extends Component
 		end
 		
 		self.lastActionValid = true
-		self.lastDamage = monster.atk
+		self.lastDamage = monster.atk or 0
+		self.lastHitCount = 1
 		self.lastDotDmg = monster.dotDmg
 		self.lastDotTurn = monster.dotTurn
 		
 		local patternKey = string.lower(monster.patternId or "")
+		patternKey = string.gsub(patternKey, "^%s+", "")
+		patternKey = string.gsub(patternKey, "%s+$", "")
+		
 		if patternKey == "poison" then
 			self.lastStatus = "poison"
 		elseif patternKey == "multi" then
-			self.lastStatus = "none"
+			self.lastStatus = "multi"
+			self.lastHitCount = monster.atkCount or 2
+			if self.lastHitCount <= 0 then
+				self.lastHitCount = 2
+			end
 		else
-			self.lastStatus = monster.status
+			local statusKey = string.lower(monster.status or "")
+			statusKey = string.gsub(statusKey, "^%s+", "")
+			statusKey = string.gsub(statusKey, "%s+$", "")
+			if statusKey == "multi" then
+				self.lastStatus = "multi"
+				self.lastHitCount = monster.atkCount or 2
+				if self.lastHitCount <= 0 then
+					self.lastHitCount = 2
+				end
+			elseif statusKey == "poison" then
+				self.lastStatus = "poison"
+			else
+				self.lastStatus = monster.status
+			end
 		end
 		
-		log("[MonsterManager] " .. monster.name .. "[MonsterManager] " .. tostring(monster.atk) .. "[MonsterManager] " .. monster.status)
-		--
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
 	end
-
 	method void MonsterAction(integer index)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
@@ -365,8 +377,15 @@ script MonsterManager extends Component
 		end
 		
 		if monster.isBoss then
-			-- Boss should not be called with MonsterAction in normal ways, but just in case, redirect.
 			self:BossAction()
+			return
+		end
+		
+		local patternKey = string.lower(monster.patternId or "")
+		patternKey = string.gsub(patternKey, "^%s+", "")
+		patternKey = string.gsub(patternKey, "%s+$", "")
+		if patternKey == "multi" then
+			self:MonsterSkillAttack(index)
 			return
 		end
 		
@@ -375,7 +394,6 @@ script MonsterManager extends Component
 		if patternProb > 100 then patternProb = 100 end
 		
 		local roll = math.random(1, 100)
-		log("[MonsterManager] Pattern roll=" .. tostring(roll) .. " / prob=" .. tostring(patternProb) .. " : " .. monster.name)
 		if roll <= patternProb then
 			self:MonsterSkillAttack(index)
 		else
@@ -397,7 +415,7 @@ script MonsterManager extends Component
 		
 		local patterns = self.dataManager:GetBossPatterns(self.currentBossId, self.currentBossPhase)
 		if patterns == nil or #patterns == 0 then
-			log_error("[MonsterManager] 보스 ?�턴???�습?�다.")
+			log_error("[MonsterManager] 보스 ?�턴???�습?�다.")
 			self.lastActionValid = false
 			return
 		end
@@ -406,22 +424,23 @@ script MonsterManager extends Component
 		local pattern = patterns[patternIdx]
 		
 		self.lastActionValid = true
+		self.lastHitCount = 1
 		
 		-- Use our property fields to pass skill details to BattleManager
 		self.lastStatus = pattern.effectType  -- 'hp_dmg', 'poison', 'shield', 'heal'
 		self.lastDamage = pattern.effectValue -- percentage or value
 		self.lastDotTurn = pattern.turn -- turns for poison, or 1 for shield
 		
-		log("[MonsterManager] 보스?�킬 발동: " .. pattern.name .. " [?�?? " .. self.lastStatus .. "] (밸류:" .. tostring(self.lastDamage) .. ")")
+		log("[MonsterManager] 보스?�킬 발동: " .. pattern.name .. " [?�?? " .. self.lastStatus .. "] (밸류:" .. tostring(self.lastDamage) .. ")")
 		
-		-- 보스 ?�신 ?�???�킬 처리 (shield, heal)
+		-- 보스 ?�신 ?�???�킬 처리 (shield, heal)
 		if self.lastStatus == "shield" then
 			boss.shieldActive = true
-			log("[MonsterManager] 보스가 ?��?방어�??�쳤?�니??")
+			log("[MonsterManager] 보스가 ?��?방어�??�쳤?�니??")
 		elseif self.lastStatus == "heal" then
 			local healAmount = math.floor(boss.maxHP * (self.lastDamage / 100.0))
 			boss.currentHP = math.min(boss.maxHP, boss.currentHP + healAmount)
-			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?�복?�습?�다! (?�재 HP: " .. tostring(boss.currentHP) .. ")")
+			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?�복?�습?�다! (?�재 HP: " .. tostring(boss.currentHP) .. ")")
 		end
 		
 		-- Update Boss Skill UI highlight
