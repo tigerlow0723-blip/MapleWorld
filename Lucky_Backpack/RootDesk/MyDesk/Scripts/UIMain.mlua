@@ -53,11 +53,15 @@ script UIMain extends Component
 
 	property Entity btnBackFromShop = nil
 
+	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
+
 	property any gameManager = nil
 
 	property any battleManager = nil
 
 	property any playerManager = nil
+
+	property any scrollInventoryUI = nil
 
 	property integer targetMonsterIdx = 0
 
@@ -169,8 +173,26 @@ script UIMain extends Component
 		end
 	end
 
+	method void RefreshScrollInventoryUI()
+		if self.scrollInventoryUI == nil then
+			local scrollPanel = _EntityService:GetEntityByPath(self.scrollPanelPath)
+			if scrollPanel == nil then
+				scrollPanel = _EntityService:GetEntityByPath("/ui/UIGroup")
+			end
+			if scrollPanel ~= nil then
+				self.scrollInventoryUI = scrollPanel.ScrollInventoryUI
+			end
+		end
+		
+		if self.scrollInventoryUI ~= nil then
+			self.scrollInventoryUI:UpdateUI()
+		end
+	end
+
 	method void UpdateUI()
 		if self.playerManager == nil then return end
+		
+		self:RefreshScrollInventoryUI()
 		
 		-- 타겟 강조 갱신 (몬스터가 죽거나 스테이지가 바뀌었을 때 등을 대비)
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then

@@ -413,20 +413,30 @@ script ItemDisplayArea extends Component
 		end
 		
 		local soldCount = 0
+		local movedScrollCount = 0
 		for i = #self.spawnedItems, 1, -1 do
 			local itemEntity = self.spawnedItems[i]
 			if itemEntity ~= nil and isvalid(itemEntity) then
 				local shouldSell = false
+				local soldItemId = 0
 				if itemEntity.Parent == self.Entity then
 					local itemComp = itemEntity.Item
 					if itemComp == nil or itemComp:IsPlaced() == false then
 						shouldSell = true
+						if itemComp ~= nil then
+							soldItemId = itemComp.itemId or 0
+						end
 					end
 				end
 		
 				if shouldSell then
+					if playerManager ~= nil and (soldItemId == 9 or soldItemId == 10) then
+						playerManager:AddScroll(soldItemId, 1)
+						movedScrollCount += 1
+					else
+						soldCount += 1
+					end
 					itemEntity:Destroy()
-					soldCount += 1
 				end
 			end
 			table.remove(self.spawnedItems, i)
@@ -437,7 +447,7 @@ script ItemDisplayArea extends Component
 		if totalGold > 0 and playerManager ~= nil then
 			playerManager:AddGold(totalGold)
 		end
-		log("[ItemDisplayArea] Auto-sell completed. Count=" .. tostring(soldCount) .. " Gold=" .. tostring(totalGold))
+		log("[ItemDisplayArea] Auto-sell completed. SoldCount=" .. tostring(soldCount) .. " Gold=" .. tostring(totalGold) .. " MovedScrollCount=" .. tostring(movedScrollCount))
 	end
 
 end
