@@ -148,6 +148,8 @@ script DataManager extends Component
 			headers["desc"] = true
 			headers["imageRUID"] = true
 			headers["shapeMask"] = true
+			headers["grade"] = true
+			headers["next_upgrade_id"] = true
 			return headers
 		end
 		
@@ -561,6 +563,8 @@ script DataManager extends Component
 						data.desc = getString("desc", "")
 						data.spawnGroup = getNumber("Spawn_Group", "", 1)
 						data.imageRUID = getString("imageRUID", "")
+						data.grade = getString("grade", "")
+						data.nextUpgradeId = getNumber("next_upgrade_id", "", 0)
 		
 						local shapeMask = getString("shapeMask", "")
 						if shapeMask == "" then
