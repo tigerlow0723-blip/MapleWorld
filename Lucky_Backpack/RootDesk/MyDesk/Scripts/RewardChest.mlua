@@ -3,8 +3,6 @@ script RewardChest extends Component
 
 	property string displayAreaPath = ""
 
-	property integer itemCount = 5
-
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 			self.Entity:SetEnable(false)
@@ -20,7 +18,7 @@ script RewardChest extends Component
 
 	@ExecSpace("ClientOnly")
 	method void SpawnItems()
-		    log("[RewardLog][RewardChest] trigger index=-1 id=-1 name=spawn_items type=random count=" .. tostring(self.itemCount))
+		    log("[RewardLog][RewardChest] trigger index=-1 id=-1 name=spawn_items type=random policy=expand_1_to_3_plus_normal_3")
 		    local displayAreaEntity = _EntityService:GetEntityByPath(self.displayAreaPath)
 		    if displayAreaEntity == nil then
 		        log_warning("[RewardChest] ItemDisplayArea entity not found: " .. self.displayAreaPath)
@@ -35,7 +33,7 @@ script RewardChest extends Component
 		        return
 		    end
 			
-			displayArea:GenerateRandomItems(self.itemCount)
+			displayArea:GenerateRandomItems()
 		
 			if displayAreaEntity ~= nil then
 				displayAreaEntity:SetEnable(true)

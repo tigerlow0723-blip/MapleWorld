@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://c084bd224b584f838e25d041bbabfb7b",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/c084bd224b584f838e25d041bbabfb7b/639073440491597595",
+      "upload_hash": "6A1A27E75B1EBAC390A82D58E4ADE9A74FD7F9EF408329822177F5E561FB760C",
+      "name": "ShopPanelUI",
+      "resource_guid": "c084bd224b584f838e25d041bbabfb7b",
+      "resource_version": "699ab7b1c20404cce164aba7"
+    }
+  }
+}

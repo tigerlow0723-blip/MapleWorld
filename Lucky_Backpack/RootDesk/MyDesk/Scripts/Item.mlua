@@ -37,6 +37,10 @@ script Item extends Component
 
 	property string spriteRUID = ""
 
+	property string grade = ""
+
+	property integer next_upgrade_id = 0
+
 	property integer gridRow = -1
 
 	property integer gridCol = -1
@@ -117,6 +121,39 @@ script Item extends Component
 		    self.spawnGroup = tonumber(itemData.spawnGroup) or 0
 		    self.desc = itemData.desc or ""
 		    self.spriteRUID = itemData.imageRUID or ""
+		    self.grade = itemData.grade or ""
+		    self.next_upgrade_id = tonumber(itemData.next_upgrade_id) or 0
+
+		    local weaponDataSetName = "Data_Table - 아이템 - 장비"
+		    local weaponDataSet = _DataService:GetTable(weaponDataSetName)
+		    if weaponDataSet ~= nil then
+		        local row = self:FindItemRowById(weaponDataSet, id)
+		        if row > 0 then
+		            local okGrade, gradeValue = pcall(function()
+		                return weaponDataSet:GetCell(row, 21)
+		            end)
+		            if okGrade == false or gradeValue == nil or gradeValue == "" then
+		                okGrade, gradeValue = pcall(function()
+		                    return weaponDataSet:GetCell(row, "grade")
+		                end)
+		            end
+		            if okGrade and gradeValue ~= nil and gradeValue ~= "" then
+		                self.grade = tostring(gradeValue)
+		            end
+		
+		            local okNext, nextUpgradeValue = pcall(function()
+		                return weaponDataSet:GetCell(row, 22)
+		            end)
+		            if okNext == false or nextUpgradeValue == nil or nextUpgradeValue == "" then
+		                okNext, nextUpgradeValue = pcall(function()
+		                    return weaponDataSet:GetCell(row, "next_upgrade_id")
+		                end)
+		            end
+		            if okNext and nextUpgradeValue ~= nil and nextUpgradeValue ~= "" then
+		                self.next_upgrade_id = tonumber(nextUpgradeValue) or 0
+		            end
+		        end
+		    end
 		
 		    local shapeMask = itemData.shapeMask or ""
 		    self.shapeMatrix = self:ParseShapeMask(shapeMask)
@@ -155,10 +192,17 @@ script Item extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method integer FindItemRowById(string dataSet, integer id)
-		    local rowCount = _DataService:GetRowCount(dataSet)
+	method integer FindItemRowById(any dataSet, integer id)
+		    if dataSet == nil then
+		        return 0
+		    end
+		
+		    local rowCount = dataSet:GetRowCount()
 		    for row = 1, rowCount do
-		        local rowId = tonumber(_DataService:GetCell(dataSet, row, "id"))
+		        local rowId = tonumber(dataSet:GetCell(row, "id"))
+		        if rowId == nil then
+		            rowId = tonumber(dataSet:GetCell(row, "ID"))
+		        end
 		        if rowId ~= nil and rowId == id then
 		            return row
 		        end

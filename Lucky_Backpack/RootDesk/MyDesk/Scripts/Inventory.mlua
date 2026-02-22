@@ -230,6 +230,20 @@ script Inventory extends Component
 		    return true
 	end
 
+	method boolean ConsumeItem(integer itemId, integer row, integer col, integer w, integer h)
+		    local info = self.placedItems[itemId]
+		    if info ~= nil then
+		        if row > 0 and col > 0 then
+		            return self:RemoveItemAt(itemId, row, col, w, h)
+		        end
+		        return self:RemoveItem(itemId)
+		    end
+		
+		    self.placedItems[itemId] = nil
+		    log("[Inventory] Consumed item " .. itemId)
+		    return true
+	end
+
 	method boolean ExpandGrid()
 		    if self.currentWidth >= self.maxWidth and self.currentHeight >= self.maxHeight then
 		        log_warning("[Inventory] Grid already at max size")
