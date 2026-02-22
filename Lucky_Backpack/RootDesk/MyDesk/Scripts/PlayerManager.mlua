@@ -341,6 +341,8 @@ script PlayerManager extends Component
 		else
 			self:PlayPlayerAnim("Hit")
 		end
+		
+		self:ProcessHitVisual(finalDmg)
 	end
 
 	method void Heal(number amount)
@@ -589,18 +591,23 @@ script PlayerManager extends Component
 			return nil
 		end
 		
+		local buffTurn = 3
+		if skillData.activeTurn ~= nil and skillData.activeTurn > 0 then
+			buffTurn = skillData.activeTurn
+		end
+		
 		--
 		if skillData.heal > 0 then
 			self:Heal(skillData.heal)
 		end
 		if skillData.critRate > 0 then
-			self:AddBuff("critRate", skillData.critRate, 3)
+			self:AddBuff("critRate", skillData.critRate, buffTurn)
 		end
 		if skillData.critDmg > 0 then
-			self:AddBuff("critDmg", skillData.critDmg, 3)
+			self:AddBuff("critDmg", skillData.critDmg, buffTurn)
 		end
 		if skillData.atk > 0 then
-			self:AddBuff("atkPercent", skillData.atk, 3)
+			self:AddBuff("atkPercent", skillData.atk, buffTurn)
 		end
 		
 		log("[PlayerManager] Skill used: " .. self.skillName)
@@ -615,6 +622,55 @@ script PlayerManager extends Component
 		if stateComp ~= nil then
 			stateComp:ChangeState(stateName)
 		end
+	end
+
+	@ExecSpace("Client")
+	method void ProcessHitVisual(number damage)
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		
+		-- 진짜 메이?�스?�리 ?��?지 ?�스???��?지 ?�킨)�??�우�??�해 HitEvent 발생
+		-- ?�백(?�로 밀�???방�??�기 ?�해 ?�동/물리 컴포?�트�??�시 비활?�화?�니??
+		local rb = player.RigidbodyComponent
+		local mv = player.MovementComponent
+		local wasRbEnabled = false
+		local wasMvEnabled = false
+		
+		if rb ~= nil then
+			wasRbEnabled = rb.Enable
+			rb.Enable = false
+		end
+		
+		if mv ~= nil then
+			wasMvEnabled = mv.Enable
+			mv.Enable = false
+		end
+		
+		-- Parameter: (방향, ?��?지?�치, ?�리?�컬?��?, 공격?�턴?�름, ?�격횟??
+				local hitComp = player.HitComponent
+		if hitComp ~= nil then
+			hitComp:OnHit(player, math.ceil(damage), false, "Attack", 1)
+		else
+			log_warning("[PlayerManager] HitComponent not found on LocalPlayer.")
+		end
+		
+		-- 0.5�??�백 계산 종료) ?�에 ?�시 물리 ?�태 복구
+		local restoreFunc = function()
+			if _EntityService:IsValid(player) then
+				local crb = player.RigidbodyComponent
+				local cmv = player.MovementComponent
+				if crb ~= nil then crb.Enable = wasRbEnabled end
+				if cmv ~= nil then cmv.Enable = wasMvEnabled end
+				
+				-- 가?�도가 ?�아?�을 ???�으므�?초기??
+				if crb ~= nil and wasRbEnabled then
+					crb.MoveVelocity = Vector2.zero
+					crb:SetForce(Vector2.zero)
+				end
+			end
+		end
+		
+		_TimerService:SetTimerOnce(restoreFunc, 0.5)
 	end
 
 end
