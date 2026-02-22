@@ -7267,7 +7267,7 @@
       {
         "id": "214e3da4-150a-46fb-9dcd-5b55a89dfa00",
         "path": "/ui/UIGroup/ShopPanel/ItemList",
-        "componentNames": "MOD.Core.UITransformComponent",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
         "jsonString": {
           "name": "ItemList",
           "path": "/ui/UIGroup/ShopPanel/ItemList",
@@ -7300,12 +7300,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 850.0,
-                "y": -205.0
+                "x": 783.577637,
+                "y": -166.16
               },
               "OffsetMin": {
-                "x": -350.0,
-                "y": -555.0
+                "x": -416.4224,
+                "y": -566.160034
               },
               "Pivot": {
                 "x": 0.5,
@@ -7313,17 +7313,17 @@
               },
               "RectSize": {
                 "x": 1200.0,
-                "y": 350.0
+                "y": 400.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 250.0,
-                "y": -380.0
+                "x": 183.5776,
+                "y": -366.16
               },
               "Position": {
-                "x": 250.0,
-                "y": -380.0,
+                "x": 183.5776,
+                "y": -366.16,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7332,6 +7332,14 @@
                 "z": 0.0,
                 "w": 1.0
               },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "c084bd224b584f838e25d041bbabfb7b"
+              },
+              "OverrideSorting": false,
               "Enable": true
             }
           ],
@@ -7346,7 +7354,7 @@
           "name": "ItemCardTemplate",
           "path": "/ui/UIGroup/ShopPanel/ItemList/ItemCardTemplate",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 0,
@@ -7374,12 +7382,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -380.0,
-                "y": 25.0000763
+                "x": -336.5148,
+                "y": 154.0242
               },
               "OffsetMin": {
-                "x": -580.0,
-                "y": -274.999939
+                "x": -536.5148,
+                "y": -145.9758
               },
               "Pivot": {
                 "x": 0.5,
@@ -7392,12 +7400,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -480.0,
-                "y": -124.999924
+                "x": -436.5148,
+                "y": 4.0242
               },
               "Position": {
-                "x": -480.0,
-                "y": -124.999924,
+                "x": -436.5148,
+                "y": 4.0242,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7411,7 +7419,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "2860136c06ab075439721c027de365af"
+                "DataId": "691ca26fa0df43d885924fb001d818f5"
               },
               "OverrideSorting": false,
               "Color": {
@@ -7507,20 +7515,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 65.0,
-                "y": 145.0
+                "x": 50.0,
+                "y": 130.0
               },
               "OffsetMin": {
-                "x": -65.0,
-                "y": 15.0
+                "x": -50.0,
+                "y": 30.0
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 130.0,
-                "y": 130.0
+                "x": 100.0,
+                "y": 100.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -10224,7 +10232,9 @@
                 "DataId": "58e099a62e0d47569fc9109e0b8be031"
               },
               "OverrideSorting": false,
+              "FlipX": false,
               "FlipY": false,
+              "RaycastTarget": true,
               "Enable": true
             }
           ],

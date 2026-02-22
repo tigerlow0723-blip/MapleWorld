@@ -66,7 +66,7 @@ script ItemDisplayArea extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void GenerateRandomItems(integer count)
+	method void GenerateRandomItems()
 		self:ClearAllItems()
 		
 		local expandItemIds = {}
@@ -108,7 +108,14 @@ script ItemDisplayArea extends Component
 							isGoldOre = true
 						end
 						if isGoldOre == false and hasValidSprite(itemData) then
-							normalItemIds[#normalItemIds + 1] = itemId
+							if itemType == "weapon" then
+								local weaponGrade = itemData.grade or ""
+								if weaponGrade == "Rare" then
+									normalItemIds[#normalItemIds + 1] = itemId
+								end
+							else
+								normalItemIds[#normalItemIds + 1] = itemId
+							end
 						end
 					end
 				end
@@ -138,7 +145,76 @@ script ItemDisplayArea extends Component
 		for i = 1, normalPickCount do
 			local randomIndex = math.random(1, #normalItemIds)
 			local itemId = normalItemIds[randomIndex]
-			spawnItemIds[#spawnItemIds + 1] = itemId
+			local selectedId = itemId
+			local selectedData = nil
+			local roll = 0
+			local rulePath = "pool_pick"
+			local baseType = "unknown"
+			local baseGrade = "None"
+			local resultGrade = "Unknown"
+			if dataManager ~= nil then
+				selectedData = dataManager:GetItemData(itemId)
+			end
+			if selectedData ~= nil then
+				baseType = selectedData.type or "unknown"
+				baseGrade = selectedData.grade or "None"
+				resultGrade = baseGrade
+			end
+		
+			if selectedData ~= nil and selectedData.type == "weapon" and selectedData.grade == "Rare" then
+				roll = math.random(1, 100)
+				if roll >= 71 and roll <= 95 then
+					local epicId = tonumber(selectedData.nextUpgradeId) or 0
+					if epicId > 0 then
+						selectedId = epicId
+						rulePath = "weapon_rare_to_epic"
+						resultGrade = "Epic"
+					else
+						rulePath = "weapon_rare_to_epic_fallback_rare"
+						resultGrade = "Rare"
+					end
+				elseif roll >= 96 and roll <= 100 then
+					local epicId = tonumber(selectedData.nextUpgradeId) or 0
+					if epicId > 0 and dataManager ~= nil then
+						local epicData = dataManager:GetItemData(epicId)
+						if epicData ~= nil then
+							local uniqueId = tonumber(epicData.nextUpgradeId) or 0
+							if uniqueId > 0 then
+								selectedId = uniqueId
+								rulePath = "weapon_rare_to_unique"
+								resultGrade = "Unique"
+							else
+								rulePath = "weapon_rare_to_unique_fallback_rare"
+								resultGrade = "Rare"
+							end
+						else
+							rulePath = "weapon_rare_to_unique_fallback_rare"
+							resultGrade = "Rare"
+						end
+					else
+						rulePath = "weapon_rare_to_unique_fallback_rare"
+						resultGrade = "Rare"
+					end
+				else
+					rulePath = "weapon_rare_keep"
+					resultGrade = "Rare"
+				end
+			else
+				rulePath = "non_rare_or_non_weapon"
+			end
+		
+			spawnItemIds[#spawnItemIds + 1] = selectedId
+			local resultName = "unknown"
+			if dataManager ~= nil then
+				local resultData = dataManager:GetItemData(selectedId)
+				if resultData ~= nil then
+					resultName = resultData.name or "unknown"
+					if resultData.grade ~= nil and resultData.grade ~= "" then
+						resultGrade = resultData.grade
+					end
+				end
+			end
+			log("[RewardRoll][ItemDisplayArea] index=" .. tostring(i - 1) .. " base_id=" .. tostring(itemId) .. " base_type=" .. tostring(baseType) .. " base_grade=" .. tostring(baseGrade) .. " roll=" .. tostring(roll) .. " result_id=" .. tostring(selectedId) .. " result_name=" .. tostring(resultName) .. " result_grade=" .. tostring(resultGrade) .. " rule=" .. tostring(rulePath))
 			table.remove(normalItemIds, randomIndex)
 		end
 		

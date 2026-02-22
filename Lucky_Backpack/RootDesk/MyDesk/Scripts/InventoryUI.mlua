@@ -396,6 +396,11 @@ script InventoryUI extends Component
 		
 		    local touchPoint = event.TouchPoint
 		    self.dragState.lastTouchPoint = touchPoint
+		    if self:TryUpgradeItem(touchPoint) then
+		        self:EndDrag()
+		        return
+		    end
+		
 		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
 		
 		    if result.row > 0 and result.col > 0 then
@@ -413,6 +418,219 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method boolean TryUpgradeItem(Vector2 touchPoint)
+		    if self.dragState == nil or self.dragState.itemEntity == nil then
+		        return false
+		    end
+		
+		    local scrollItemTarget = self.dragState.itemEntity.Item
+		    if scrollItemTarget == nil then
+		        return false
+		    end
+		
+		    local scrollId = scrollItemTarget.itemId
+		    if scrollId ~= 9 and scrollId ~= 10 then
+		        return false
+		    end
+		
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        return false
+		    end
+		
+		    local weaponTarget = nil
+		    local targetCell = self:ScreenPosToGridCell(touchPoint, 1, 1)
+		    if targetCell.row > 0 and targetCell.col > 0 then
+		        local targetItemId = inventory:GetCellValue(targetCell.row, targetCell.col)
+		        if targetItemId > 1 then
+		            local children = self.Entity.Children
+		            if children ~= nil then
+		                for i = 1, #children do
+		                    local child = children[i]
+		                    if child ~= nil and child.Item ~= nil then
+		                        local inventoryWeapon = child.Item
+		                        if inventoryWeapon ~= nil and inventoryWeapon.itemId == targetItemId and inventoryWeapon.itemType == "weapon" then
+		                            weaponTarget = inventoryWeapon
+		                            break
+		                        end
+		                    end
+		                end
+		            end
+		        end
+		    end
+		
+		    if weaponTarget == nil then
+		        weaponTarget = self:FindDisplayAreaWeaponTarget(touchPoint)
+		    end
+		    if weaponTarget ~= nil then
+		        self:ProcessUpgrade(scrollItemTarget, weaponTarget)
+		        return true
+		    end
+		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method any FindDisplayAreaWeaponTarget(Vector2 touchPoint)
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem == nil or gameSystem.GameManager == nil then
+		        return nil
+		    end
+		
+		    local displayArea = gameSystem.GameManager.itemDisplayArea
+		    if displayArea == nil or displayArea.Entity == nil then
+		        return nil
+		    end
+		    if self:IsPointInsideDisplayArea(displayArea, touchPoint) == false then
+		        return nil
+		    end
+		
+		    local children = displayArea.Entity.Children
+		    if children == nil then
+		        return nil
+		    end
+		
+		    for i = #children, 1, -1 do
+		        local child = children[i]
+		        if child ~= nil and child.Item ~= nil then
+		            local itemComp = child.Item
+		            if itemComp ~= nil and itemComp.itemType == "weapon" then
+		                if self:IsPointInsideItemEntity(child, touchPoint) then
+		                    return itemComp
+		                end
+		            end
+		        end
+		    end
+		
+		    return nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsPointInsideItemEntity(Entity itemEntity, Vector2 touchPoint)
+		    if itemEntity == nil or touchPoint == nil then
+		        return false
+		    end
+		
+		    local itemUI = itemEntity.UITransformComponent
+		    if itemUI == nil then
+		        return false
+		    end
+		    local size = itemUI.RectSize
+		    if size == nil then
+		        return false
+		    end
+		
+		    local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, itemUI)
+		    local halfW = size.x * 0.5
+		    local halfH = size.y * 0.5
+		    if localPos.x < -halfW or localPos.x > halfW then
+		        return false
+		    end
+		    if localPos.y < -halfH or localPos.y > halfH then
+		        return false
+		    end
+		    return true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ProcessUpgrade(Component scrollItemTarget, Component weaponTarget)
+		    if scrollItemTarget == nil or weaponTarget == nil then
+		        return
+		    end
+		
+		    local scrollId = scrollItemTarget.itemId
+		    if scrollId ~= 9 and scrollId ~= 10 then
+		        return
+		    end
+		
+		    if weaponTarget.next_upgrade_id <= 0 or weaponTarget.grade == "Legendary" then
+		        self:ReturnToOrigin()
+		        log_error("[Upgrade] Weapon cannot be upgraded.")
+		        return
+		    end
+		
+		    local isSuccess = true
+		    if scrollId == 9 then
+		        local successChance = 0
+		        if weaponTarget.grade == "Rare" then
+		            successChance = 90
+		        elseif weaponTarget.grade == "Epic" then
+		            successChance = 10
+		        elseif weaponTarget.grade == "Unique" then
+		            successChance = 5
+		        end
+		
+		        local roll = math.random(1, 100)
+		        if roll > successChance then
+		            isSuccess = false
+		        end
+		    end
+		
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        self:ReturnToOrigin()
+		        log_error("[Upgrade] Inventory not found.")
+		        return
+		    end
+		
+		    local scrollRow = scrollItemTarget.gridRow or 0
+		    local scrollCol = scrollItemTarget.gridCol or 0
+		    local scrollW = scrollItemTarget.width or 1
+		    local scrollH = scrollItemTarget.height or 1
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    inventory:ConsumeItem(scrollItemTarget.itemId, scrollRow, scrollCol, scrollW, scrollH)
+		
+		    if self.dragState ~= nil and self.dragState.itemEntity ~= nil and isvalid(self.dragState.itemEntity) then
+		        if gameSystem ~= nil and gameSystem.GameManager ~= nil and gameSystem.GameManager.itemDisplayArea ~= nil then
+		            gameSystem.GameManager.itemDisplayArea:RemoveItem(self.dragState.itemEntity)
+		        end
+		        self.dragState.itemEntity:Destroy()
+		    end
+		
+		    local targetInInventory = weaponTarget.gridRow > 0 and weaponTarget.gridCol > 0
+		
+		    if isSuccess == false then
+		        log("[Upgrade] Upgrade failed. Scroll consumed.")
+		        if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
+		            gameSystem.PlayerManager:SyncInventoryFromGrid()
+		        end
+		        return
+		    end
+		
+		    local prevItemId = weaponTarget.itemId
+		    local upgradedItemId = weaponTarget.next_upgrade_id
+		    local weaponRow = weaponTarget.gridRow
+		    local weaponCol = weaponTarget.gridCol
+		    if targetInInventory then
+		        inventory:RemoveItem(prevItemId)
+		    end
+		    weaponTarget:InitFromTable(upgradedItemId)
+		
+		    local weaponRenderer = weaponTarget.Entity.SpriteGUIRendererComponent
+		    if weaponRenderer ~= nil and weaponTarget.spriteRUID ~= nil and weaponTarget.spriteRUID ~= "" and weaponTarget.spriteRUID ~= "NONE" then
+		        weaponRenderer.ImageRUID = weaponTarget.spriteRUID
+		    end
+		
+		    if targetInInventory then
+		        local upgradedShape = weaponTarget:GetShapeCells()
+		        local placed = inventory:PlaceItem(weaponRow, weaponCol, weaponTarget.itemId, upgradedShape)
+		        if placed then
+		            weaponTarget:SetGridPosition(weaponRow, weaponCol)
+		            self:SnapItemToGrid(weaponTarget.Entity, weaponRow, weaponCol, weaponTarget.width, weaponTarget.height, upgradedShape)
+		            log("[Upgrade] Upgrade success: " .. tostring(prevItemId) .. " -> " .. tostring(weaponTarget.itemId))
+		        else
+		            log_error("[Upgrade] Upgrade succeeded but placement failed.")
+		        end
+		    else
+		        weaponTarget:ClearGridPosition()
+		        log("[Upgrade] Display item upgrade success: " .. tostring(prevItemId) .. " -> " .. tostring(weaponTarget.itemId))
+		    end
+		
+		    if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
+		        gameSystem.PlayerManager:SyncInventoryFromGrid()
+		    end
+	end
+
 	method boolean TryDropToDisplayArea(Vector2 touchPoint)
 		    if self.dragState == nil or self.dragState.itemEntity == nil then
 		        return false
