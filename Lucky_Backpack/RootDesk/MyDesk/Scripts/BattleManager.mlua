@@ -320,17 +320,29 @@ script BattleManager extends Component
 				local dmg = math.floor(maxHP * (effectValue / 100.0))
 				self.playerManager:TakeDamage(dmg)
 			elseif statusName == "poison" then
-				-- Apply Poison DOT as fixed damage per turn from monster data.
-				local dmgPerTurn = math.floor(self.monsterManager.lastDotDmg or 0)
-				local dotTurnVal = self.monsterManager.lastDotTurn
+				local dotTurnVal = self.monsterManager.lastDotTurn or 1
+				if dotTurnVal <= 0 then
+					dotTurnVal = 1
+				end
 				
-				if dmgPerTurn > 0 then
-					local dot = {}
-					dot.status = "poison"
-					dot.dmg = dmgPerTurn
-					dot.remainTurn = dotTurnVal
-					self.playerDotEffects[#self.playerDotEffects + 1] = dot
-					log("[BattleManager] ë§¹ë… ?íƒœ?´ìƒ ë¶€?? ë§???" .. tostring(dmgPerTurn) .. " ?¼í•´ (" .. tostring(dotTurnVal) .. "???¨ìŒ)")
+				local dot = {}
+				dot.status = "poison"
+				dot.remainTurn = dotTurnVal
+				
+				if self.monsterManager.isBossBattle then
+					local percentPerTurn = math.floor(effectValue or 0)
+					if percentPerTurn > 0 then
+						dot.dmgPercent = percentPerTurn
+						self.playerDotEffects[#self.playerDotEffects + 1] = dot
+						log("[BattleManager] Boss poison applied: " .. tostring(percentPerTurn) .. "% MaxHP x " .. tostring(dotTurnVal) .. " turns")
+					end
+				else
+					local dmgPerTurn = math.floor(self.monsterManager.lastDotDmg or 0)
+					if dmgPerTurn > 0 then
+						dot.dmg = dmgPerTurn
+						self.playerDotEffects[#self.playerDotEffects + 1] = dot
+						log("[BattleManager] Monster poison applied: " .. tostring(dmgPerTurn) .. " x " .. tostring(dotTurnVal) .. " turns")
+					end
 				end
 			elseif statusName == "none" or statusName == nil then
 				-- Normal attack
@@ -362,8 +374,19 @@ script BattleManager extends Component
 		for i = 1, #self.playerDotEffects do
 			local dot = self.playerDotEffects[i]
 			if dot ~= nil and dot.remainTurn > 0 then
-				self.playerManager:TakeDamage(dot.dmg)
-				log("[BattleManager] DoT damage: " .. dot.status .. " " .. tostring(dot.dmg))
+				local appliedDmg = 0
+				if dot.dmgPercent ~= nil and dot.dmgPercent > 0 then
+					local maxHP = self.playerManager.maxHP or self.playerManager.hp or 0
+					appliedDmg = math.floor(maxHP * (dot.dmgPercent / 100.0))
+					appliedDmg = math.max(1, appliedDmg)
+				else
+					appliedDmg = math.floor(dot.dmg or 0)
+				end
+				
+				if appliedDmg > 0 then
+					self.playerManager:TakeDamage(appliedDmg)
+					log("[BattleManager] DoT damage: " .. dot.status .. " " .. tostring(appliedDmg))
+				end
 				dot.remainTurn -= 1
 				if dot.remainTurn > 0 then
 					newDots[#newDots + 1] = dot

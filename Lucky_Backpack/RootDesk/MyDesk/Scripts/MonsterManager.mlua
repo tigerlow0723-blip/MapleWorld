@@ -197,6 +197,7 @@ script MonsterManager extends Component
 		end
 		monster.currentHP -= finalDmg
 		result.damage = finalDmg
+		self:ProcessMonsterHitVisual(monster, finalDmg)
 		
 		log("[MonsterManager] " .. monster.name .. " took damage: " .. tostring(finalDmg) .. ", HP: " .. tostring(monster.currentHP))
 		--
@@ -263,6 +264,44 @@ script MonsterManager extends Component
 		end
 		
 		return result
+	end
+
+
+	method void ProcessMonsterHitVisual(table monster, number damage)
+		if monster == nil then
+			return
+		end
+		
+		local targetEntityId = monster.animEntityId
+		if targetEntityId == nil or targetEntityId == "" then
+			targetEntityId = monster.entityId
+		end
+		if targetEntityId == nil or targetEntityId == "" then
+			return
+		end
+		
+		local targetEntity = _EntityService:GetEntity(targetEntityId)
+		if targetEntity == nil then
+			return
+		end
+		
+		local hitComp = targetEntity.HitComponent
+		if hitComp == nil then
+			targetEntity:AddComponent("HitComponent")
+			hitComp = targetEntity.HitComponent
+		end
+		if targetEntity.DamageSkinSpawnerComponent == nil then
+			targetEntity:AddComponent("DamageSkinSpawnerComponent")
+		end
+		if targetEntity.DamageSkinSettingComponent == nil then
+			targetEntity:AddComponent("DamageSkinSettingComponent")
+		end
+		
+		if hitComp ~= nil then
+			hitComp:OnHit(targetEntity, math.ceil(damage), false, "Attack", 1)
+		else
+			log_warning("[MonsterManager] HitComponent not found on monster: " .. tostring(targetEntityId))
+		end
 	end
 
 	method void MonsterBasicAttack(integer index)
@@ -754,16 +793,8 @@ script MonsterManager extends Component
 			if monster ~= nil and monster.entityId ~= nil then
 				local entity = _EntityService:GetEntity(monster.entityId)
 				if entity ~= nil then
-					local spriteRenderer = entity.SpriteRendererComponent
-					if spriteRenderer ~= nil then
-						if i == targetIndex and monster.alive then
-							--
-							spriteRenderer.Color = Color(1, 0.4, 0.4, 1)
-							validTargetEntity = entity
-						else
-							--
-							spriteRenderer.Color = Color(1, 1, 1, 1)
-						end
+					if i == targetIndex and monster.alive then
+						validTargetEntity = entity
 					end
 				end
 			end
@@ -792,3 +823,6 @@ script MonsterManager extends Component
 	end
 
 end
+
+
+
