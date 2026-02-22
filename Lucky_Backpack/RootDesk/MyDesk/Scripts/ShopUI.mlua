@@ -541,17 +541,23 @@ script ShopUI extends Component
 		        return
 		    end
 		
-		    if self.itemDisplayArea ~= nil then
-		        if self.itemDisplayArea.Entity ~= nil then
-		            self.itemDisplayArea.Entity:SetEnable(true)
-		            self.itemDisplayArea.Entity:SetVisible(true)
-		        end
-		        local nextIndex = #self.itemDisplayArea.spawnedItems
-		        local spawned = self.itemDisplayArea:CreateItemEntity(itemData.id, nextIndex)
-		        if spawned ~= nil and spawned.UITransformComponent ~= nil then
-		            spawned.UITransformComponent.anchoredPosition = Vector2(0, 100)
-		            if spawned.Item ~= nil then
-		                spawned.Item.spawnPosition = {x = 0, y = 100}
+		    local purchasedItemId = tonumber(itemData.id) or 0
+		    if purchasedItemId == 9 or purchasedItemId == 10 then
+		        self.playerManager:AddScroll(purchasedItemId, 1)
+		        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))
+		    else
+		        if self.itemDisplayArea ~= nil then
+		            if self.itemDisplayArea.Entity ~= nil then
+		                self.itemDisplayArea.Entity:SetEnable(true)
+		                self.itemDisplayArea.Entity:SetVisible(true)
+		            end
+		            local nextIndex = #self.itemDisplayArea.spawnedItems
+		            local spawned = self.itemDisplayArea:CreateItemEntity(purchasedItemId, nextIndex)
+		            if spawned ~= nil and spawned.UITransformComponent ~= nil then
+		                spawned.UITransformComponent.anchoredPosition = Vector2(0, 100)
+		                if spawned.Item ~= nil then
+		                    spawned.Item.spawnPosition = {x = 0, y = 100}
+		                end
 		            end
 		        end
 		    end
