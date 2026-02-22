@@ -3,7 +3,7 @@ script InventoryUI extends Component
 
 	property string gridContainerPath = ""
 
-	property string dragLayerPath = ""
+	property string dragLayerPath = "/ui/UIGroup"
 
 	property integer cellSize = 60
 
@@ -26,6 +26,34 @@ script InventoryUI extends Component
 	property string itemTemplatePath = "/ui/UIGroup/ItemTemplate"
 
 	property string shopPanelPath = "/ui/UIGroup/ShopPanel"
+
+	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
+
+	property number tooltipHoverDelay = 1.0
+
+	property any tooltipUI = nil
+
+	property table hoverTimerByItemId = {}
+
+	property table hoverPointByItemId = {}
+
+	property any tooltipMouseMoveHandler = nil
+
+	property any tooltipRightClickKeyHandler = nil
+
+	property boolean cellTooltipEventsBound = false
+
+	property boolean tooltipHoverByShapeCell = true
+
+	property integer gridHoverTimerId = 0
+
+	property integer gridHoverItemId = 0
+
+	property integer gridHoverRow = 0
+
+	property integer gridHoverCol = 0
+
+	property integer tooltipCellHitPadding = 6
 
 	property boolean isPanelVisible = true
 
@@ -56,9 +84,53 @@ script InventoryUI extends Component
 		        rotateHandler = nil
 		    }
 		
+		    self.hoverTimerByItemId = {}
+		    self.hoverPointByItemId = {}
+		
+		    if self.tooltipMouseMoveHandler == nil then
+		        self.tooltipMouseMoveHandler = _InputService:ConnectEvent(MouseMoveEvent, function(event)
+		            self:OnTooltipMouseMove(event)
+		        end)
+		    end
+		    if self.tooltipRightClickKeyHandler == nil then
+		        self.tooltipRightClickKeyHandler = _InputService:ConnectEvent(KeyDownEvent, function(event)
+		            self:OnTooltipRightClickKeyDown(event)
+		        end)
+		    end
+		
 		    self:CollectCellEntities()
+		    self:BindCellTooltipEvents()
 		    self:RebuildItemsFromGrid()
 		    self:RenderGrid()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		    if self.tooltipMouseMoveHandler ~= nil then
+		        _InputService:DisconnectEvent(MouseMoveEvent, self.tooltipMouseMoveHandler)
+		        self.tooltipMouseMoveHandler = nil
+		    end
+		    if self.tooltipRightClickKeyHandler ~= nil then
+		        _InputService:DisconnectEvent(KeyDownEvent, self.tooltipRightClickKeyHandler)
+		        self.tooltipRightClickKeyHandler = nil
+		    end
+		    self:ClearGridHoverTimer()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		    if self.tooltipHoverByShapeCell == false then
+		        return
+		    end
+		    if self.isPanelVisible == false then
+		        return
+		    end
+		    if self.dragState ~= nil and self.dragState.isDragging then
+		        return
+		    end
+		
+		    local cursorPos = _InputService:GetCursorPosition()
+		    self:HandleGridHoverFromCursor(cursorPos)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -67,6 +139,9 @@ script InventoryUI extends Component
 		    if inventory == nil then
 		        return
 		    end
+		
+		    self:ClearAllTooltipTimers()
+		    self:HideTooltip()
 		
 		    local children = self.Entity.Children
 		    if children ~= nil then
@@ -153,6 +228,50 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method any ResolveItemDisplayArea()
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem == nil or gameSystem.GameManager == nil then
+		        return nil
+		    end
+		    return gameSystem.GameManager.itemDisplayArea
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EnsurePrebuiltShapeHitCells(Entity itemEntity, Component itemComp)
+		    if itemEntity == nil or itemComp == nil then
+		        return
+		    end
+		
+		    local displayArea = self:ResolveItemDisplayArea()
+		    if displayArea == nil then
+		        return
+		    end
+		    if displayArea.EnsureShapeHitCells ~= nil then
+		        displayArea:EnsureShapeHitCells(itemEntity, itemComp)
+		    end
+		    if displayArea.SetDisplayAreaHitMode ~= nil then
+		        displayArea:SetDisplayAreaHitMode(itemEntity, false)
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SyncShapeHitModeWithParent(Entity itemEntity, Entity parentEntity)
+		    if itemEntity == nil then
+		        return
+		    end
+		    local displayArea = self:ResolveItemDisplayArea()
+		    if displayArea == nil or displayArea.SetDisplayAreaHitMode == nil then
+		        return
+		    end
+		
+		    local useDisplayAreaMode = false
+		    if parentEntity ~= nil and displayArea.Entity ~= nil and parentEntity == displayArea.Entity then
+		        useDisplayAreaMode = true
+		    end
+		    displayArea:SetDisplayAreaHitMode(itemEntity, useDisplayAreaMode)
+	end
+
+	@ExecSpace("ClientOnly")
 	method void SpawnItemInGrid(integer itemId, integer row, integer col, integer w, integer h)
 		    local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
 		    if templateEntity == nil then
@@ -173,6 +292,7 @@ script InventoryUI extends Component
 		        itemComp.itemId = itemId
 		        itemComp.inventoryUIPath = self.Entity.Path
 		        itemComp:InitFromTable(itemId)
+		        self:EnsurePrebuiltShapeHitCells(itemEntity, itemComp)
 		
 		        local renderer = itemEntity.SpriteGUIRendererComponent
 		        if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
@@ -182,11 +302,556 @@ script InventoryUI extends Component
 		        itemComp:SetGridPosition(row, col)
 		        local shapeCells = itemComp:GetShapeCells()
 		        self:SnapItemToGrid(itemEntity, row, col, itemComp.width, itemComp.height, shapeCells)
+		        self:BindTooltipEvents(itemEntity, itemComp)
 		    end
 	end
 
 	@ExecSpace("ClientOnly")
+	method void BindCellTooltipEvents()
+		    if self.cellTooltipEventsBound == true then
+		        return
+		    end
+		
+		    for r = 1, 6 do
+		        if self.cellEntities[r] == nil then
+		            continue
+		        end
+		        for c = 1, 6 do
+		            local cellEntity = self.cellEntities[r][c]
+		            if cellEntity == nil then
+		                continue
+		            end
+		            local cellRenderer = cellEntity.SpriteGUIRendererComponent
+		            if cellRenderer ~= nil then
+		                cellRenderer.RaycastTarget = true
+		            end
+		            local row = r
+		            local col = c
+		            cellEntity:ConnectEvent(UITouchDownEvent, function(event)
+		                self:TryShowTooltipFromGridRightClick(row, col, event)
+		            end)
+		            cellEntity:ConnectEvent("PointerClickEvent", function(event)
+		                self:TryShowTooltipFromGridRightClick(row, col, event)
+		            end)
+		            cellEntity:ConnectEvent(UITouchUpEvent, function(event)
+		                self:TryShowTooltipFromGridRightClick(row, col, event)
+		            end)
+		            if self.tooltipHoverByShapeCell == true then
+		                continue
+		            end
+		
+		            cellEntity:ConnectEvent(UITouchEnterEvent, function(event)
+		                if self.dragState ~= nil and self.dragState.isDragging then
+		                    return
+		                end
+		
+		                local inventory = self.Entity.Inventory
+		                if inventory == nil then
+		                    return
+		                end
+		
+		                local itemId = inventory:GetCellValue(row, col)
+		                if itemId == nil or itemId <= 0 then
+		                    return
+		                end
+		
+		                self:ClearAllTooltipTimers()
+		
+		                local hoverPoint = nil
+		                if event ~= nil then
+		                    hoverPoint = event.TouchPoint
+		                end
+		                if hoverPoint ~= nil then
+		                    self.hoverPointByItemId[itemId] = Vector2(hoverPoint.x, hoverPoint.y)
+		                end
+		
+		                local timerId = _TimerService:SetTimerOnce(function()
+		                    self.hoverTimerByItemId[itemId] = nil
+		                    if self.dragState ~= nil and self.dragState.isDragging then
+		                        return
+		                    end
+		                    local nowInventory = self.Entity.Inventory
+		                    if nowInventory == nil then
+		                        return
+		                    end
+		                    local nowItemId = nowInventory:GetCellValue(row, col)
+		                    if nowItemId ~= itemId then
+		                        return
+		                    end
+		                    local point = self.hoverPointByItemId[itemId]
+		                    self:ShowTooltipForItem(itemId, point)
+		                end, self.tooltipHoverDelay)
+		                self.hoverTimerByItemId[itemId] = timerId
+		            end)
+		
+		            cellEntity:ConnectEvent(UITouchExitEvent, function(event)
+		                local inventory = self.Entity.Inventory
+		                if inventory == nil then
+		                    self:ClearAllTooltipTimers()
+		                    return
+		                end
+		                local itemId = inventory:GetCellValue(row, col)
+		                if itemId ~= nil and itemId > 0 then
+		                    self:ClearTooltipTimer(itemId)
+		                else
+		                    self:ClearAllTooltipTimers()
+		                end
+		            end)
+		        end
+		    end
+		
+		    self.cellTooltipEventsBound = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveTooltipUI()
+		    if self.tooltipUI ~= nil then
+		        return
+		    end
+		
+		    local tooltipEntity = _EntityService:GetEntityByPath(self.tooltipPanelPath)
+		    if tooltipEntity ~= nil and tooltipEntity.ItemTooltipUI ~= nil then
+		        self.tooltipUI = tooltipEntity.ItemTooltipUI
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HideTooltip()
+		    self:ResolveTooltipUI()
+		    if self.tooltipUI ~= nil then
+		        self.tooltipUI:HideTooltip()
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearTooltipTimer(integer itemId)
+		    if self.hoverTimerByItemId == nil then
+		        self.hoverTimerByItemId = {}
+		        return
+		    end
+		
+		    local timerId = self.hoverTimerByItemId[itemId]
+		    if timerId ~= nil and timerId > 0 then
+		        _TimerService:ClearTimer(timerId)
+		    end
+		    self.hoverTimerByItemId[itemId] = nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearAllTooltipTimers()
+		    if self.hoverTimerByItemId == nil then
+		        self.hoverTimerByItemId = {}
+		        self:ClearGridHoverTimer()
+		        return
+		    end
+		
+		    for itemId, timerId in pairs(self.hoverTimerByItemId) do
+		        if timerId ~= nil and timerId > 0 then
+		            _TimerService:ClearTimer(timerId)
+		        end
+		        self.hoverTimerByItemId[itemId] = nil
+		    end
+		    self:ClearGridHoverTimer()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearGridHoverTimer()
+		    if self.gridHoverTimerId ~= nil and self.gridHoverTimerId > 0 then
+		        _TimerService:ClearTimer(self.gridHoverTimerId)
+		    end
+		    self.gridHoverTimerId = 0
+		    self.gridHoverItemId = 0
+		    self.gridHoverRow = 0
+		    self.gridHoverCol = 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ScheduleGridHover(integer itemId, integer row, integer col, Vector2 screenPos)
+		    self:ClearGridHoverTimer()
+		    self.gridHoverItemId = itemId
+		    self.gridHoverRow = row
+		    self.gridHoverCol = col
+		    if screenPos ~= nil then
+		        self.hoverPointByItemId[itemId] = Vector2(screenPos.x, screenPos.y)
+		    end
+		
+		    self.gridHoverTimerId = _TimerService:SetTimerOnce(function()
+		        self.gridHoverTimerId = 0
+		        if self.dragState ~= nil and self.dragState.isDragging then
+		            return
+		        end
+		        local inventory = self.Entity.Inventory
+		        if inventory == nil then
+		            return
+		        end
+		        local currentId = inventory:GetCellValue(row, col)
+		        if currentId ~= itemId then
+		            return
+		        end
+		        local cursorPos = _InputService:GetCursorPosition()
+		        local nowCell = self:ScreenPosToGridCellByBounds(cursorPos)
+		        if nowCell.row ~= row or nowCell.col ~= col then
+		            return
+		        end
+		        local point = self.hoverPointByItemId[itemId]
+		        if point == nil then
+		            point = cursorPos
+		        end
+		        self.gridHoverTimerId = -1
+		        self:ShowTooltipForItem(itemId, point)
+		    end, self.tooltipHoverDelay)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table ScreenPosToGridCellByBounds(Vector2 screenPos)
+		    if screenPos == nil then
+		        return {row = 0, col = 0}
+		    end
+		
+		    local container = _EntityService:GetEntityByPath(self.gridContainerPath)
+		    if container == nil then
+		        return {row = 0, col = 0}
+		    end
+		    local containerUI = container.UITransformComponent
+		    if containerUI == nil then
+		        return {row = 0, col = 0}
+		    end
+		    local localPos = _UILogic:ScreenToLocalUIPosition(screenPos, containerUI)
+		
+		    local bestRow = 0
+		    local bestCol = 0
+		    local bestDist = 999999
+		    local hitPadding = self.tooltipCellHitPadding
+		    if hitPadding < 0 then
+		        hitPadding = 0
+		    end
+		
+		    for r = 1, 6 do
+		        if self.cellEntities[r] == nil then
+		            continue
+		        end
+		        for c = 1, 6 do
+		            local cellEntity = self.cellEntities[r][c]
+		            if cellEntity == nil then
+		                continue
+		            end
+		            local cellUI = cellEntity.UITransformComponent
+		            if cellUI == nil then
+		                continue
+		            end
+		
+		            local rect = cellUI.RectSize
+		            local cellW = self.cellSize
+		            local cellH = self.cellSize
+		            if rect ~= nil then
+		                if rect.x ~= nil and rect.x > 0 then
+		                    cellW = rect.x
+		                end
+		                if rect.y ~= nil and rect.y > 0 then
+		                    cellH = rect.y
+		                end
+		            end
+		
+		            local halfW = cellW * 0.5 + hitPadding
+		            local halfH = cellH * 0.5 + hitPadding
+		            local center = cellUI.anchoredPosition
+		            local dx = localPos.x - center.x
+		            local dy = localPos.y - center.y
+		
+		            if math.abs(dx) <= halfW and math.abs(dy) <= halfH then
+		                local dist = dx * dx + dy * dy
+		                if dist < bestDist then
+		                    bestDist = dist
+		                    bestRow = r
+		                    bestCol = c
+		                end
+		            end
+		        end
+		    end
+		
+		    if bestRow == 0 or bestCol == 0 then
+		        return self:ScreenPosToGridCell(screenPos, 1, 1, nil)
+		    end
+		
+		    return {row = bestRow, col = bestCol}
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HandleGridHoverFromCursor(Vector2 cursorPos)
+		    if self.tooltipHoverByShapeCell == false then
+		        return
+		    end
+		    if cursorPos == nil then
+		        return
+		    end
+		    if self.dragState ~= nil and self.dragState.isDragging then
+		        self:ClearGridHoverTimer()
+		        return
+		    end
+		
+		    local cell = self:ScreenPosToGridCellByBounds(cursorPos)
+		    if cell.row <= 0 or cell.col <= 0 then
+		        self:ClearGridHoverTimer()
+		        return
+		    end
+		
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        self:ClearGridHoverTimer()
+		        return
+		    end
+		    local itemId = inventory:GetCellValue(cell.row, cell.col)
+		    if itemId == nil or itemId <= 0 then
+		        self:ClearGridHoverTimer()
+		        return
+		    end
+		
+		    if self.gridHoverTimerId ~= 0 and self.gridHoverItemId == itemId and self.gridHoverRow == cell.row and self.gridHoverCol == cell.col then
+		        self.hoverPointByItemId[itemId] = Vector2(cursorPos.x, cursorPos.y)
+		        return
+		    end
+		
+		    self:ScheduleGridHover(itemId, cell.row, cell.col, cursorPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTooltipMouseMove(MouseMoveEvent event)
+		    if event == nil then
+		        return
+		    end
+		
+		    local delta = event.MouseDelta
+		    if delta == nil then
+		        return
+		    end
+		
+		    if math.abs(delta.x) < 0.5 and math.abs(delta.y) < 0.5 then
+		        return
+		    end
+		
+		    self:HideTooltip()
+		    local cursorPos = _InputService:GetCursorPosition()
+		    self:HandleGridHoverFromCursor(cursorPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsRightClick(any event)
+		    if event == nil then
+		        return false
+		    end
+		
+		    if event.TouchId ~= nil and event.TouchId == -3 then
+		        return true
+		    end
+		
+		    local button = event.Button
+		    if button == nil then button = event.button end
+		    if button ~= nil then
+		        if button == 1 or button == 2 or button == -3 then
+		            return true
+		        end
+		        local buttonText = string.lower(tostring(button))
+		        if string.find(buttonText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    local actionType = event.ActionType
+		    if actionType ~= nil then
+		        local actionText = string.lower(tostring(actionType))
+		        if string.find(actionText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method void TryShowTooltipFromGridRightClick(integer row, integer col, any event)
+		    if self.dragState ~= nil and self.dragState.isDragging then
+		        return
+		    end
+		    if self:IsRightClick(event) == false then
+		        return
+		    end
+		
+		    local point = nil
+		    if event ~= nil then
+		        point = event.TouchPoint
+		    end
+		    if point == nil then
+		        point = _InputService:GetCursorPosition()
+		    end
+		    self:ShowTooltipFromGridCell(row, col, point)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowTooltipFromGridCell(integer row, integer col, Vector2 point)
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        return
+		    end
+		
+		    local itemId = inventory:GetCellValue(row, col)
+		    if itemId == nil or itemId <= 0 then
+		        return
+		    end
+		
+		    self:ClearAllTooltipTimers()
+		    if point ~= nil then
+		        self.hoverPointByItemId[itemId] = Vector2(point.x, point.y)
+		    end
+		    self:ShowTooltipForItem(itemId, point)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTooltipRightClickKeyDown(KeyDownEvent event)
+		    if event == nil then
+		        return
+		    end
+		    if self.dragState ~= nil and self.dragState.isDragging then
+		        return
+		    end
+		    if self.isPanelVisible == false then
+		        return
+		    end
+		
+		    local key = event.key
+		    if key ~= KeyboardKey.Mouse1 then
+		        return
+		    end
+		
+		    local cursorPos = _InputService:GetCursorPosition()
+		    local cell = self:ScreenPosToGridCellByBounds(cursorPos)
+		    if cell == nil or cell.row <= 0 or cell.col <= 0 then
+		        return
+		    end
+		
+		    self:ShowTooltipFromGridCell(cell.row, cell.col, cursorPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowTooltipForItem(integer itemId, Vector2 screenPos)
+		    self:ResolveTooltipUI()
+		    if self.tooltipUI == nil then
+		        return
+		    end
+		
+		    if screenPos == nil then
+		        screenPos = Vector2(0, 0)
+		    end
+		    self.tooltipUI:HideTooltip()
+		    self.tooltipUI:ShowTooltip(itemId, screenPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BindTooltipEvents(Entity itemEntity, Component itemComp)
+		    if itemEntity == nil or itemComp == nil then
+		        return
+		    end
+		
+		    itemEntity:ConnectEvent(UITouchEnterEvent, function(event)
+		        local isInventoryItem = (itemEntity ~= nil and itemEntity.Parent == self.Entity)
+		        if self.tooltipHoverByShapeCell == true and isInventoryItem == true then
+		            return
+		        end
+		        local itemId = itemComp.itemId
+		        self:ClearTooltipTimer(itemId)
+		
+		        local hoverPoint = nil
+		        if event ~= nil then
+		            hoverPoint = event.TouchPoint
+		        end
+		        if hoverPoint ~= nil then
+		            self.hoverPointByItemId[itemId] = Vector2(hoverPoint.x, hoverPoint.y)
+		        end
+		
+		        local timerId = _TimerService:SetTimerOnce(function()
+		            self.hoverTimerByItemId[itemId] = nil
+		            if self.dragState ~= nil and self.dragState.isDragging then
+		                return
+		            end
+		            local point = self.hoverPointByItemId[itemId]
+		            self:ShowTooltipForItem(itemId, point)
+		        end, self.tooltipHoverDelay)
+		        self.hoverTimerByItemId[itemId] = timerId
+		    end)
+
+		    itemEntity:ConnectEvent(UITouchDownEvent, function(event)
+		        if self.dragState ~= nil and self.dragState.isDragging then
+		            return
+		        end
+		        if self:IsRightClick(event) == false then
+		            return
+		        end
+		
+		        local itemId = itemComp.itemId
+		        self:ClearTooltipTimer(itemId)
+		        local point = nil
+		        if event ~= nil then
+		            point = event.TouchPoint
+		        end
+		        if point == nil then
+		            point = self.hoverPointByItemId[itemId]
+		        end
+		        self:ShowTooltipForItem(itemId, point)
+		    end)
+		
+		    itemEntity:ConnectEvent(UITouchExitEvent, function(event)
+		        local isInventoryItem = (itemEntity ~= nil and itemEntity.Parent == self.Entity)
+		        if self.tooltipHoverByShapeCell == true and isInventoryItem == true then
+		            return
+		        end
+		        local itemId = itemComp.itemId
+		        self:ClearTooltipTimer(itemId)
+		    end)
+		
+		    itemEntity:ConnectEvent("PointerClickEvent", function(event)
+		        if self.dragState ~= nil and self.dragState.isDragging then
+		            return
+		        end
+		        if self:IsRightClick(event) == false then
+		            return
+		        end
+		
+		        local itemId = itemComp.itemId
+		        self:ClearTooltipTimer(itemId)
+		        local point = nil
+		        if event ~= nil then
+		            point = event.TouchPoint
+		        end
+		        if point == nil then
+		            point = self.hoverPointByItemId[itemId]
+		        end
+		        self:ShowTooltipForItem(itemId, point)
+		    end)
+		
+		    itemEntity:ConnectEvent(UITouchUpEvent, function(event)
+		        if self.dragState ~= nil and self.dragState.isDragging then
+		            return
+		        end
+		        if self:IsRightClick(event) == false then
+		            return
+		        end
+		
+		        local itemId = itemComp.itemId
+		        self:ClearTooltipTimer(itemId)
+		        local point = nil
+		        if event ~= nil then
+		            point = event.TouchPoint
+		        end
+		        if point == nil then
+		            point = self.hoverPointByItemId[itemId]
+		        end
+		        self:ShowTooltipForItem(itemId, point)
+		    end)
+	end
+
+	@ExecSpace("ClientOnly")
 	method void RemoveItemEntity(integer itemId)
+		    self:ClearTooltipTimer(itemId)
+		    self.hoverPointByItemId[itemId] = nil
 		    local children = self.Entity.Children
 		    if children ~= nil then
 		        for i = #children, 1, -1 do
@@ -205,6 +870,8 @@ script InventoryUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void StartDrag(Entity itemEntity)
+		    self:HideTooltip()
+		    self:ClearAllTooltipTimers()
 		    if self.dragState.isDragging then
 		        return
 		    end
@@ -212,6 +879,9 @@ script InventoryUI extends Component
 		    local itemComp = itemEntity.Item
 		    if itemComp == nil then
 		        return
+		    end
+		    if itemEntity.Parent == self.Entity then
+		        self:EnsurePrebuiltShapeHitCells(itemEntity, itemComp)
 		    end
 		
 		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
@@ -314,22 +984,26 @@ script InventoryUI extends Component
 		        return
 		    end
 		
-		    if itemEntity.Parent ~= self.Entity then
+		    local dragParent = self:ResolveDragParent()
+		    if itemEntity.Parent ~= dragParent then
 		        local itemUI = itemEntity.UITransformComponent
 		        local fromParent = itemEntity.Parent
 		        local fromParentUI = nil
 		        if fromParent ~= nil then
 		            fromParentUI = fromParent.UITransformComponent
 		        end
-		        local toParentUI = self.Entity.UITransformComponent
+		        local toParentUI = nil
+		        if dragParent ~= nil then
+		            toParentUI = dragParent.UITransformComponent
+		        end
 		
 		        if itemUI ~= nil and fromParentUI ~= nil and toParentUI ~= nil then
 		            local worldPos = _UILogic:LocalUIToWorldPosition(itemUI.anchoredPosition, fromParentUI)
 		            local screenPos = _UILogic:WorldToScreenPosition(worldPos)
-		            self.Entity:AttachChild(itemEntity)
+		            dragParent:AttachChild(itemEntity)
 		            itemUI.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, toParentUI)
 		        else
-		            self.Entity:AttachChild(itemEntity)
+		            dragParent:AttachChild(itemEntity)
 		        end
 		    end
 		
@@ -344,6 +1018,21 @@ script InventoryUI extends Component
 		
 		    self.dragState.dragActivated = true
 		    self:RenderGrid()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveDragParent()
+		    if self.dragLayerPath ~= nil and self.dragLayerPath ~= "" then
+		        local dragLayer = _EntityService:GetEntityByPath(self.dragLayerPath)
+		        if dragLayer ~= nil then
+		            return dragLayer
+		        end
+		    end
+		
+		    if self.Entity ~= nil and self.Entity.Parent ~= nil then
+		        return self.Entity.Parent
+		    end
+		    return self.Entity
 	end
 
 	@ExecSpace("ClientOnly")
@@ -375,7 +1064,7 @@ script InventoryUI extends Component
 		        uiTransform.anchoredPosition = localPos
 		    end
 		
-		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
+		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight, self.dragState.shapeCells)
 		    if result.row > 0 and result.col > 0 then
 		        self:HighlightPlacement(result.row, result.col, self.dragState.shapeCells)
 		    else
@@ -397,7 +1086,7 @@ script InventoryUI extends Component
 		    local touchPoint = event.TouchPoint
 		    self.dragState.lastTouchPoint = touchPoint
 		
-		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
+		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight, self.dragState.shapeCells)
 		
 		    if result.row > 0 and result.col > 0 then
 		        self:TryDropItem(result.row, result.col)
@@ -566,7 +1255,7 @@ script InventoryUI extends Component
 		        return
 		    end
 		
-		    local result = self:ScreenPosToGridCell(self.dragState.lastTouchPoint, self.dragState.itemWidth, self.dragState.itemHeight)
+		    local result = self:ScreenPosToGridCell(self.dragState.lastTouchPoint, self.dragState.itemWidth, self.dragState.itemHeight, self.dragState.shapeCells)
 		    if result.row > 0 and result.col > 0 then
 		        self:HighlightPlacement(result.row, result.col, self.dragState.shapeCells)
 		    else
@@ -593,6 +1282,7 @@ script InventoryUI extends Component
 		        if placed then
 		            itemComp:SetGridPosition(self.dragState.originRow, self.dragState.originCol)
 		            self:SnapItemToGrid(itemEntity, self.dragState.originRow, self.dragState.originCol, itemComp.width, itemComp.height, shapeCells)
+		            self:SyncShapeHitModeWithParent(itemEntity, self.Entity)
 		            local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		            if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
 		                gameSystem.PlayerManager:SyncInventoryFromGrid()
@@ -614,6 +1304,7 @@ script InventoryUI extends Component
 		            uiTransform.anchoredPosition = Vector2(itemComp.spawnPosition.x, itemComp.spawnPosition.y)
 		        end
 		    end
+		    self:SyncShapeHitModeWithParent(itemEntity, itemEntity.Parent)
 		
 		    itemComp:ClearGridPosition()
 	end
@@ -647,6 +1338,8 @@ script InventoryUI extends Component
 		    self.dragState.originCol = -1
 		    self.dragState.originPosition = nil
 		    self.dragState.lastTouchPoint = nil
+		
+		    self:HideTooltip()
 		
 		    self:RenderGrid()
 	end
@@ -691,6 +1384,7 @@ script InventoryUI extends Component
 		        inventory:PlaceItem(row, col, itemComp.itemId, shapeCells)
 		        itemComp:SetGridPosition(row, col)
 		        self:SnapItemToGrid(itemEntity, row, col, itemComp.width, itemComp.height, shapeCells)
+		        self:SyncShapeHitModeWithParent(itemEntity, self.Entity)
 		
 		        local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		        if gameSystem ~= nil and gameSystem.GameManager ~= nil and gameSystem.GameManager.itemDisplayArea ~= nil then
@@ -721,6 +1415,10 @@ script InventoryUI extends Component
 		    if uiTransform == nil then
 		        return
 		    end
+		    local renderer = itemEntity.SpriteGUIRendererComponent
+		    if renderer ~= nil then
+		        renderer.RaycastTarget = true
+		    end
 		
 		    local targetCell = nil
 		    if self.cellEntities[row] ~= nil then
@@ -735,6 +1433,69 @@ script InventoryUI extends Component
 		        return
 		    end
 		
+		    local bounds = self:GetShapeBounds(shapeCells, w, h)
+		    local minRow = bounds.minRow
+		    local maxRow = bounds.maxRow
+		    local minCol = bounds.minCol
+		    local maxCol = bounds.maxCol
+		    local spacing = self:GetGridCellSpacing()
+		    local pitchX = spacing.x
+		    local pitchY = spacing.y
+		
+		    local offsetX = (minCol + maxCol) * pitchX * 0.5
+		    local offsetY = (minRow + maxRow) * pitchY * -0.5
+		    local cellPos = cellUITransform.anchoredPosition
+		    local snapPosInGrid = Vector2(cellPos.x + offsetX, cellPos.y + offsetY)
+		
+		    local inventoryUI = self.Entity.UITransformComponent
+		    local gridParentUI = nil
+		    if targetCell.Parent ~= nil then
+		        gridParentUI = targetCell.Parent.UITransformComponent
+		    end
+		
+		    if inventoryUI ~= nil and gridParentUI ~= nil then
+		        local worldPos = _UILogic:LocalUIToWorldPosition(snapPosInGrid, gridParentUI)
+		        local screenPos = _UILogic:WorldToScreenPosition(worldPos)
+		        uiTransform.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, inventoryUI)
+		    else
+		        uiTransform.anchoredPosition = snapPosInGrid
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetGridCellSpacing()
+		    local spacingX = self.cellSize
+		    local spacingY = self.cellSize
+		
+		    if self.cellEntities ~= nil then
+		        local c11 = nil
+		        if self.cellEntities[1] ~= nil then
+		            c11 = self.cellEntities[1][1]
+		        end
+		        local c12 = nil
+		        if self.cellEntities[1] ~= nil then
+		            c12 = self.cellEntities[1][2]
+		        end
+		        local c21 = nil
+		        if self.cellEntities[2] ~= nil then
+		            c21 = self.cellEntities[2][1]
+		        end
+		
+		        if c11 ~= nil and c12 ~= nil and c11.UITransformComponent ~= nil and c12.UITransformComponent ~= nil then
+		            spacingX = math.abs(c12.UITransformComponent.anchoredPosition.x - c11.UITransformComponent.anchoredPosition.x)
+		        end
+		        if c11 ~= nil and c21 ~= nil and c11.UITransformComponent ~= nil and c21.UITransformComponent ~= nil then
+		            spacingY = math.abs(c21.UITransformComponent.anchoredPosition.y - c11.UITransformComponent.anchoredPosition.y)
+		        end
+		    end
+		
+		    if spacingX <= 0 then spacingX = self.cellSize end
+		    if spacingY <= 0 then spacingY = self.cellSize end
+		    return {x = spacingX, y = spacingY}
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetShapeBounds(table shapeCells, integer w, integer h)
 		    local minRow = 999
 		    local maxRow = -999
 		    local minCol = 999
@@ -752,19 +1513,28 @@ script InventoryUI extends Component
 		        end
 		    else
 		        minRow = 0
-		        maxRow = h - 1
+		        maxRow = math.max(0, h - 1)
 		        minCol = 0
-		        maxCol = w - 1
+		        maxCol = math.max(0, w - 1)
 		    end
 		
-		    local offsetX = (minCol + maxCol) * self.cellSize * 0.5
-		    local offsetY = (minRow + maxRow) * self.cellSize * -0.5
-		    local cellPos = cellUITransform.anchoredPosition
-		    uiTransform.anchoredPosition = Vector2(cellPos.x + offsetX, cellPos.y + offsetY)
+		    if minRow == 999 or maxRow == -999 or minCol == 999 or maxCol == -999 then
+		        minRow = 0
+		        maxRow = math.max(0, h - 1)
+		        minCol = 0
+		        maxCol = math.max(0, w - 1)
+		    end
+		
+		    return {
+		        minRow = minRow,
+		        maxRow = maxRow,
+		        minCol = minCol,
+		        maxCol = maxCol
+		    }
 	end
 
 	@ExecSpace("ClientOnly")
-	method table ScreenPosToGridCell(Vector2 screenPos, integer itemW, integer itemH)
+	method table ScreenPosToGridCell(Vector2 screenPos, integer itemW, integer itemH, table shapeCells)
 		    local minDist = 999999
 		    local bestRow = 0
 		    local bestCol = 0
@@ -781,8 +1551,10 @@ script InventoryUI extends Component
 		
 		    local uiPos = _UILogic:ScreenToLocalUIPosition(screenPos, containerUI)
 		
-		    local adjustedX = uiPos.x - (itemW - 1) * self.cellSize * 0.5
-		    local adjustedY = uiPos.y + (itemH - 1) * self.cellSize * 0.5
+		    local bounds = self:GetShapeBounds(shapeCells, itemW, itemH)
+		    local spacing = self:GetGridCellSpacing()
+		    local adjustedX = uiPos.x - (bounds.minCol + bounds.maxCol) * spacing.x * 0.5
+		    local adjustedY = uiPos.y + (bounds.minRow + bounds.maxRow) * spacing.y * 0.5
 		
 		    for r = 1, 6 do
 		        if self.cellEntities[r] == nil then continue end
@@ -805,7 +1577,8 @@ script InventoryUI extends Component
 		        end
 		    end
 		
-		    if minDist < (self.cellSize * self.cellSize) then
+		    local threshold = math.max(spacing.x, spacing.y)
+		    if minDist < (threshold * threshold) then
 		        return {row = bestRow, col = bestCol}
 		    end
 		

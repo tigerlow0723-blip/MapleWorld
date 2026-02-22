@@ -1,0 +1,688 @@
+@Component
+script ItemTooltipUI extends Component
+
+	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
+
+	property string nameTextPath = "/ui/UIGroup/TooltipPanel/NameText"
+
+	property string itemImagePath = "/ui/UIGroup/TooltipPanel/ItemImage"
+
+	property string typeTextPath = "/ui/UIGroup/TooltipPanel/TypeText"
+
+	property string gradeTextPath = "/ui/UIGroup/TooltipPanel/GradeText"
+
+	property string shapeGridPath = "/ui/UIGroup/TooltipPanel/ShapeGrid"
+
+	property string dividerPath = "/ui/UIGroup/TooltipPanel/Divider"
+
+	property string statsTextPath = "/ui/UIGroup/TooltipPanel/StatsText"
+
+	property integer shapePreviewRows = 3
+
+	property integer shapePreviewCols = 3
+
+	property Color shapePreviewOccupiedColor = Color(0.0, 0.45, 0.9, 1.0)
+
+	property table shapePreviewCells = {}
+
+	property integer tooltipOffsetX = 24
+
+	property integer tooltipOffsetY = -24
+
+	property any dataManager = nil
+
+	property any tooltipPanel = nil
+
+	property any nameText = nil
+
+	property any itemImage = nil
+
+	property any typeText = nil
+
+	property any gradeText = nil
+
+	property any shapeGrid = nil
+
+	property any divider = nil
+
+	property any statsText = nil
+
+	property boolean tooltipLayoutCached = false
+
+	property number basePanelHeight = 0
+
+	property number basePanelTop = 0
+
+	property number baseStatsHeight = 0
+
+	property number baseStatsTop = 0
+
+	property number baseNameTextY = 0
+
+	property number baseItemImageY = 0
+
+	property number baseTypeTextY = 0
+
+	property number baseGradeTextY = 0
+
+	property number baseShapeGridY = 0
+
+	property number baseDividerY = 0
+
+	property number tooltipDynamicYOffset = 0
+
+	property number statsHeightPadding = 8
+
+	property number minStatsHeight = 32
+
+	property number maxStatsHeight = 280
+
+	property number panelBottomPadding = 24
+
+	property number minPanelHeight = 260
+
+	property boolean isTooltipHovered = false
+
+	property boolean tooltipPanelEventsBound = false
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self:ResolveReferences()
+		self:BuildShapePreviewCells()
+		self:CacheTooltipLayoutMetrics()
+		self:HideLegacyCostText()
+		self:BindTooltipPanelEvents()
+		self:HideTooltip()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveReferences()
+		if self.tooltipPanel == nil then
+			self.tooltipPanel = _EntityService:GetEntityByPath(self.tooltipPanelPath)
+			if self.tooltipPanel == nil then
+				self.tooltipPanel = self.Entity
+			end
+		end
+		
+		if self.nameText == nil then
+			self.nameText = _EntityService:GetEntityByPath(self.nameTextPath)
+		end
+		if self.itemImage == nil then
+			self.itemImage = _EntityService:GetEntityByPath(self.itemImagePath)
+		end
+		if self.typeText == nil then
+			self.typeText = _EntityService:GetEntityByPath(self.typeTextPath)
+		end
+		if self.gradeText == nil then
+			self.gradeText = _EntityService:GetEntityByPath(self.gradeTextPath)
+		end
+		if self.shapeGrid == nil then
+			self.shapeGrid = _EntityService:GetEntityByPath(self.shapeGridPath)
+		end
+		if self.divider == nil then
+			self.divider = _EntityService:GetEntityByPath(self.dividerPath)
+		end
+		if self.statsText == nil then
+			self.statsText = _EntityService:GetEntityByPath(self.statsTextPath)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BindTooltipPanelEvents()
+		if self.tooltipPanelEventsBound == true then
+			return
+		end
+		
+		if self.tooltipPanel == nil then
+			return
+		end
+		
+		if self.tooltipPanel.CanvasGroupComponent ~= nil then
+			self.tooltipPanel.CanvasGroupComponent.BlocksRaycasts = false
+			self.tooltipPanel.CanvasGroupComponent.Interactable = false
+		end
+		if self.tooltipPanel.SpriteGUIRendererComponent ~= nil then
+			self.tooltipPanel.SpriteGUIRendererComponent.RaycastTarget = false
+		end
+		
+		self.tooltipPanel:ConnectEvent(UITouchEnterEvent, function(event)
+			self.isTooltipHovered = true
+		end)
+		
+		self.tooltipPanel:ConnectEvent(UITouchExitEvent, function(event)
+			self.isTooltipHovered = false
+		end)
+		
+		self.tooltipPanelEventsBound = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveDataManager()
+		if self.dataManager ~= nil then
+			return
+		end
+		
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			self.dataManager = gameSystem.DataManager
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowTooltip(integer itemId, Vector2 screenPos)
+		self:ResolveDataManager()
+		self:ResolveReferences()
+		
+		if self.dataManager == nil then
+			log_warning("[ItemTooltipUI] DataManager not found.")
+			return
+		end
+		local itemData = self.dataManager:GetItemData(itemId)
+		if itemData == nil then
+			log_warning("[ItemTooltipUI] Item data not found. id=" .. tostring(itemId))
+			self:HideTooltip()
+			return
+		end
+		if self:ShouldSuppressTooltip(itemData) == true then
+			self:HideTooltip()
+			return
+		end
+		
+		self:SetNameText(itemData)
+		self:SetItemImage(itemData)
+		self:SetTypeText(itemData)
+		self:SetGradeText(itemData)
+		self:SetStatsText(itemData)
+		self:RedrawShapeGrid(itemData)
+		self:AdjustTooltipPanelToContent()
+		self:MoveTooltip(screenPos)
+		self:SetPanelVisible(true)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HideTooltip()
+		self:ResolveReferences()
+		self:SetPanelVisible(false)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetPanelVisible(boolean visible)
+		if self.tooltipPanel == nil then
+			return
+		end
+		
+		if visible == false then
+			self.isTooltipHovered = false
+		end
+		
+		self.tooltipPanel:SetEnable(visible)
+		self.tooltipPanel:SetVisible(visible)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetNameText(table itemData)
+		if self.nameText ~= nil and self.nameText.TextComponent ~= nil then
+			self.nameText.TextComponent.Text = tostring(itemData.name or "")
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetItemImage(table itemData)
+		if self.itemImage == nil then
+			return
+		end
+		
+		local renderer = self.itemImage.SpriteGUIRendererComponent
+		if renderer == nil then
+			return
+		end
+		
+		local ruid = itemData.imageRUID or ""
+		if ruid == "" and itemData.spriteRUID ~= nil then
+			ruid = itemData.spriteRUID
+		end
+		renderer.ImageRUID = ruid
+	end
+
+	@ExecSpace("ClientOnly")
+	method string ToDisplayType(string itemType)
+		if itemType == nil or itemType == "" then
+			return "Unknown"
+		end
+		
+		local lower = string.lower(itemType)
+		if lower == "weapon" then
+			return "Weapon"
+		elseif lower == "armor" then
+			return "Armor"
+		elseif lower == "consumable" then
+			return "Consumable"
+		elseif lower == "expand" then
+			return "Expand"
+		end
+		return itemType
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean ShouldSuppressTooltip(table itemData)
+		if itemData == nil then
+			return true
+		end
+		
+		local itemType = tostring(itemData.type or "")
+		if string.lower(itemType) == "expand" then
+			return true
+		end
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetTypeText(table itemData)
+		if self.typeText ~= nil and self.typeText.TextComponent ~= nil then
+			self.typeText.TextComponent.Text = self:ToDisplayType(itemData.type or "")
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method string ToDisplayGrade(string grade)
+		local gradeLower = ""
+		if grade ~= nil then
+			gradeLower = string.lower(grade)
+		end
+		
+		if gradeLower == "rare" then
+			return "Rare"
+		elseif gradeLower == "epic" then
+			return "Epic"
+		elseif gradeLower == "unique" then
+			return "Unique"
+		elseif gradeLower == "legendary" then
+			return "Legendary"
+		end
+		return tostring(grade or "")
+	end
+
+	@ExecSpace("ClientOnly")
+	method Color GetGradeColor(string grade)
+		local gradeLower = ""
+		if grade ~= nil then
+			gradeLower = string.lower(grade)
+		end
+		
+		if gradeLower == "rare" then
+			return Color(0.2, 0.8, 1.0, 1)
+		elseif gradeLower == "epic" then
+			return Color(0.7, 0.4, 1.0, 1)
+		elseif gradeLower == "unique" then
+			return Color(1.0, 0.9, 0.2, 1)
+		elseif gradeLower == "legendary" then
+			return Color(0.3, 1.0, 0.3, 1)
+		end
+		return Color(1, 1, 1, 1)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetGradeText(table itemData)
+		if self.gradeText == nil or self.gradeText.TextComponent == nil then
+			return
+		end
+		
+		local grade = tostring(itemData.grade or "")
+		if grade == "" then
+			grade = "None"
+		end
+		self.gradeText.TextComponent.Text = self:ToDisplayGrade(grade)
+		self.gradeText.TextComponent.FontColor = self:GetGradeColor(grade)
+	end
+
+	@ExecSpace("ClientOnly")
+	method string BuildStatsText(table itemData)
+		local lines = ""
+		
+		local atk = tonumber(itemData.atk) or 0
+		if atk ~= 0 then
+			lines = lines .. "Attack: " .. tostring(atk) .. "~" .. tostring(atk)
+		end
+		
+		local critRate = tonumber(itemData.critRate) or 0
+		if critRate ~= 0 then
+			if lines ~= "" then lines = lines .. "\n" end
+			lines = lines .. "Crit Rate: " .. tostring(critRate) .. "%"
+		end
+		
+		local critDmg = tonumber(itemData.critDmg) or 0
+		if critDmg ~= 0 then
+			if lines ~= "" then lines = lines .. "\n" end
+			lines = lines .. "Crit Damage: " .. tostring(critDmg) .. "%"
+		end
+		
+		local cost = tonumber(itemData.cost) or 0
+		if lines ~= "" then lines = lines .. "\n" end
+		lines = lines .. "<color=#87CEEB>MP Cost on Attack: " .. tostring(cost) .. "</color>"
+		
+		return lines
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetStatsText(table itemData)
+		if self.statsText ~= nil and self.statsText.TextComponent ~= nil then
+			self.statsText.TextComponent.IsRichText = true
+			self.statsText.TextComponent.Text = self:BuildStatsText(itemData)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void CacheTooltipLayoutMetrics()
+		if self.tooltipLayoutCached == true then
+			return
+		end
+		
+		if self.tooltipPanel == nil or self.statsText == nil then
+			return
+		end
+		
+		local panelUI = self.tooltipPanel.UITransformComponent
+		local statsUI = self.statsText.UITransformComponent
+		if panelUI == nil or statsUI == nil then
+			return
+		end
+		
+		self.basePanelHeight = panelUI.RectSize.y
+		self.basePanelTop = panelUI.RectSize.y * 0.5
+		self.baseStatsHeight = statsUI.RectSize.y
+		self.baseStatsTop = statsUI.anchoredPosition.y + (statsUI.RectSize.y * 0.5)
+		self.baseNameTextY = self:GetAnchoredY(self.nameText)
+		self.baseItemImageY = self:GetAnchoredY(self.itemImage)
+		self.baseTypeTextY = self:GetAnchoredY(self.typeText)
+		self.baseGradeTextY = self:GetAnchoredY(self.gradeText)
+		self.baseShapeGridY = self:GetAnchoredY(self.shapeGrid)
+		self.baseDividerY = self:GetAnchoredY(self.divider)
+		self.tooltipLayoutCached = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method number GetAnchoredY(Entity uiEntity)
+		if uiEntity == nil then
+			return 0
+		end
+		local ui = uiEntity.UITransformComponent
+		if ui == nil then
+			return 0
+		end
+		return ui.anchoredPosition.y
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetAnchoredY(Entity uiEntity, number targetY)
+		if uiEntity == nil then
+			return
+		end
+		local ui = uiEntity.UITransformComponent
+		if ui == nil then
+			return
+		end
+		ui.anchoredPosition = Vector2(ui.anchoredPosition.x, targetY)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void AdjustTopSectionAnchors(number deltaHalf)
+		self:SetAnchoredY(self.nameText, self.baseNameTextY - deltaHalf)
+		self:SetAnchoredY(self.itemImage, self.baseItemImageY - deltaHalf)
+		self:SetAnchoredY(self.typeText, self.baseTypeTextY - deltaHalf)
+		self:SetAnchoredY(self.gradeText, self.baseGradeTextY - deltaHalf)
+		self:SetAnchoredY(self.shapeGrid, self.baseShapeGridY - deltaHalf)
+		self:SetAnchoredY(self.divider, self.baseDividerY - deltaHalf)
+	end
+
+	@ExecSpace("ClientOnly")
+	method number GetPreferredStatsHeight()
+		if self.statsText == nil then
+			return self.baseStatsHeight
+		end
+		
+		local statsUI = self.statsText.UITransformComponent
+		local textComp = self.statsText.TextComponent
+		if statsUI == nil or textComp == nil then
+			return self.baseStatsHeight
+		end
+		
+		local width = statsUI.RectSize.x
+		local preferred = textComp:GetPreferredHeight(tostring(textComp.Text or ""), width)
+		if preferred == nil or preferred <= 0 then
+			preferred = self.baseStatsHeight
+		end
+		
+		preferred += self.statsHeightPadding
+		if preferred < self.minStatsHeight then
+			preferred = self.minStatsHeight
+		end
+		if preferred > self.maxStatsHeight then
+			preferred = self.maxStatsHeight
+		end
+		return preferred
+	end
+
+	@ExecSpace("ClientOnly")
+	method void AdjustTooltipPanelToContent()
+		self:CacheTooltipLayoutMetrics()
+		
+		if self.tooltipLayoutCached == false then
+			return
+		end
+		if self.tooltipPanel == nil or self.statsText == nil then
+			return
+		end
+		
+		local panelUI = self.tooltipPanel.UITransformComponent
+		local statsUI = self.statsText.UITransformComponent
+		if panelUI == nil or statsUI == nil then
+			return
+		end
+		
+		local targetStatsHeight = self:GetPreferredStatsHeight()
+		local targetPanelHeight = (self.basePanelTop - self.baseStatsTop) + targetStatsHeight + self.panelBottomPadding
+		if targetPanelHeight < self.minPanelHeight then
+			targetPanelHeight = self.minPanelHeight
+		end
+		
+		panelUI.RectSize = Vector2(panelUI.RectSize.x, targetPanelHeight)
+		local deltaHalf = (self.basePanelHeight - targetPanelHeight) * 0.5
+		self.tooltipDynamicYOffset = deltaHalf
+		self:AdjustTopSectionAnchors(deltaHalf)
+		
+		statsUI.RectSize = Vector2(statsUI.RectSize.x, targetStatsHeight)
+		local adjustedStatsTop = self.baseStatsTop - deltaHalf
+		statsUI.anchoredPosition = Vector2(statsUI.anchoredPosition.x, adjustedStatsTop - (targetStatsHeight * 0.5))
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HideLegacyCostText()
+		local legacyCostText = _EntityService:GetEntityByPath("/ui/UIGroup/TooltipPanel/CostText")
+		if legacyCostText == nil then
+			return
+		end
+		
+		if legacyCostText.TextComponent ~= nil then
+			legacyCostText.TextComponent.Text = ""
+		end
+		legacyCostText:SetVisible(false)
+		legacyCostText:SetEnable(false)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table ParseShapeRows(string shapeMask)
+		local rows = {}
+		if shapeMask == nil or shapeMask == "" then
+			rows[1] = "1"
+			return rows
+		end
+		
+		local rowText = ""
+		for i = 1, string.len(shapeMask) do
+			local ch = string.sub(shapeMask, i, i)
+			if ch == "/" or ch == "," then
+				if rowText ~= "" then
+					rows[#rows + 1] = rowText
+				end
+				rowText = ""
+			elseif ch == "0" or ch == "1" then
+				rowText = rowText .. ch
+			end
+		end
+		if rowText ~= "" then
+			rows[#rows + 1] = rowText
+		end
+		
+		if #rows == 0 then
+			rows[1] = "1"
+		end
+		return rows
+	end
+
+	@ExecSpace("ClientOnly")
+	method string BuildShapeCellKey(integer row, integer col)
+		return tostring(row) .. "_" .. tostring(col)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveShapePreviewCell(integer row, integer col)
+		local key = self:BuildShapeCellKey(row, col)
+		local cellEntity = _EntityService:GetEntityByPath(self.shapeGridPath .. "/Cell_" .. key)
+		if cellEntity ~= nil then
+			return cellEntity
+		end
+		
+		return _EntityService:GetEntityByPath(self.shapeGridPath .. "/" .. key)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetShapePreviewCellState(Entity cellEntity, boolean occupied)
+		if cellEntity == nil then
+			return
+		end
+		
+		if occupied ~= true then
+			cellEntity:SetVisible(false)
+			cellEntity:SetEnable(false)
+			return
+		end
+		
+		cellEntity:SetEnable(true)
+		cellEntity:SetVisible(true)
+		local renderer = cellEntity.SpriteGUIRendererComponent
+		if renderer ~= nil then
+			renderer.Color = self.shapePreviewOccupiedColor
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BuildShapePreviewCells()
+		if self.shapeGrid == nil then
+			return
+		end
+		
+		self.shapePreviewCells = {}
+		
+		for row = 1, self.shapePreviewRows do
+			for col = 1, self.shapePreviewCols do
+				local key = self:BuildShapeCellKey(row, col)
+				local cellEntity = self:ResolveShapePreviewCell(row, col)
+				if cellEntity ~= nil then
+					self.shapePreviewCells[key] = cellEntity
+					self:SetShapePreviewCellState(cellEntity, false)
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity GetShapePreviewCell(integer row, integer col)
+		if self.shapePreviewCells == nil then
+			self.shapePreviewCells = {}
+		end
+		
+		local key = self:BuildShapeCellKey(row, col)
+		local cellEntity = self.shapePreviewCells[key]
+		if cellEntity ~= nil and isvalid(cellEntity) then
+			return cellEntity
+		end
+		
+		cellEntity = self:ResolveShapePreviewCell(row, col)
+		if cellEntity ~= nil then
+			self.shapePreviewCells[key] = cellEntity
+		end
+		return cellEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RedrawShapeGrid(table itemData)
+		if self.shapeGrid == nil then
+			return
+		end
+		
+		if self.shapePreviewCells == nil or next(self.shapePreviewCells) == nil then
+			self:BuildShapePreviewCells()
+		end
+		if self.shapePreviewCells == nil or next(self.shapePreviewCells) == nil then
+			log_warning("[ItemTooltipUI] Static shape preview cells not found under ShapeGrid.")
+			return
+		end
+		
+		for row = 1, self.shapePreviewRows do
+			for col = 1, self.shapePreviewCols do
+				local emptyCell = self:GetShapePreviewCell(row, col)
+				if emptyCell ~= nil then
+					self:SetShapePreviewCellState(emptyCell, false)
+				end
+			end
+		end
+		
+		local rows = self:ParseShapeRows(itemData.shapeMask or "")
+		
+		for r = 1, #rows do
+			if r > self.shapePreviewRows then
+				break
+			end
+			local rowText = rows[r]
+			for c = 1, string.len(rowText) do
+				if c > self.shapePreviewCols then
+					break
+				end
+				
+				local cellEntity = self:GetShapePreviewCell(r, c)
+				if cellEntity ~= nil then
+					local occupied = string.sub(rowText, c, c) == "1"
+					self:SetShapePreviewCellState(cellEntity, occupied)
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void MoveTooltip(Vector2 screenPos)
+		if self.tooltipPanel == nil then
+			return
+		end
+		
+		local panelUI = self.tooltipPanel.UITransformComponent
+		if panelUI == nil or screenPos == nil then
+			return
+		end
+		
+		local parent = self.tooltipPanel.Parent
+		if parent == nil then
+			return
+		end
+		local parentUI = parent.UITransformComponent
+		if parentUI == nil then
+			return
+		end
+		
+		local localPos = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+		panelUI.anchoredPosition = Vector2(
+			localPos.x + self.tooltipOffsetX,
+			localPos.y + self.tooltipOffsetY + self.tooltipDynamicYOffset
+		)
+	end
+
+end
