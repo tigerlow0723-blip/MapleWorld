@@ -31,6 +31,10 @@ script PlayerManager extends Component
 
 	property integer gold = 0
 
+	property integer scrollNormal = 0
+
+	property integer scrollGuaranteed = 0
+
 	property table inventory = {}
 
 	property table buffList = {}
@@ -94,6 +98,8 @@ script PlayerManager extends Component
 		self.level = 1
 		self.isDead = false
 		self.gold = 0
+		self.scrollNormal = 0
+		self.scrollGuaranteed = 0
 		self.inventory = {}
 		self.buffList = {}
 		
@@ -394,6 +400,63 @@ script PlayerManager extends Component
 		end
 		self.gold = (self.gold or 0) + amount
 		log("[PlayerManager] Gold +" .. tostring(amount) .. " => " .. tostring(self.gold))
+	end
+
+	method void NotifyScrollInventoryUI()
+		local scrollPanelEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ScrollPanel")
+		if scrollPanelEntity == nil then
+			scrollPanelEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
+		end
+		if scrollPanelEntity ~= nil and scrollPanelEntity.ScrollInventoryUI ~= nil then
+			scrollPanelEntity.ScrollInventoryUI:UpdateUI()
+		end
+	end
+
+	method void AddScroll(integer typeId, integer amount)
+		if amount == nil or amount <= 0 then
+			return
+		end
+		
+		if typeId == 9 then
+			self.scrollNormal = (self.scrollNormal or 0) + amount
+		elseif typeId == 10 then
+			self.scrollGuaranteed = (self.scrollGuaranteed or 0) + amount
+		else
+			return
+		end
+		
+		log("[PlayerManager] Scroll +" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
+		self:NotifyScrollInventoryUI()
+	end
+
+	method boolean UseScroll(integer typeId, integer amount)
+		if amount == nil or amount <= 0 then
+			return true
+		end
+		
+		local current = 0
+		if typeId == 9 then
+			current = self.scrollNormal or 0
+		elseif typeId == 10 then
+			current = self.scrollGuaranteed or 0
+		else
+			return false
+		end
+		
+		if current < amount then
+			log("[PlayerManager] Not enough scroll. type=" .. tostring(typeId) .. " need=" .. tostring(amount) .. " current=" .. tostring(current))
+			return false
+		end
+		
+		if typeId == 9 then
+			self.scrollNormal = current - amount
+		else
+			self.scrollGuaranteed = current - amount
+		end
+		
+		log("[PlayerManager] Scroll -" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
+		self:NotifyScrollInventoryUI()
+		return true
 	end
 
 	method boolean SpendGold(integer amount)
