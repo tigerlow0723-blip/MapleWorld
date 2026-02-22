@@ -70,6 +70,10 @@ script Item extends Component
 		    end
 		
 		    self.Entity:ConnectEvent(UITouchDownEvent, function(event)
+		        if self:CanStartDragFromTouch(event) == false then
+		            return
+		        end
+		
 		        local inventoryUI = nil
 		        if self.inventoryUIPath ~= "" then
 		            local targetEntity = _EntityService:GetEntityByPath(self.inventoryUIPath)
@@ -89,6 +93,63 @@ script Item extends Component
 		            log_warning("[Item] InventoryUI not found")
 		        end
 		    end)
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean CanStartDragFromTouch(any event)
+		    if self:IsRightClickTouch(event) == true then
+		        return false
+		    end
+		
+		    if event ~= nil and event.TouchId ~= nil then
+		        local touchId = tonumber(event.TouchId)
+		        if touchId ~= nil and touchId >= 0 then
+		            return true
+		        end
+		    end
+		
+		    if _InputService:IsKeyPressed(KeyboardKey.Mouse0) == true then
+		        return true
+		    end
+		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsRightClickTouch(any event)
+		    if event == nil then
+		        return false
+		    end
+		
+		    if event.TouchId ~= nil and event.TouchId == -3 then
+		        return true
+		    end
+		
+		    local button = event.Button
+		    if button == nil then button = event.button end
+		    if button ~= nil then
+		        if button == 1 or button == 2 or button == -3 then
+		            return true
+		        end
+		        local buttonText = string.lower(tostring(button))
+		        if string.find(buttonText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    local actionType = event.ActionType
+		    if actionType ~= nil then
+		        local actionText = string.lower(tostring(actionType))
+		        if string.find(actionText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    if _InputService:IsKeyPressed(KeyboardKey.Mouse1) == true then
+		        return true
+		    end
+		
+		    return false
 	end
 
 	@ExecSpace("ClientOnly")
