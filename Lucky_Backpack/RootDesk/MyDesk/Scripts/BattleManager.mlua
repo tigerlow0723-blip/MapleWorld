@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script BattleManager extends Component
 
 	property string currentTurn = "None"
@@ -77,8 +77,6 @@ script BattleManager extends Component
 		log("[BattleManager] >>> Player Turn Start <<<")
 	end
 
-	--
-
 	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
 			log("[BattleManager] Not player turn!")
@@ -88,7 +86,7 @@ script BattleManager extends Component
 		if self.playerManager.isDead == true then
 			return
 		end
-
+		
 		local itemData = nil
 		if self.dataManager ~= nil then
 			itemData = self.dataManager:GetItemData(itemId)
@@ -97,46 +95,46 @@ script BattleManager extends Component
 			log("[BattleManager] Invalid item ID: " .. tostring(itemId))
 			return
 		end
-
+		
 		if itemData.type ~= "weapon" then
 			log("[BattleManager] Cannot attack with a non-weapon item.")
 			return
 		end
-
+		
 		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
 			targetMonsterIdx = 1
 		end
-
+		
 		-- Validate target monster before attack.
 		if self.monsterManager == nil then
 			log("[BattleManager] MonsterManager is nil.")
 			return
 		end
-
+		
 		local targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
 		if targetMonster == nil or targetMonster.alive == false then
 			log("[BattleManager] Target monster is missing or already dead: " .. tostring(targetMonsterIdx))
 			return
 		end
-
+		
 		if self.playerManager:UseCost(itemData.cost) == false then
 			return
 		end
-
+		
 		local damage = self:CalculatePlayerDamage(itemData)
 		local accuracy = self.playerManager.acc or 0
-
+		
 		log("[BattleManager DEBUG] Attack attempt(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
-
+		
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		if result ~= nil then
 			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage))
 		else
 			log("[Battle] Attack missed or target dead.")
 		end
-
+		
 		self:RefreshUI()
-
+		
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
 			return
@@ -147,11 +145,11 @@ script BattleManager extends Component
 		if self.currentTurn ~= "Player" then
 			return false
 		end
-
+		
 		if self.playerManager == nil or self.playerManager.isDead == true then
 			return false
 		end
-
+		
 		local itemData = nil
 		if self.dataManager ~= nil then
 			itemData = self.dataManager:GetItemData(itemId)
@@ -159,15 +157,15 @@ script BattleManager extends Component
 		if itemData == nil then
 			return false
 		end
-
+		
 		if itemData.type ~= "consumable" then
 			return false
 		end
-
+		
 		if self.playerManager:UseCost(itemData.cost or 0) == false then
 			return false
 		end
-
+		
 		--
 		if (itemData.hp or 0) > 0 then
 			self.playerManager:Heal(itemData.hp)
@@ -187,7 +185,7 @@ script BattleManager extends Component
 		if (itemData.hpPercent or 0) > 0 then
 			self.playerManager:AddBuff("hpPercent", itemData.hpPercent, 3)
 		end
-
+		
 		log("[BattleManager] Consumable used: " .. tostring(itemData.name))
 		self:RefreshUI()
 		return true
@@ -217,8 +215,6 @@ script BattleManager extends Component
 		return math.floor(finalAtk)
 	end
 
-	--
-
 	method void OnPlayerUseSkill(integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
 			return
@@ -243,7 +239,7 @@ script BattleManager extends Component
 		end
 		
 		self:RefreshUI()
-
+		
 		--
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
@@ -326,7 +322,7 @@ script BattleManager extends Component
 			end
 			
 			self:RefreshUI()
-
+		
 			--
 			if self.playerManager.isDead == true then
 				self:EndBattle("Defeat")

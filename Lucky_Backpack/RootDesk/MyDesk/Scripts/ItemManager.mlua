@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script ItemManager extends Component
 
 	property any dataManager = nil
@@ -69,10 +69,10 @@ script ItemManager extends Component
 			log("[ItemManager] 사용 가능한 아이템 없음 (group: " .. tostring(spawnGroup) .. ")")
 			return drops
 		end
-
+		
 		local expandItems = {}
 		local normalItems = {}
-
+		
 		for i = 1, #availableItems do
 			local item = availableItems[i]
 			if item.type == "expand" then
@@ -81,7 +81,7 @@ script ItemManager extends Component
 				table.insert(normalItems, item)
 			end
 		end
-
+		
 		local function CreateDropItem(item)
 			local drop = {}
 			drop.id = item.id
@@ -103,7 +103,7 @@ script ItemManager extends Component
 			drop.imageRUID = item.imageRUID or ""
 			return drop
 		end
-
+		
 		-- 1. 확장 아이템 무조건 1개 보장
 		if #expandItems > 0 and count > 0 then
 			local idx = math.random(1, #expandItems)
@@ -113,7 +113,7 @@ script ItemManager extends Component
 			log("[ItemManager] 드랍 확정(확장템): " .. drop.name)
 			count = count - 1
 		end
-
+		
 		-- 2. 나머지 아이템들은 랜덤
 		if count > 0 then
 			if #normalItems == 0 then
@@ -128,7 +128,7 @@ script ItemManager extends Component
 				end
 			end
 		end
-
+		
 		-- 3. 보상 목록 섞기 (확장템이 항상 첫 번째로 고정되는 것을 방지)
 		for i = #drops, 2, -1 do
 			local j = math.random(1, i)
@@ -169,4 +169,3 @@ script ItemManager extends Component
 	end
 
 end
-

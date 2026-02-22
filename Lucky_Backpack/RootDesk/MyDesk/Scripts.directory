@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://78ad5d72a163480ab1ac76e0e290657c",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://78ad5d72a163480ab1ac76e0e290657c",
+      "name": "Scripts",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}
