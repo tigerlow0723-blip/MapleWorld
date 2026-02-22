@@ -1,5 +1,5 @@
 ﻿classId,baseHP,baseATK,accPercent,critRate,critDmg,baseCost,skill
-War,1000,1000,80,5,120,10,하이퍼바디
+War,1000,10,80,5,120,10,하이퍼바디
 Arc,80,12,100,10,130,10,샤프아이즈
 Mag,70,18,85,5,150,10,인피니티
 Rog,90,13,90,15,180,10,암살

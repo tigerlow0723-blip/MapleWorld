@@ -126,6 +126,8 @@ script BattleManager extends Component
 		
 		log("[BattleManager DEBUG] Attack attempt(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
 		
+		self.playerManager:PlayPlayerAnim("Attack")
+		
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		if result ~= nil then
 			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage))
@@ -237,6 +239,13 @@ script BattleManager extends Component
 			local result = self.monsterManager:DamageMonster(targetMonsterIdx, skillData.skillDmg, acc)
 			log("[BattleManager] " .. tostring(skillData.skillDmg))
 		end
+		if skillData.incomingDmgUp > 0 and targetMonsterIdx > 0 then
+			local debuffTurn = skillData.activeTurn
+			if debuffTurn == nil or debuffTurn <= 0 then
+				debuffTurn = 1
+			end
+			self.monsterManager:ApplyIncomingDamageDebuff(targetMonsterIdx, skillData.incomingDmgUp, debuffTurn)
+		end
 		
 		self:RefreshUI()
 		
@@ -296,6 +305,14 @@ script BattleManager extends Component
 		if self.monsterManager.lastActionValid == true then
 			local statusName = self.monsterManager.lastStatus
 			local effectValue = self.monsterManager.lastDamage -- percentage for HP percent skills
+			-- Normalize monster status text from data tables.
+			if statusName == "��" then
+				statusName = "poison"
+			elseif statusName == "����" then
+				statusName = "none"
+			elseif statusName ~= nil then
+				statusName = string.lower(statusName)
+			end
 			
 			if statusName == "hp_dmg" then
 				-- Fixed percentage damage of Player's Max HP
@@ -303,9 +320,8 @@ script BattleManager extends Component
 				local dmg = math.floor(maxHP * (effectValue / 100.0))
 				self.playerManager:TakeDamage(dmg)
 			elseif statusName == "poison" then
-				-- Apply Poison DOT as fixed percentage of Max HP per turn
-				local maxHP = self.playerManager.maxHP or self.playerManager.hp
-				local dmgPerTurn = math.floor(maxHP * (effectValue / 100.0))
+				-- Apply Poison DOT as fixed damage per turn from monster data.
+				local dmgPerTurn = math.floor(self.monsterManager.lastDotDmg or 0)
 				local dotTurnVal = self.monsterManager.lastDotTurn
 				
 				if dmgPerTurn > 0 then
@@ -314,10 +330,14 @@ script BattleManager extends Component
 					dot.dmg = dmgPerTurn
 					dot.remainTurn = dotTurnVal
 					self.playerDotEffects[#self.playerDotEffects + 1] = dot
-					log("[BattleManager] 맹독 상태이상 부여: 매 턴 " .. tostring(dmgPerTurn) .. " 피해 (" .. tostring(dotTurnVal) .. "턴 남음)")
+					log("[BattleManager] 맹독 ?�태?�상 부?? �???" .. tostring(dmgPerTurn) .. " ?�해 (" .. tostring(dotTurnVal) .. "???�음)")
 				end
 			elseif statusName == "none" or statusName == nil then
 				-- Normal attack
+				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
+			else
+				-- Unknown status from data: still apply base damage so attacks are not skipped.
+				log_warning("[BattleManager] Unknown monster status: " .. tostring(self.monsterManager.lastStatus) .. ", fallback to normal damage")
 				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 			end
 			
@@ -370,6 +390,7 @@ script BattleManager extends Component
 		--
 		self.currentTurn = "Player"
 		self.playerManager:RestoreCost()
+		self.monsterManager:TickMonsterDebuffs()
 		self:RefreshUI()
 	end
 
