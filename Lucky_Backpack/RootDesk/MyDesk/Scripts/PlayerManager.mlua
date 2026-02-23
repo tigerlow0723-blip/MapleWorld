@@ -245,8 +245,12 @@ script PlayerManager extends Component
 			maxCol = #grid[1]
 		end
 		
-		for placedItemId, placedInfo in pairs(self.inventoryComp.placedItems) do
+		for placedKey, placedInfo in pairs(self.inventoryComp.placedItems) do
 			if placedInfo == nil then
+				continue
+			end
+			local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+			if placedItemId <= 0 then
 				continue
 			end
 			
@@ -345,13 +349,36 @@ script PlayerManager extends Component
 		log("[PlayerManager] Init Start")
 	end
 
+	method Entity ResolveEventBroadcasterEntity()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			return gameSystem
+		end
+		return self.Entity
+	end
+
+	method void EmitPlayerStatChangedEvent()
+		local broadcaster = self:ResolveEventBroadcasterEntity()
+		if broadcaster == nil then
+			return
+		end
+		broadcaster:SendEvent(PlayerStatChangedEvent())
+	end
+
 	method void SyncInventoryFromGrid()
 		self.inventoryComp = self:ResolveInventoryComp()
 		if self.inventoryComp == nil then
 			return
 		end
 		self.inventory = {}
-		for itemId, _ in pairs(self.inventoryComp.placedItems) do
+		for placedKey, placedInfo in pairs(self.inventoryComp.placedItems) do
+			if placedInfo == nil then
+				continue
+			end
+			local itemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+			if itemId <= 0 then
+				continue
+			end
 			local itemData = self.dataManager:GetItemData(itemId)
 			if itemData ~= nil then
 				self.inventory[#self.inventory + 1] = itemData
@@ -440,6 +467,42 @@ script PlayerManager extends Component
 		self.maxCost = self:CalcMaxCost()
 	end
 
+	method table CalcTotalItemStats()
+		local stats = {
+			itemAtk = 0,
+			itemAtkPercent = 0,
+			itemHp = 0,
+			itemHpPercent = 0,
+			itemAcc = 0,
+			itemCritRate = 0,
+			itemCritDmg = 0,
+			itemDef = 0
+		}
+		
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
+				if not isRecoveryItem then
+					stats.itemHp += item.hp or 0
+					stats.itemHpPercent += item.hpPercent or 0
+				end
+				
+				if item.type ~= "weapon" then
+					stats.itemAtk += item.atk or 0
+					stats.itemAtkPercent += item.atkPercent or 0
+					stats.itemAcc += item.accPercent or 0
+					stats.itemCritRate += item.critRate or 0
+					stats.itemCritDmg += item.critDmg or 0
+				end
+				
+				stats.itemDef += item.def or 0
+			end
+		end
+		
+		return stats
+	end
+
 	method number CalcFinalATK(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local lvStat = self.dataManager:GetLevelStats(self.classId)
@@ -451,19 +514,9 @@ script PlayerManager extends Component
 			lvAtk = lvStat.atkPerLv * (self.level - 1)
 		end
 		
-		local itemAtk = 0
-		local itemAtkPercent = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemAtk += item.atk or 0
-				itemAtkPercent += item.atkPercent or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemAtk = stats.itemAtk
+		local itemAtkPercent = stats.itemAtkPercent
 		itemAtk += self:CalcWeaponSynergyAtk()
 		
 		-- Add only the selected weapon stats
@@ -496,18 +549,9 @@ script PlayerManager extends Component
 			lvHp = lvStat.hpPerLv * (self.level - 1)
 		end
 		
-		local itemHp = 0
-		local itemHpPercent = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
-				if not isRecoveryItem then
-					itemHp += item.hp or 0
-					itemHpPercent += item.hpPercent or 0
-				end
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemHp = stats.itemHp
+		local itemHpPercent = stats.itemHpPercent
 		
 		local buffHpPercent = self:GetBuffValue("hpPercent")
 		
@@ -526,17 +570,8 @@ script PlayerManager extends Component
 			lvAcc = lvStat.accPerLv * (self.level - 1)
 		end
 		
-		local itemAcc = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemAcc += item.accPercent or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemAcc = stats.itemAcc
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -559,17 +594,8 @@ script PlayerManager extends Component
 		local correction = self.dataManager:GetCorrectionStats(self.level)
 		
 		local baseCrit = baseStat.critRate
-		local itemCrit = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemCrit += item.critRate or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemCrit = stats.itemCritRate
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -600,17 +626,8 @@ script PlayerManager extends Component
 			lvCritDmg = lvStat.critDmgPerLv * (self.level - 1)
 		end
 		
-		local itemCritDmg = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemCritDmg += item.critDmg or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemCritDmg = stats.itemCritDmg
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -648,6 +665,7 @@ script PlayerManager extends Component
 		self.maxCost = self:CalcMaxCost()
 		self.currentCost = self.maxCost
 		log("[PlayerManager] Cost restored: " .. tostring(self.currentCost))
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method boolean UseCost(number amount)
@@ -657,18 +675,14 @@ script PlayerManager extends Component
 		end
 		self.currentCost -= amount
 		log("[PlayerManager] Cost used: " .. tostring(amount) .. " Remain: " .. tostring(self.currentCost))
+		self:EmitPlayerStatChangedEvent()
 		return true
 	end
 
 	method void TakeDamage(number dmg)
 		--
-		local totalDef = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				totalDef += item.def or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local totalDef = stats.itemDef
 		
 		local finalDmg = math.max(1, dmg - totalDef)
 		self.currentHP -= finalDmg
@@ -684,11 +698,13 @@ script PlayerManager extends Component
 		end
 		
 		self:ProcessHitVisual(finalDmg)
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method void Heal(number amount)
 		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
 		log("[PlayerManager] HP recovered: " .. tostring(amount) .. " Current HP: " .. tostring(self.currentHP))
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method void LevelUp()
@@ -700,6 +716,7 @@ script PlayerManager extends Component
 		self.currentHP += hpGain
 		self.currentHP = math.min(self.maxHP, self.currentHP)
 		log("[PlayerManager] Level up! Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method void AddBuff(string statName, number value, integer duration)
@@ -743,16 +760,7 @@ script PlayerManager extends Component
 		end
 		self.gold = (self.gold or 0) + amount
 		log("[PlayerManager] Gold +" .. tostring(amount) .. " => " .. tostring(self.gold))
-	end
-
-	method void NotifyScrollInventoryUI()
-		local scrollPanelEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ScrollPanel")
-		if scrollPanelEntity == nil then
-			scrollPanelEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
-		end
-		if scrollPanelEntity ~= nil and scrollPanelEntity.ScrollInventoryUI ~= nil then
-			scrollPanelEntity.ScrollInventoryUI:UpdateUI()
-		end
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method void AddScroll(integer typeId, integer amount)
@@ -769,7 +777,7 @@ script PlayerManager extends Component
 		end
 		
 		log("[PlayerManager] Scroll +" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
-		self:NotifyScrollInventoryUI()
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method boolean UseScroll(integer typeId, integer amount)
@@ -798,7 +806,7 @@ script PlayerManager extends Component
 		end
 		
 		log("[PlayerManager] Scroll -" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
-		self:NotifyScrollInventoryUI()
+		self:EmitPlayerStatChangedEvent()
 		return true
 	end
 
@@ -813,6 +821,7 @@ script PlayerManager extends Component
 		end
 		self.gold = current - amount
 		log("[PlayerManager] Gold -" .. tostring(amount) .. " => " .. tostring(self.gold))
+		self:EmitPlayerStatChangedEvent()
 		return true
 	end
 

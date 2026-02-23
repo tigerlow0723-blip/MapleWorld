@@ -108,7 +108,14 @@ script BattleManager extends Component
 			return
 		end
 		
-		for itemId, _ in pairs(inventoryComp.placedItems) do
+		for placedKey, placedInfo in pairs(inventoryComp.placedItems) do
+			if placedInfo == nil then
+				continue
+			end
+			local itemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+			if itemId <= 0 then
+				continue
+			end
 			local itemData = nil
 			if self.dataManager ~= nil then
 				itemData = self.dataManager:GetItemData(itemId)
@@ -295,6 +302,10 @@ script BattleManager extends Component
 		end
 		
 		if itemData.type ~= "consumable" then
+			return false
+		end
+		
+		if itemId ~= 2 and itemId ~= 3 and itemId ~= 4 and itemId ~= 5 then
 			return false
 		end
 		

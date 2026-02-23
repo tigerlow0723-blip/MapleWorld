@@ -315,6 +315,8 @@ script MonsterManager extends Component
 			targetEntity:AddComponent("HitComponent")
 			hitComp = targetEntity.HitComponent
 		end
+		
+		-- Ensure damage skin components are present (added only once per spawn)
 		if targetEntity.DamageSkinSpawnerComponent == nil then
 			targetEntity:AddComponent("DamageSkinSpawnerComponent")
 		end
@@ -323,13 +325,8 @@ script MonsterManager extends Component
 		end
 		
 		if hitComp ~= nil then
-			local critical = false
-			if isCritical == true then
-				critical = true
-			end
+			local critical = (isCritical == true)
 			hitComp:OnHit(targetEntity, math.ceil(damage), critical, "Attack", 1)
-		else
-			log_warning("[MonsterManager] HitComponent not found on monster: " .. tostring(targetEntityId))
 		end
 	end
 	method void MonsterBasicAttack(integer index)

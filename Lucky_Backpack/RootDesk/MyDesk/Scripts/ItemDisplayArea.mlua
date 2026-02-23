@@ -484,15 +484,19 @@ script ItemDisplayArea extends Component
 					local childName = child.Name or ""
 					if string.sub(childName, 1, 13) == "ShapeHitCell_" then
 						shapeCellFound = true
-						child:SetEnable(true)
-						child:SetVisible(true)
+						child:SetEnable(useShapeHitCell)
+						child:SetVisible(useShapeHitCell)
 						local hitTouch = child.UITouchReceiveComponent
 						if hitTouch ~= nil then
 							hitTouch.Enable = useShapeHitCell
 						end
 						local hitRenderer = child.SpriteGUIRendererComponent
 						if hitRenderer ~= nil then
-							hitRenderer.Color = Color(1, 1, 1, cellAlpha)
+							local alpha = 0
+							if useShapeHitCell == true then
+								alpha = cellAlpha
+							end
+							hitRenderer.Color = Color(1, 1, 1, alpha)
 							hitRenderer.RaycastTarget = useShapeHitCell
 						end
 					end

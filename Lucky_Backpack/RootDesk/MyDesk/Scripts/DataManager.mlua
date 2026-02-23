@@ -121,6 +121,8 @@ script DataManager extends Component
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
+			headers["Spawn_Rate(%)"] = true
+			headers["spawn_rate"] = true
 			headers["1"] = true
 			headers["2"] = true
 			headers["3"] = true
@@ -147,6 +149,8 @@ script DataManager extends Component
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
+			headers["Spawn_Rate(%)"] = true
+			headers["spawn_rate"] = true
 			headers["shapeMask"] = true
 			headers["grade"] = true
 			headers["next_upgrade_id"] = true
@@ -222,6 +226,8 @@ script DataManager extends Component
 			headers["desc"] = true
 			headers["imageRUID"] = true
 			headers["shapeMask"] = true
+			headers["isRewardDrop"] = true
+			headers["rewardDrop"] = true
 			return headers
 		end
 		
@@ -575,6 +581,8 @@ script DataManager extends Component
 						data.def = getNumber("def", "", 0)
 						data.desc = getString("desc", "")
 						data.spawnGroup = getNumber("Spawn_Group", "", 1)
+						data.spawnRate = getNumber("Spawn_Rate(%)", "spawn_rate", 0)
+						data.isRewardDrop = getNumber("isRewardDrop", "rewardDrop", 1)
 						data.imageRUID = getString("imageRUID", "")
 						data.grade = getString("grade", "")
 						data.nextUpgradeId = getNumber("next_upgrade_id", "", 0)
