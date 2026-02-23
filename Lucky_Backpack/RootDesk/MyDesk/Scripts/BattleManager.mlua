@@ -53,7 +53,10 @@ script BattleManager extends Component
 		self.playerDotEffects = {}
 		
 		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
-			self.gameManager.uiMain.targetMonsterIdx = 0
+			self.gameManager.uiMain.targetMonsterIdx = 1
+			if self.monsterManager ~= nil then
+				self.monsterManager:UpdateTargetHighlight(1)
+			end
 		end
 		
 		log("========================================")
@@ -140,6 +143,28 @@ script BattleManager extends Component
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
 			return
+		end
+		
+		if result ~= nil and result.killed == true then
+			if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+				local uiMain = self.gameManager.uiMain
+				if uiMain.targetMonsterIdx == targetMonsterIdx then
+					-- Find next alive monster
+					local nextTarget = 0
+					for i = 1, #self.monsterManager.monsterList do
+						if self.monsterManager.monsterList[i].alive then
+							nextTarget = i
+							break
+						end
+					end
+					
+					if nextTarget > 0 then
+						uiMain.targetMonsterIdx = nextTarget
+						self.monsterManager:UpdateTargetHighlight(nextTarget)
+						self:RefreshUI()
+					end
+				end
+			end
 		end
 	end
 
@@ -244,6 +269,31 @@ script BattleManager extends Component
 		--
 		if self.monsterManager:IsAllDead() then
 			self:EndBattle("Victory")
+			return
+		end
+		
+		if targetMonsterIdx > 0 then
+			local targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
+			if targetMonster ~= nil and targetMonster.alive == false then
+				if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+					local uiMain = self.gameManager.uiMain
+					if uiMain.targetMonsterIdx == targetMonsterIdx then
+						local nextTarget = 0
+						for i = 1, #self.monsterManager.monsterList do
+							if self.monsterManager.monsterList[i].alive then
+								nextTarget = i
+								break
+							end
+						end
+						
+						if nextTarget > 0 then
+							uiMain.targetMonsterIdx = nextTarget
+							self.monsterManager:UpdateTargetHighlight(nextTarget)
+							self:RefreshUI()
+						end
+					end
+				end
+			end
 		end
 	end
 	method void EndPlayerTurn()
