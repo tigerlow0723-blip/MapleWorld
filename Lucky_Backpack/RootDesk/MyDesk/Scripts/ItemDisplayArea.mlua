@@ -321,15 +321,33 @@ script ItemDisplayArea extends Component
 			return 0
 		end
 		self:ResolveInventoryUI()
-		local cellSize = self.slotSize
+		local cellSizeX = self.slotSize
+		local cellSizeY = self.slotSize
 		if self.inventoryUI ~= nil and self.inventoryUI.cellSize ~= nil and self.inventoryUI.cellSize > 0 then
-			cellSize = self.inventoryUI.cellSize
+			cellSizeX = self.inventoryUI.cellSize
+			cellSizeY = self.inventoryUI.cellSize
+			if self.inventoryUI.GetGridCellSpacing ~= nil then
+				local spacing = self.inventoryUI:GetGridCellSpacing()
+				if spacing ~= nil then
+					if spacing.x ~= nil and spacing.x > 0 then
+						cellSizeX = spacing.x
+					end
+					if spacing.y ~= nil and spacing.y > 0 then
+						cellSizeY = spacing.y
+					end
+				end
+			end
 		elseif template.UITransformComponent ~= nil and template.UITransformComponent.RectSize ~= nil then
 			local tRect = template.UITransformComponent.RectSize
 			if tRect.x ~= nil and tRect.x > 0 then
-				cellSize = tRect.x
+				cellSizeX = tRect.x
+			end
+			if tRect.y ~= nil and tRect.y > 0 then
+				cellSizeY = tRect.y
 			end
 		end
+		if cellSizeX <= 0 then cellSizeX = 1 end
+		if cellSizeY <= 0 then cellSizeY = 1 end
 		local pad = self.shapeHitCellPadding
 		if pad < 0 then pad = 0 end
 		
@@ -360,8 +378,22 @@ script ItemDisplayArea extends Component
 			return 0
 		end
 		
-		local boundsW = (maxCol - minCol + 1) * cellSize
-		local boundsH = (maxRow - minRow + 1) * cellSize
+		local shapeBoundsW = (maxCol - minCol + 1) * cellSizeX
+		local shapeBoundsH = (maxRow - minRow + 1) * cellSizeY
+		local displayCols = maxCol - minCol + 1
+		local displayRows = maxRow - minRow + 1
+		if itemComp.displayBoundsCols ~= nil and itemComp.displayBoundsCols > 0 then
+			displayCols = itemComp.displayBoundsCols
+		end
+		if itemComp.displayBoundsRows ~= nil and itemComp.displayBoundsRows > 0 then
+			displayRows = itemComp.displayBoundsRows
+		end
+		local displayBoundsW = displayCols * cellSizeX
+		local displayBoundsH = displayRows * cellSizeY
+		local itemUI = itemEntity.UITransformComponent
+		if itemUI ~= nil then
+			itemUI.RectSize = Vector2(math.max(2, displayBoundsW), math.max(2, displayBoundsH))
+		end
 		
 		local createdCount = 0
 		local cellAlpha = 0.02
@@ -388,10 +420,10 @@ script ItemDisplayArea extends Component
 						hitUI.AnchorsMin = Vector2(0.5, 0.5)
 						hitUI.AnchorsMax = Vector2(0.5, 0.5)
 						hitUI.Pivot = Vector2(0.5, 0.5)
-						local x = (-boundsW * 0.5) + (((col - minCol) + 0.5) * cellSize)
-						local y = (boundsH * 0.5) - (((row - minRow) + 0.5) * cellSize)
+						local x = (-shapeBoundsW * 0.5) + (((col - minCol) + 0.5) * cellSizeX)
+						local y = (shapeBoundsH * 0.5) - (((row - minRow) + 0.5) * cellSizeY)
 						hitUI.anchoredPosition = Vector2(x, y)
-						hitUI.RectSize = Vector2(math.max(2, cellSize - pad), math.max(2, cellSize - pad))
+						hitUI.RectSize = Vector2(math.max(2, cellSizeX - pad), math.max(2, cellSizeY - pad))
 					end
 					
 					local hitRenderer = hitCell.SpriteGUIRendererComponent
