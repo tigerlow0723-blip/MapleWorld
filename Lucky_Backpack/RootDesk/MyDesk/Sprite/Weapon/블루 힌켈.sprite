@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://5e4ab0b325c647e798d3c896cae63924",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/5e4ab0b325c647e798d3c896cae63924/639071869967322587",
+      "upload_hash": "E55DF73A22EAACA1311B91BBC14B05BEB09E4C9577FABF369B9828D7FAB39C85",
+      "name": "블루 힌켈",
+      "resource_guid": "5e4ab0b325c647e798d3c896cae63924",
+      "resource_version": "699852341d7853c1f4cd9222"
+    }
+  }
+}

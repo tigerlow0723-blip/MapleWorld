@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://51dee7ff9e2845588eedb93597910f9d",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/51dee7ff9e2845588eedb93597910f9d/639074219951815740",
+      "upload_hash": "C85510095A7117FACD98FC9203505C04B0389EF46E0F5D6EAD8A4672B3365C4B",
+      "name": "한손검 유니크-글라디우스",
+      "resource_guid": "51dee7ff9e2845588eedb93597910f9d",
+      "resource_version": "699be82b5e4a0a42e7574a30"
+    }
+  }
+}

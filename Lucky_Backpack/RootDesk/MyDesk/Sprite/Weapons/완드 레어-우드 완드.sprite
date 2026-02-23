@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://9b655524c0294f48a7fc9b131835a6fc",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/9b655524c0294f48a7fc9b131835a6fc/639074219961821042",
+      "upload_hash": "9A73D38D9702568892952E5575814F3EFA74D7D50A45E6745FED34A9F282C099",
+      "name": "완드 레어-우드 완드",
+      "resource_guid": "9b655524c0294f48a7fc9b131835a6fc",
+      "resource_version": "699be82cf92933a652cbb0a8"
+    }
+  }
+}

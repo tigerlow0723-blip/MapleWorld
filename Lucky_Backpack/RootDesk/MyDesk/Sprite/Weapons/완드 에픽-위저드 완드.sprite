@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://d3ac0ad29e5d443cacfa907d94ad1446",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/d3ac0ad29e5d443cacfa907d94ad1446/639074219964808688",
+      "upload_hash": "70D64FF5E352E45BF8595D94DDFE1FFB7984E650B1C2B00AC85D66FF39E6CD6C",
+      "name": "완드 에픽-위저드 완드",
+      "resource_guid": "d3ac0ad29e5d443cacfa907d94ad1446",
+      "resource_version": "699be82c2f2996a26f21b07f"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://0fc37c3c0aa64acf955aece2fecbcc03",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/0fc37c3c0aa64acf955aece2fecbcc03/639071869962703885",
+      "upload_hash": "932081CAD38EBE754C08C716C5B42A2A53EDF91028D588E6F79AE9CEF1C23998",
+      "name": "하트 완드",
+      "resource_guid": "0fc37c3c0aa64acf955aece2fecbcc03",
+      "resource_version": "699852341d7853c1f4cd9220"
+    }
+  }
+}

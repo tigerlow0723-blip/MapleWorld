@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://9e66af3009ee464eb5419d918d65f3ec",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/9e66af3009ee464eb5419d918d65f3ec/639071869976021429",
+      "upload_hash": "168C3B72FE0BA4BFB11E82285DE7929A0AE1397E58789B4DC2D6F129D4C6136A",
+      "name": "라 투핸더",
+      "resource_guid": "9e66af3009ee464eb5419d918d65f3ec",
+      "resource_version": "69985235b314f0c263cc0f29"
+    }
+  }
+}

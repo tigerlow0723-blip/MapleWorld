@@ -1,0 +1,862 @@
+@Component
+script DataManager extends Component
+
+	property table MonsterTable = {}
+
+	property table BossTable = {}
+
+	property table BossBasicTable = {}
+
+	property table SpawnTable = {}
+
+	property table ItemTable = {}
+
+	property table BaseStatTable = {}
+
+	property table LevelStatTable = {}
+
+	property table SkillTable = {}
+
+	property table CorrectionTable = {}
+
+	property table MapTable = {}
+
+	property table StageWeightTable = {}
+
+	property table SpecialEventTable = {}
+
+	method void OnInitialize()
+		log("[DataManager] (OnInitialize)  (  : Server/Client)")
+	end
+
+	method void OnBeginPlay()
+		self:LoadAllTables()
+		log("[DataManager]     ")
+	end
+
+	method void LoadAllTables()
+		self:LoadMonsterTable()
+		self:LoadBossTable()
+		self:LoadSpawnTable()
+		self:LoadItemTable()
+		self:LoadBaseStatTable()
+		self:LoadLevelStatTable()
+		self:LoadSkillTable()
+		self:LoadCorrectionTable()
+		self:LoadMapTable()
+		self:LoadStageWeightTable()
+		self:LoadSpecialEventTable()
+		
+		log("[DataManager]      .")
+	end
+
+	method any GetDataSet(string tableName)
+		local ds = _DataService:GetTable(tableName)
+		if ds == nil then
+			log("[ERROR] [DataManager]    : " .. tableName)
+			return nil
+		end
+		return ds
+	end
+
+	method string GetCellString(any ds, integer row, string colA, string colB)
+		if ds == nil then
+			return ""
+		end
+		
+		local value = self:TryGetCell(ds, row, colA)
+		if value ~= nil and value ~= "" then
+			return tostring(value)
+		end
+		
+		if colB ~= nil and colB ~= "" then
+			local valueB = self:TryGetCell(ds, row, colB)
+			if valueB ~= nil and valueB ~= "" then
+				return tostring(valueB)
+			end
+		end
+		
+		return ""
+	end
+
+	method any TryGetCell(any ds, integer row, string colName)
+		if ds == nil or colName == nil or colName == "" then
+			return nil
+		end
+		
+		local ok, value = pcall(function()
+			return ds:GetCell(row, colName)
+		end)
+		
+		if ok then
+			return value
+		end
+		
+		return nil
+	end
+
+	method table GetCsvHeaderSet(string tableName)
+		local headers = {}
+		if tableName == nil or tableName == "" then
+			return headers
+		end
+		
+		if tableName == "Data_Table - 장비 - 장비" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["1"] = true
+			headers["2"] = true
+			headers["3"] = true
+			return headers
+		end
+		
+		if tableName == "Data_Table - 아이템 - 장비" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			headers["grade"] = true
+			headers["next_upgrade_id"] = true
+			return headers
+		end
+		
+		if tableName == "Data_Table - 방어구 - 방어구" or tableName == "Data_Table - 기타 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			return headers
+		end
+		
+		if tableName == "Data_Table - 아이템 - 방어구" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+		
+		if tableName == "Data_Table - 아이템 - 기타" then
+			headers["id"] = true
+			headers["type"] = true
+			headers["name"] = true
+			headers["width"] = true
+			headers["height"] = true
+			headers["cost"] = true
+			headers["price"] = true
+			headers["atk"] = true
+			headers["min_atk"] = true
+			headers["max_atk"] = true
+			headers["atkPercent"] = true
+			headers["accPercent"] = true
+			headers["critRate"] = true
+			headers["critDmg"] = true
+			headers["hp"] = true
+			headers["hpPercent"] = true
+			headers["def"] = true
+			headers["Spawn_Group"] = true
+			headers["desc"] = true
+			headers["imageRUID"] = true
+			headers["shapeMask"] = true
+			return headers
+		end
+		
+		return headers
+	end
+
+	method integer GetCellNumber(any ds, integer row, string colA, string colB, integer defaultValue)
+		local text = self:GetCellString(ds, row, colA, colB)
+		if text == "" then
+			return defaultValue
+		end
+		return tonumber(text) or defaultValue
+	end
+
+	method string NormalizeShapeMask(string shapeMask)
+		if shapeMask == nil or shapeMask == "" then
+			return ""
+		end
+		
+		local normalized = ""
+		for i = 1, string.len(shapeMask) do
+			local ch = string.sub(shapeMask, i, i)
+			if ch == "," then
+				normalized = normalized .. "/"
+			elseif ch == "0" or ch == "1" or ch == "/" then
+				normalized = normalized .. ch
+			end
+		end
+		
+		local rows = {}
+		local rowText = ""
+		for i = 1, string.len(normalized) do
+			local ch = string.sub(normalized, i, i)
+			if ch == "/" then
+				if rowText ~= "" then
+					rows[#rows + 1] = rowText
+				end
+				rowText = ""
+			else
+				rowText = rowText .. ch
+			end
+		end
+		if rowText ~= "" then
+			rows[#rows + 1] = rowText
+		end
+		
+		if #rows == 0 then
+			return ""
+		end
+		
+		local top = #rows + 1
+		local bottom = 0
+		local left = 9999
+		local right = 0
+		local hasOne = false
+		
+		for r = 1, #rows do
+			local line = rows[r]
+			for c = 1, string.len(line) do
+				if string.sub(line, c, c) == "1" then
+					hasOne = true
+					if r < top then top = r end
+					if r > bottom then bottom = r end
+					if c < left then left = c end
+					if c > right then right = c end
+				end
+			end
+		end
+		
+		if hasOne == false then
+			return ""
+		end
+		
+		local compactRows = {}
+		for r = top, bottom do
+			local line = rows[r]
+			local outLine = ""
+			for c = left, right do
+				if c <= string.len(line) and string.sub(line, c, c) == "1" then
+					outLine = outLine .. "1"
+				else
+					outLine = outLine .. "0"
+				end
+			end
+			compactRows[#compactRows + 1] = outLine
+		end
+		
+		local compactMask = compactRows[1]
+		for i = 2, #compactRows do
+			compactMask = compactMask .. "/" .. compactRows[i]
+		end
+		return compactMask
+	end
+
+	method string BuildShapeMaskFromLegacyColumns(any ds, integer row)
+		if ds == nil then
+			return ""
+		end
+		
+		local rows = {}
+		for i = 1, 3 do
+			local key = tostring(i)
+			local rowText = self:TryGetCell(ds, row, key)
+			if rowText ~= nil and rowText ~= "" then
+				rows[#rows + 1] = tostring(rowText)
+			end
+		end
+		
+		if #rows == 0 then
+			return ""
+		end
+		
+		local shapeMask = rows[1]
+		for i = 2, #rows do
+			shapeMask = shapeMask .. "/" .. rows[i]
+		end
+		return self:NormalizeShapeMask(shapeMask)
+	end
+
+	method table GetShapeBounds(string shapeMask)
+		local result = {width = 0, height = 0}
+		local mask = self:NormalizeShapeMask(shapeMask)
+		if mask == "" then
+			return result
+		end
+		
+		local rowText = ""
+		for i = 1, string.len(mask) do
+			local ch = string.sub(mask, i, i)
+			if ch == "/" then
+				if rowText ~= "" then
+					result.height += 1
+					if string.len(rowText) > result.width then
+						result.width = string.len(rowText)
+					end
+				end
+				rowText = ""
+			else
+				rowText = rowText .. ch
+			end
+		end
+		
+		if rowText ~= "" then
+			result.height += 1
+			if string.len(rowText) > result.width then
+				result.width = string.len(rowText)
+			end
+		end
+		
+		return result
+	end
+
+	method void LoadMonsterTable()
+		local ds = self:GetDataSet("Data_Table - 몬스터리스트")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local id = ds:GetCell(i, "ID")
+			if id ~= nil and id ~= "" then
+				local data = {}
+				data.id = id
+				data.name = ds:GetCell(i, "name")
+				data.spawnGroup = tonumber(ds:GetCell(i, "Spawn_Group")) or 0
+				data.hp = tonumber(ds:GetCell(i, "HP")) or 0
+				data.atk = tonumber(ds:GetCell(i, "ATK")) or 0
+				data.def = tonumber(ds:GetCell(i, "DEF")) or 0
+				data.dodge = tonumber(ds:GetCell(i, "dodge")) or 0
+				data.patternId = ds:GetCell(i, "patternId") or ""
+				data.patternProb = tonumber(ds:GetCell(i, "patternProb")) or 50
+				data.atkCount = tonumber(ds:GetCell(i, "atkCount")) or 1
+				data.status = ds:GetCell(i, "status") or "none"
+				data.dotDmg = tonumber(ds:GetCell(i, "dotDmg")) or 0
+				data.dotTurn = tonumber(ds:GetCell(i, "dotTurn")) or 0
+				data.rewardExp = tonumber(ds:GetCell(i, "rewardExp")) or 0
+				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
+				data.goldDrop = tonumber(ds:GetCell(i, "goldDrop")) or data.rewardGold
+				data.modelID = ds:GetCell(i, "ModelID") or ""
+				data.deathDelay = tonumber(ds:GetCell(i, "deathDelay")) or 0.7
+				data.arrowOffsetY = tonumber(ds:GetCell(i, "arrowOffsetY")) or 1.2
+				self.MonsterTable[id] = data
+			end
+		end
+		local count = 0
+		for _ in pairs(self.MonsterTable) do count = count + 1 end
+		
+		if count == 0 then
+			log("[ERROR] [DataManager]   ! CSV .")
+		else
+			log("[DataManager]  " .. tostring(count) .. "   ")
+		end
+	end
+
+	method void LoadBossTable()
+		-- 1) 보스 기본 정보 로드
+		local dsBasic = self:GetDataSet("Data_Table - 보스")
+		if dsBasic ~= nil then
+			local rowCount = dsBasic:GetRowCount()
+			for i = 1, rowCount do
+				local bossId = dsBasic:GetCell(i, "boss_id")
+				if bossId ~= nil and bossId ~= "" then
+					local data = {}
+					data.id = bossId
+					data.hpPhase1 = tonumber(dsBasic:GetCell(i, "hp_phase1")) or 500
+					data.hpPhase2 = tonumber(dsBasic:GetCell(i, "hp_phase2")) or 500
+					data.hpPhase3 = tonumber(dsBasic:GetCell(i, "hp_phase3")) or 500
+					data.modelPhase1 = dsBasic:GetCell(i, "model_phase1") or ""
+					data.modelPhase2 = dsBasic:GetCell(i, "model_phase2") or ""
+					data.modelPhase3 = dsBasic:GetCell(i, "model_phase3") or ""
+					
+					self.BossBasicTable[bossId] = data
+				end
+			end
+		end
+		
+		-- 2) 보스 패턴 정보 로드
+		local dsPattern = self:GetDataSet("Data_Table - 보스패턴")
+		if dsPattern ~= nil then
+			local rowCount = dsPattern:GetRowCount()
+			for i = 1, rowCount do
+				local bossId = dsPattern:GetCell(i, "boss_id")
+				if bossId ~= nil and bossId ~= "" then
+					local phase = tonumber(dsPattern:GetCell(i, "phase")) or 1
+					local key = bossId .. "_" .. tostring(phase)
+					if self.BossTable[key] == nil then
+						self.BossTable[key] = {}
+					end
+					
+					local pattern = {}
+					pattern.name = dsPattern:GetCell(i, "name") or ""
+					pattern.effectType = dsPattern:GetCell(i, "effect_type") or "hp_dmg"
+					pattern.effectValue = tonumber(dsPattern:GetCell(i, "effect_value")) or 0
+					pattern.turn = tonumber(dsPattern:GetCell(i, "turn")) or 0
+					pattern.patternRuid = dsPattern:GetCell(i, "Patten_RUID") or ""
+					
+					-- 연출 시간 추가 (duration 컬럼이 없으면 기본값 사용, 쉴드면 0.81초, 그 외는 1.5초)
+					local durationValue = tonumber(dsPattern:GetCell(i, "duration"))
+					if durationValue == nil or durationValue <= 0 then
+						if pattern.effectType == "shield" then
+							durationValue = 0.81
+						else
+							durationValue = 1.5
+						end
+					end
+					pattern.duration = durationValue
+					
+					local patterns = self.BossTable[key]
+					patterns[#patterns + 1] = pattern
+				end
+			end
+		end
+		
+		log("[DataManager] 보스 시트 및 패턴 로드 완료")
+	end
+
+	method void LoadSpawnTable()
+		local ds = self:GetDataSet("Data_Table - 전투 몬스터 스폰")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local stageId = tonumber(ds:GetCell(i, "stage_id")) or 0
+			if stageId > 0 then
+				local data = {}
+				data.stageId = stageId
+				data.minMonsters = tonumber(ds:GetCell(i, "min_monsters")) or 1
+				data.maxMonsters = tonumber(ds:GetCell(i, "max_monsters")) or 1
+				data.poolId = tonumber(ds:GetCell(i, "monster_pool_id")) or 1
+				self.SpawnTable[stageId] = data
+			end
+		end
+		log("[DataManager]    ")
+	end
+
+	method void LoadItemTable()
+		self.ItemTable = {}
+		
+		local tableNames = {
+			"Data_Table - 아이템 - 장비",
+			"Data_Table - 아이템 - 방어구",
+			"Data_Table - 아이템 - 기타",
+			"Data_Table - 장비 - 장비",
+			"Data_Table - 방어구 - 방어구",
+			"Data_Table - 기타 - 기타",
+			"Data_Table - 소비 - 소비"
+		}
+		
+		local loadedCount = 0
+		
+		for t = 1, #tableNames do
+			local tableName = tableNames[t]
+			local ds = _DataService:GetTable(tableName)
+			if ds ~= nil then
+				local headerSet = self:GetCsvHeaderSet(tableName)
+				local rowCount = ds:GetRowCount()
+				for i = 1, rowCount do
+					local function hasCol(colName)
+						return headerSet[colName] == true
+					end
+		
+					local function getCell(colName)
+						if hasCol(colName) == false then
+							return nil
+						end
+						return self:TryGetCell(ds, i, colName)
+					end
+		
+					local function getString(colA, colB)
+						local v = getCell(colA)
+						if v ~= nil and v ~= "" then
+							return tostring(v)
+						end
+						if colB ~= nil and colB ~= "" then
+							local v2 = getCell(colB)
+							if v2 ~= nil and v2 ~= "" then
+								return tostring(v2)
+							end
+						end
+						return ""
+					end
+		
+					local function getNumber(colA, colB, defaultValue)
+						local text = getString(colA, colB)
+						if text == "" then
+							return defaultValue
+						end
+						return tonumber(text) or defaultValue
+					end
+		
+					local id = getNumber("id", "ID", 0)
+					if id > 0 and self.ItemTable[id] == nil then
+						local data = {}
+						data.id = id
+						data.type = getString("type", "")
+						if data.type == "" then
+							data.type = "weapon"
+						end
+		
+						data.name = getString("name", "")
+						data.cost = getNumber("cost", "", 0)
+						if hasCol("price") then
+							data.price = getNumber("price", "", data.cost)
+						else
+							data.price = data.cost
+						end
+						data.atk = getNumber("atk", "", 0)
+						data.atkPercent = getNumber("atkPercent", "atkPercent (%)", 0)
+						data.accPercent = getNumber("accPercent", "accPercent (%)", 0)
+						data.critRate = getNumber("critRate", "critRate (%)", 0)
+						data.critDmg = getNumber("critDmg", "critDmg (%)", 0)
+						data.hp = getNumber("hp", "", 0)
+						data.hpPercent = getNumber("hpPercent", "hpPercent (%)", 0)
+						data.def = getNumber("def", "", 0)
+						data.desc = getString("desc", "")
+						data.spawnGroup = getNumber("Spawn_Group", "", 1)
+						data.imageRUID = getString("imageRUID", "")
+						data.grade = getString("grade", "")
+						data.nextUpgradeId = getNumber("next_upgrade_id", "", 0)
+		
+						local shapeMask = getString("shapeMask", "")
+						if shapeMask == "" then
+							if hasCol("1") or hasCol("2") or hasCol("3") then
+								shapeMask = self:BuildShapeMaskFromLegacyColumns(ds, i)
+							end
+						end
+						data.shapeMask = self:NormalizeShapeMask(shapeMask)
+		
+						local rawWidth = getNumber("width", "", 0)
+						local rawHeight = getNumber("height", "", 0)
+						local bounds = self:GetShapeBounds(data.shapeMask)
+						if rawWidth > 0 then
+							data.width = rawWidth
+						else
+							data.width = bounds.width
+						end
+						if rawHeight > 0 then
+							data.height = rawHeight
+						else
+							data.height = bounds.height
+						end
+		
+						if data.width <= 0 then data.width = 1 end
+						if data.height <= 0 then data.height = 1 end
+						if data.shapeMask == "" then
+							data.shapeMask = "1"
+						end
+		
+						self.ItemTable[id] = data
+						loadedCount += 1
+					end
+				end
+			end
+		end
+		
+		log("[DataManager]  " .. tostring(loadedCount) .. "  ")
+	end
+
+	method void LoadBaseStatTable()
+		local ds = self:GetDataSet("Data_Table - 캐릭터 직업별 기본 스탯")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local classId = ds:GetCell(i, "classId") or ""
+			if classId ~= "" then
+				local data = {}
+				data.classId = classId
+				data.hp = tonumber(ds:GetCell(i, "baseHP")) or 0
+				data.atk = tonumber(ds:GetCell(i, "baseATK")) or 0
+				data.acc = tonumber(ds:GetCell(i, "accPercent")) or 0
+				data.critRate = tonumber(ds:GetCell(i, "critRate")) or 0
+				data.critDmg = tonumber(ds:GetCell(i, "critDmg")) or 0
+				data.cost = tonumber(ds:GetCell(i, "baseCost")) or 10
+				data.skill = ds:GetCell(i, "skill") or ""
+				self.BaseStatTable[classId] = data
+			end
+		end
+		log("[DataManager]     ")
+	end
+
+	method void LoadLevelStatTable()
+		local ds = self:GetDataSet("Data_Table - 캐릭터 직업별 렙당 스탯")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local classId = ds:GetCell(i, "classId") or ""
+			if classId ~= "" then
+				local data = {}
+				data.hpPerLv = tonumber(ds:GetCell(i, "hpPerLv")) or 0
+				data.atkPerLv = tonumber(ds:GetCell(i, "atkPerLv")) or 0
+				data.accPerLv = tonumber(ds:GetCell(i, "accPerLv")) or 0
+				data.critDmgPerLv = tonumber(ds:GetCell(i, "critDmgPerLv")) or 0
+				self.LevelStatTable[classId] = data
+			end
+		end
+		log("[DataManager]     ")
+	end
+
+	method void LoadSkillTable()
+		local ds = self:GetDataSet("Data_Table - 캐릭터 직업별 스킬")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local id = ds:GetCell(i, "id") or ""
+			if id ~= "" then
+				local data = {}
+				data.id = id
+				data.cost = tonumber(ds:GetCell(i, "cost")) or 0
+				data.activeTurn = tonumber(ds:GetCell(i, "activeTurn")) or 0
+				data.heal = tonumber(ds:GetCell(i, "heal")) or 0
+				data.critRate = tonumber(ds:GetCell(i, "critRate")) or 0
+				data.critDmg = tonumber(ds:GetCell(i, "critDmg")) or 0
+				data.atk = tonumber(ds:GetCell(i, "atk")) or 0
+				data.incomingDmgUp = tonumber(ds:GetCell(i, "incomingDmgUp")) or 0
+				data.skillDmg = tonumber(ds:GetCell(i, "skillDmg")) or 0
+				data.alwaysHit = tonumber(ds:GetCell(i, "alwaysHit")) or 0
+				data.ruid = ds:GetCell(i, "RUID") or ""
+				self.SkillTable[id] = data
+			end
+		end
+		log("[DataManager]    ")
+	end
+
+	method void LoadCorrectionTable()
+		local ds = self:GetDataSet("Data_Table - 보정 스탯")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local lv = tonumber(ds:GetCell(i, "level")) or 0
+			if lv > 0 then
+				local data = {}
+				data.level = lv
+				data.atkPercent = tonumber(ds:GetCell(i, "atkPercent")) or 0
+				data.accPercent = tonumber(ds:GetCell(i, "accPercent")) or 0
+				data.critRate = tonumber(ds:GetCell(i, "critRate")) or 0
+				data.critDmg = tonumber(ds:GetCell(i, "critDmg")) or 0
+				data.maxCost = tonumber(ds:GetCell(i, "maxCost")) or 0
+				self.CorrectionTable[lv] = data
+			end
+		end
+		log("[DataManager]     ")
+	end
+
+	method void LoadMapTable()
+		local ds = self:GetDataSet("Data_Table - 맵 매니저")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		log("[DEBUG-MAP] LoadMapTable . RowCount: " .. tostring(rowCount))
+		local count = 0
+		for i = 1, rowCount do
+			local stageId = tonumber(ds:GetCell(i, "stage_id")) or 0
+			if stageId > 0 then
+				local data = {}
+				data.stageId = stageId
+				data.theme = ds:GetCell(i, "theme") or ""
+				data.isFixed = ds:GetCell(i, "is_fixed") == "TRUE"
+				data.fixedMapType = ds:GetCell(i, "fixed_map_type") or "None"
+				data.choiceCount = tonumber(ds:GetCell(i, "choice_count")) or 1
+				data.bgRUID = ds:GetCell(i, "bgRUID") or ""
+				self.MapTable[stageId] = data
+				count = count + 1
+				log("[DEBUG-MAP] ID: " .. tostring(stageId) .. " Fixed: " .. tostring(data.isFixed) .. " Type: " .. data.fixedMapType)
+			end
+		end
+		if count == 0 then
+			log("[ERROR] [DataManager]    ! CSV .")
+		else
+			log("[DataManager]     . : " .. tostring(count))
+		end
+	end
+
+	method void LoadStageWeightTable()
+		local ds = self:GetDataSet("Data_Table - 비고정 스테이지 확률")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local nodeType = ds:GetCell(i, "node_type") or ""
+			if nodeType ~= "" then
+				local data = {}
+				data.nodeType = nodeType
+				data.weight = tonumber(ds:GetCell(i, "weight")) or 0
+				self.StageWeightTable[#self.StageWeightTable + 1] = data
+			end
+		end
+		log("[DataManager]     ")
+	end
+
+	method void LoadSpecialEventTable()
+		local ds = self:GetDataSet("Data_Table - 특별 이벤트 확률")
+		if ds == nil then return end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local npcId = ds:GetCell(i, "npc_id") or ""
+			if npcId ~= "" then
+				local data = {}
+				data.npcId = npcId
+				data.npcName = ds:GetCell(i, "npc_name") or ""
+				data.weight = tonumber(ds:GetCell(i, "weight")) or 0
+				data.rewardPreview = ds:GetCell(i, "reward_preview") or ""
+				data.description = ds:GetCell(i, "description") or ""
+				data.imageRUID = ds:GetCell(i, "imageRUID") or ""
+				self.SpecialEventTable[#self.SpecialEventTable + 1] = data
+			end
+		end
+		log("[DataManager]     ")
+	end
+
+	method table GetMonsterData(string monsterId)
+		return self.MonsterTable[monsterId]
+	end
+
+	method table GetMonstersByPool(integer poolId)
+		local result = {}
+		for k, v in pairs(self.MonsterTable) do
+			if v.spawnGroup == poolId then
+				result[#result + 1] = v
+			end
+		end
+		return result
+	end
+
+	method table GetSpawnInfo(integer stageId)
+		return self.SpawnTable[stageId]
+	end
+
+	method table GetItemData(integer itemId)
+		return self.ItemTable[itemId]
+	end
+
+	method table GetItemsBySpawnGroup(integer spawnGroup)
+		local result = {}
+		for k, v in pairs(self.ItemTable) do
+			if v.spawnGroup <= spawnGroup then
+				result[#result + 1] = v
+			end
+		end
+		return result
+	end
+
+	method table GetBaseStats(string classId)
+		return self.BaseStatTable[classId]
+	end
+
+	method table GetLevelStats(string classId)
+		return self.LevelStatTable[classId]
+	end
+
+	method table GetSkillData(string skillId)
+		return self.SkillTable[skillId]
+	end
+
+	method table GetCorrectionStats(integer level)
+		return self.CorrectionTable[level]
+	end
+
+	method table GetMapData(integer stageId)
+		return self.MapTable[stageId]
+	end
+
+	method table GetBossPatterns(string bossId, integer phase)
+		local key = bossId .. "_" .. tostring(phase)
+		return self.BossTable[key]
+	end
+
+	method table GetBossBasicData(string bossId)
+		return self.BossBasicTable[bossId]
+	end
+
+	method string GetRandomNodeType()
+		local totalWeight = 0
+		for i = 1, #self.StageWeightTable do
+			totalWeight += self.StageWeightTable[i].weight
+		end
+		local roll = math.random() * totalWeight
+		local cumulative = 0
+		for i = 1, #self.StageWeightTable do
+			cumulative += self.StageWeightTable[i].weight
+			if roll <= cumulative then
+				return self.StageWeightTable[i].nodeType
+			end
+		end
+		return "Battle"
+	end
+
+	method table GetRandomSpecialNPC()
+		local totalWeight = 0
+		for i = 1, #self.SpecialEventTable do
+			totalWeight += self.SpecialEventTable[i].weight
+		end
+		local roll = math.random() * totalWeight
+		local cumulative = 0
+		for i = 1, #self.SpecialEventTable do
+			cumulative += self.SpecialEventTable[i].weight
+			if roll <= cumulative then
+				return self.SpecialEventTable[i]
+			end
+		end
+		return self.SpecialEventTable[1]
+	end
+
+end

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://418a9e5ca47b4c2fa6a1cbdee398abea",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/418a9e5ca47b4c2fa6a1cbdee398abea/639071869976413836",
+      "upload_hash": "FD778E04027F55341FE41E1454B2E4BCD2542765BC8E26D21DC114E567B8602A",
+      "name": "다크 보닌",
+      "resource_guid": "418a9e5ca47b4c2fa6a1cbdee398abea",
+      "resource_version": "699852357e4aa1a64b5000fa"
+    }
+  }
+}

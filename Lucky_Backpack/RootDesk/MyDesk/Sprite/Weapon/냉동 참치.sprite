@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://d5a7352f492b41168f85089e97121dcc",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/d5a7352f492b41168f85089e97121dcc/639071869967125270",
+      "upload_hash": "4AB118B50BD561F9C5AC240F1A1A989A835C25B7081B565AF49BF6784D5D0A5A",
+      "name": "냉동 참치",
+      "resource_guid": "d5a7352f492b41168f85089e97121dcc",
+      "resource_version": "69985234f92933a652cbaa1a"
+    }
+  }
+}

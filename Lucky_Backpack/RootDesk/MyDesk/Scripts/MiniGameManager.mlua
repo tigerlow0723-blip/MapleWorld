@@ -1,0 +1,182 @@
+@Component
+script MiniGameManager extends Component
+
+	property any gameManager = nil
+
+	property any playerManager = nil
+
+	property any dataManager = nil
+
+	property any uiMain = nil
+
+	property integer ORE_PRICE = 100
+
+	property integer GOLD_BAR_PRICE = 1000
+
+	property boolean isMiniGameActive = false
+
+	property string subState = "None"
+
+	method void Init(any gMgr, any pMgr, any dMgr, any ui)
+		self.gameManager = gMgr
+		self.playerManager = pMgr
+		self.dataManager = dMgr
+		self.uiMain = ui
+	end
+
+	method void StartMiniGamePhase()
+		self.isMiniGameActive = true
+		self.subState = "Main"
+		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 진입!")
+		-- UI 업데이트 등 처리 필요
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method void EndMiniGamePhase()
+		self.isMiniGameActive = false
+		self.subState = "None"
+		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 종료.")
+	end
+
+	method void ExitMiniGame()
+		self:EndMiniGamePhase()
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+		if self.gameManager ~= nil then
+			self.gameManager:OnStageComplete()
+		end
+	end
+
+	method void EnterSubPlay()
+		if not self.isMiniGameActive then return end
+		self.subState = "Play"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method void EnterSubShop()
+		if not self.isMiniGameActive then return end
+		self.subState = "Shop"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method void BackToMain()
+		if not self.isMiniGameActive then return end
+		self.subState = "Main"
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method integer GetOreCount()
+		local count = 0
+		if self.playerManager ~= nil then
+			local inv = self.playerManager.inventory
+			for i=1, #inv do
+				if inv[i].id == 12 then
+					count = count + 1
+				end
+			end
+		end
+		return count
+	end
+
+	method integer GetGoldBarCount()
+		local count = 0
+		if self.playerManager ~= nil then
+			local inv = self.playerManager.inventory
+			for i=1, #inv do
+				if inv[i].id == 13 then
+					count = count + 1
+				end
+			end
+		end
+		return count
+	end
+
+	method void ConsumeItem(integer itemId, integer count)
+		local removed = 0
+		local inv = self.playerManager.inventory
+		for i=#inv, 1, -1 do
+			if inv[i].id == itemId then
+				self.playerManager:RemoveItem(i)
+				removed = removed + 1
+				if removed >= count then
+					break
+				end
+			end
+		end
+	end
+
+	method void PlayOddEven(integer choice)
+		if not self.isMiniGameActive then return end
+		
+		if self:GetOreCount() <= 0 then
+			log("[MiniGameManager] 황금 원석이 부족하여 게임을 진행할 수 없습니다.")
+			return
+		end
+		
+		self:ConsumeItem(12, 1)
+		
+		local result = math.random(1, 2)
+		local resultStr = ""
+		if result == 1 then resultStr = "홀수" else resultStr = "짝수" end
+		
+		if choice == result then
+			log("[MiniGameManager] 결과: " .. resultStr .. "! 정답을 맞췄습니다! 순금괴 획득!")
+			local itemData = self.dataManager:GetItemData(13)
+			if itemData ~= nil then
+				self.playerManager:AddItem(itemData)
+			end
+		else
+			log("[MiniGameManager] 결과: " .. resultStr .. ". 아쉽게도 틀렸습니다. 황금 원석을 잃었습니다.")
+		end
+		
+		if self.uiMain ~= nil then 
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method void SellAllOre()
+		if not self.isMiniGameActive then return end
+		
+		local count = self:GetOreCount()
+		if count > 0 then
+			self:ConsumeItem(12, count)
+			local totalGold = count * self.ORE_PRICE
+			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
+			log("[MiniGameManager] 황금 원석 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
+			
+			if self.uiMain ~= nil then 
+				self.uiMain:UpdateUI()
+			end
+		else
+			log("[MiniGameManager] 판매할 황금 원석이 없습니다.")
+		end
+	end
+
+	method void SellAllGoldBar()
+		if not self.isMiniGameActive then return end
+		
+		local count = self:GetGoldBarCount()
+		if count > 0 then
+			self:ConsumeItem(13, count)
+			local totalGold = count * self.GOLD_BAR_PRICE
+			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
+			log("[MiniGameManager] 순금괴 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
+			
+			if self.uiMain ~= nil then 
+				self.uiMain:UpdateUI()
+			end
+		else
+			log("[MiniGameManager] 판매할 순금괴가 없습니다.")
+		end
+	end
+
+end

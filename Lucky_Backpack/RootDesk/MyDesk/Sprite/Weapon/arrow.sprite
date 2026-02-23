@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://443d2cc27cb942d7be1184dd108702b3",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/443d2cc27cb942d7be1184dd108702b3/639074161786957825",
+      "upload_hash": "D868F8A3A97BF4319ED821053240426DA9A1D15CB7B94250534CE8346942275B",
+      "name": "arrow",
+      "resource_guid": "443d2cc27cb942d7be1184dd108702b3",
+      "resource_version": "699bd172094359a56fa244b1"
+    }
+  }
+}

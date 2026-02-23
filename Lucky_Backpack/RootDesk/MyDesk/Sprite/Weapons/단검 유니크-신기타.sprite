@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://ea76552f3ae74d6c8669431962f241d1",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/ea76552f3ae74d6c8669431962f241d1/639074219956995156",
+      "upload_hash": "8A08F55AA9D758645F83E84ABDAFBB2FB02B626411C43C819D760BCABAF67851",
+      "name": "단검 유니크-신기타",
+      "resource_guid": "ea76552f3ae74d6c8669431962f241d1",
+      "resource_version": "699be82bf92933a652cbb0a5"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://35586cfa361e4639971412a0cf3b73a2",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/35586cfa361e4639971412a0cf3b73a2/639072651252114838",
+      "upload_hash": "AEAAFC5732104852ABCED148777CB0BD2F90B2D3F044212A09444F58E0BBF71E",
+      "name": "물컹물컹한 신발",
+      "resource_guid": "35586cfa361e4639971412a0cf3b73a2",
+      "resource_version": "699983654a189a0e8109e73e"
+    }
+  }
+}

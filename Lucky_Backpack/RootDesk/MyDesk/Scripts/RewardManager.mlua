@@ -1,0 +1,121 @@
+@Component
+script RewardManager extends Component
+
+	property table droppedItems = {}
+
+	property boolean isMaintenanceMode = false
+
+	property any dataManager = nil
+
+	property any playerManager = nil
+
+	property any itemManager = nil
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		log("[RewardManager] 초기화 완료")
+	end
+
+	method void SetManagers(any dataMgr, any playerMgr, any itemMgr)
+		self.dataManager = dataMgr
+		self.playerManager = playerMgr
+		self.itemManager = itemMgr
+	end
+
+	method void GenerateRewards(integer stageId, any dataMgr)
+		local dropCount = math.random(3, 5)
+		log("[RewardManager] 보상 아이템 " .. tostring(dropCount) .. "개 생성")
+		
+		self.droppedItems = self.itemManager:GenerateDropItems(stageId, dropCount, dataMgr)
+		self.isMaintenanceMode = true
+		
+		log("[RewardManager] === 정비 모드 시작 ===")
+		log("[RewardManager] 바닥에 " .. tostring(#self.droppedItems) .. "개 아이템 생성됨")
+		self:PrintDroppedItems()
+		self:PrintInventory()
+	end
+
+	method void PrintDroppedItems()
+		log("[RewardManager] --- 바닥 아이템 ---")
+		for i = 1, #self.droppedItems do
+			local item = self.droppedItems[i]
+			local desc = self.itemManager:GetItemDescription(item)
+			log("[RewardManager]  [" .. tostring(i) .. "] " .. desc)
+		end
+	end
+
+	method void PrintInventory()
+		log("[RewardManager] --- 인벤토리 ---")
+		local inventory = self.playerManager.inventory
+		for i = 1, #inventory do
+			local item = inventory[i]
+			local desc = self.itemManager:GetItemDescription(item)
+			log("[RewardManager]  [" .. tostring(i) .. "] " .. desc)
+		end
+		if #inventory == 0 then
+			log("[RewardManager]  (비어있음)")
+		end
+	end
+
+	method boolean PickUpItem(integer dropIndex)
+		if self.isMaintenanceMode == false then
+			log("[RewardManager] 정비 모드가 아닙니다!")
+			return false
+		end
+		
+		if dropIndex < 1 or dropIndex > #self.droppedItems then
+			log("[RewardManager] 유효하지 않은 인덱스: " .. tostring(dropIndex))
+			return false
+		end
+		
+		local item = self.droppedItems[dropIndex]
+		self.playerManager:AddItem(item)
+		table.remove(self.droppedItems, dropIndex)
+		
+		log("[RewardManager] 아이템 획득: " .. (item.name or tostring(item.id)))
+		return true
+	end
+
+	method boolean DropItem(integer inventoryIndex)
+		if self.isMaintenanceMode == false then
+			return false
+		end
+		
+		local inventory = self.playerManager.inventory
+		if inventoryIndex < 1 or inventoryIndex > #inventory then
+			return false
+		end
+		
+		local item = inventory[inventoryIndex]
+		self.droppedItems[#self.droppedItems + 1] = item
+		self.playerManager:RemoveItem(inventoryIndex)
+		
+		log("[RewardManager] 아이템 버림: " .. (item.name or tostring(item.id)))
+		return true
+	end
+
+	method void FinishMaintenance()
+		if self.isMaintenanceMode == false then
+			return
+		end
+		
+		self.isMaintenanceMode = false
+		log("[RewardManager] === 정비 완료! ===")
+		
+		-- 바닥에 남은 아이템은 삭제
+		if #self.droppedItems > 0 then
+			log("[RewardManager] 바닥에 남은 " .. tostring(#self.droppedItems) .. "개 아이템 삭제")
+		end
+		self.droppedItems = {}
+		
+		-- 최종 인벤토리 상태 출력
+		self:PrintInventory()
+		
+		-- 플레이어 스탯 재계산
+		self.playerManager:RecalcAllStats()
+		log("[RewardManager] 최종 공격력: " .. tostring(self.playerManager:CalcFinalATK(0)))
+		log("[RewardManager] 최종 체력: " .. tostring(self.playerManager.maxHP))
+		log("[RewardManager] 최대 코스트: " .. tostring(self.playerManager.maxCost))
+	end
+
+end

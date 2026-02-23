@@ -1,0 +1,651 @@
+@Component
+script UIMain extends Component
+
+	property Entity sliderHP = nil
+
+	property Entity sliderCost = nil
+
+	property Entity txtHP = nil
+
+	property Entity txtCost = nil
+
+	property Entity sliderBossHP = nil
+
+	property Entity txtBossHP = nil
+
+	property Entity uiBossInfoGroup = nil
+
+	property Entity uiBossSkill1 = nil
+
+	property Entity uiBossSkill2 = nil
+
+	property Entity uiBossSkill3 = nil
+
+	property Entity uiBossSkill3_1 = nil
+
+	property Entity uiBossSkill4 = nil
+
+	property any shieldTimer = nil
+
+	property Entity btnTurnEnd = nil
+
+	property Entity btnBattleStart = nil
+
+	property Entity txtStage = nil
+
+	property Entity uiStage5_1 = nil
+
+	property Entity uiStage5_2 = nil
+
+	property Entity uiStage5_3 = nil
+
+	property Entity btnPlayOddEven = nil
+
+	property Entity btnEnterShop = nil
+
+	property Entity btnExitMiniGame = nil
+
+	property Entity btnOdd = nil
+
+	property Entity btnEven = nil
+
+	property Entity btnBackFromPlay = nil
+
+	property Entity btnSellAllOre = nil
+
+	property Entity btnSellAllGoldBar = nil
+
+	property Entity btnBackFromShop = nil
+
+	property Entity uiClear = nil
+
+	property Entity uiFail = nil
+
+	property Entity btnRetry = nil
+
+	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
+
+	property any gameManager = nil
+
+	property any battleManager = nil
+
+	property any playerManager = nil
+
+	property any scrollInventoryUI = nil
+
+	property integer targetMonsterIdx = 0
+	
+	property table monsterSliders = {}
+
+	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
+		log("[UIMain] InitializeUI 호출됨")
+		self.gameManager = gameMgr
+		self.battleManager = battleMgr
+		self.playerManager = playerMgr
+		
+		self:ConnectEvents()
+		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
+		
+		if self.uiClear ~= nil then
+			self.uiClear.Enable = false
+		end
+		if self.uiFail ~= nil then
+			self.uiFail.Enable = false
+		end
+		
+		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
+		log("[UIMain] UI 초기화 완료")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		self:UpdateMonsterHPBars()
+	end
+
+	method void ConnectEvents()
+		-- 턴 종료 버튼
+		if self.btnTurnEnd ~= nil then
+			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
+				if self.gameManager == nil or self.gameManager.gamePhase ~= "Battle" then
+					return
+				end
+				self.battleManager:EndPlayerTurn()
+				self:UpdateUI()
+			end)
+		end
+		
+		-- 전투 시작 버튼
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
+					if self.gameManager.canEndPreparation == true then
+						self.gameManager:EndPreparation()
+						return
+					end
+		
+					self.gameManager:TriggerBattleStart()
+				end
+			end)
+		end
+		
+		-- ==========================================
+		-- 미니게임 버튼 자동 이벤트 연결
+		-- ==========================================
+		if self.btnPlayOddEven ~= nil then
+			self.btnPlayOddEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:EnterSubPlay()
+				end
+			end)
+		end
+		if self.btnEnterShop ~= nil then
+			self.btnEnterShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:EnterSubShop()
+				end
+			end)
+		end
+		if self.btnExitMiniGame ~= nil then
+			self.btnExitMiniGame:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:ExitMiniGame()
+				end
+			end)
+		end
+		
+		if self.btnOdd ~= nil then
+			self.btnOdd:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:PlayOddEven(1)
+				end
+			end)
+		end
+		if self.btnEven ~= nil then
+			self.btnEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:PlayOddEven(2)
+				end
+			end)
+		end
+		if self.btnBackFromPlay ~= nil then
+			self.btnBackFromPlay:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:BackToMain()
+				end
+			end)
+		end
+		
+		if self.btnSellAllOre ~= nil then
+			self.btnSellAllOre:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:SellAllOre()
+				end
+			end)
+		end
+		if self.btnSellAllGoldBar ~= nil then
+			self.btnSellAllGoldBar:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:SellAllGoldBar()
+				end
+			end)
+		end
+		if self.btnBackFromShop ~= nil then
+			self.btnBackFromShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.miniGameManager then
+					self.gameManager.miniGameManager:BackToMain()
+				end
+			end)
+		end
+	end
+
+	method void RefreshScrollInventoryUI()
+		if self.scrollInventoryUI == nil then
+			local scrollPanel = _EntityService:GetEntityByPath(self.scrollPanelPath)
+			if scrollPanel == nil then
+				scrollPanel = _EntityService:GetEntityByPath("/ui/UIGroup")
+			end
+			if scrollPanel ~= nil then
+				self.scrollInventoryUI = scrollPanel.ScrollInventoryUI
+			end
+		end
+		
+		if self.scrollInventoryUI ~= nil then
+			self.scrollInventoryUI:UpdateUI()
+		end
+	end
+
+	method void UpdateUI()
+		if self.playerManager == nil then return end
+		
+		self:RefreshScrollInventoryUI()
+		
+		-- 타겟 강조 갱신 (몬스터가 죽거나 스테이지가 바뀌었을 때 등을 대비)
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+		end
+		
+		-- 1. HP 게이지 업데이트
+		if self.sliderHP ~= nil then
+			local maxHP = self.playerManager.maxHP
+			local ratio = 0
+			if maxHP > 0 then
+				ratio = self.playerManager.currentHP / maxHP
+			end
+			-- Entity에서 SliderComponent 찾아서 값 설정
+			local slider = self.sliderHP.SliderComponent
+			if slider ~= nil then slider.Value = ratio end
+		end
+		if self.txtHP ~= nil then
+			local txt = self.txtHP.TextComponent
+			if txt ~= nil then
+				txt.Text = math.ceil(self.playerManager.currentHP) .. "/" .. math.ceil(self.playerManager.maxHP)
+			end
+		end
+		
+		-- 1.5. Monster HP Bars (Cloned Sliders mapped to World Space)
+		self:UpdateMonsterHPBars()
+		
+		-- 2. Cost 게이지 업데이트
+		if self.sliderCost ~= nil then
+			local maxCost = self.playerManager.maxCost
+			local ratio = 0
+			if maxCost > 0 then
+				ratio = self.playerManager.currentCost / maxCost
+			end
+			local slider = self.sliderCost.SliderComponent
+			if slider ~= nil then slider.Value = ratio end
+		end
+		if self.txtCost ~= nil then
+			local txt = self.txtCost.TextComponent
+			if txt ~= nil then
+				txt.Text = math.ceil(self.playerManager.currentCost) .. "/" .. math.ceil(self.playerManager.maxCost)
+			end
+		end
+		
+		-- 3. 스테이지 표시 (TextComponent가 있는 엔티티라고 가정)
+		if self.txtStage ~= nil and self.battleManager ~= nil then
+			local txt = self.txtStage.TextComponent
+			if txt ~= nil then
+				txt.Text = "Stage: " .. tostring(self.battleManager.currentStage)
+			end
+		end
+		
+		-- 3.5 보스 체력바 업데이트
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if monsterMgr.isBossBattle and self.uiBossInfoGroup ~= nil then
+				self.uiBossInfoGroup.Enable = true
+				-- Removed self:SetBossSkillUIEnable(true) here: skills should stay hidden until used
+				
+				-- 보스 리스트에서 보스 엔티티 찾기
+				local boss = nil
+				for i = 1, #monsterMgr.monsterList do
+					local m = monsterMgr.monsterList[i]
+					if m.isBoss and m.alive then
+						boss = m
+						break
+					end
+				end
+				
+				if boss ~= nil then
+					local maxTotalHP = boss.hpPhase1 + boss.hpPhase2 + boss.hpPhase3
+					local currentTotalHP = 0
+					
+					if monsterMgr.currentBossPhase == 1 then
+						currentTotalHP = boss.currentHP + boss.hpPhase2 + boss.hpPhase3
+					elseif monsterMgr.currentBossPhase == 2 then
+						currentTotalHP = boss.currentHP + boss.hpPhase3
+					elseif monsterMgr.currentBossPhase == 3 then
+						currentTotalHP = boss.currentHP
+					end
+					
+					if self.sliderBossHP ~= nil then
+						local slider = self.sliderBossHP.SliderComponent
+						if slider ~= nil then
+							if maxTotalHP > 0 then
+								slider.Value = currentTotalHP / maxTotalHP
+							else
+								slider.Value = 0
+							end
+						end
+					end
+					
+					if self.txtBossHP ~= nil then
+						local txt = self.txtBossHP.TextComponent
+						if txt ~= nil then
+							txt.Text = math.ceil(currentTotalHP) .. "/" .. math.ceil(maxTotalHP)
+						end
+					end
+				else
+					if self.uiBossInfoGroup ~= nil then
+						self.uiBossInfoGroup.Enable = false
+					end
+					self:SetBossSkillUIEnable(false)
+				end
+			else
+				if self.uiBossInfoGroup ~= nil then
+					self.uiBossInfoGroup.Enable = false
+				end
+				self:SetBossSkillUIEnable(false)
+			end
+		else
+			if self.uiBossInfoGroup ~= nil then
+				self.uiBossInfoGroup.Enable = false
+			end
+			self:SetBossSkillUIEnable(false)
+		end
+		
+		-- Button 가시성 제어 (Preparation vs Battle)
+		local phase = "None"
+		if self.gameManager ~= nil then
+			phase = self.gameManager.gamePhase
+		end
+		
+		if self.btnBattleStart ~= nil then
+			self.btnBattleStart.Enable = (phase == "Preparation")
+		end
+		
+		if self.btnTurnEnd ~= nil then
+			-- Only show turn end button during player's turn in battle
+			local isPlayerTurn = false
+			if phase == "Battle" and self.battleManager ~= nil and self.battleManager.currentTurn == "Player" then
+				isPlayerTurn = true
+			end
+			self.btnTurnEnd.Enable = isPlayerTurn
+		end
+		
+		-- 4. 미니게임 서브 메뉴 가시성 제어
+		if phase == "MiniGame" then
+			if self.gameManager ~= nil and self.gameManager.miniGameManager ~= nil then
+				local subState = self.gameManager.miniGameManager.subState
+				if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
+				if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
+				if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
+			end
+		else
+			-- 미니게임 중이 아닐 때는 전부 숨김
+			if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
+			if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
+			if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
+		end
+	end
+
+	method void OnClickMonster(integer monsterIndex)
+		-- 타겟 설정
+		self.targetMonsterIdx = monsterIndex
+		log("[UI] 타겟 설정됨: 몬스터 " .. tostring(monsterIndex))
+		
+		-- 타겟 표시 시각적 효과 갱신
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+		end
+		
+		self:UpdateUI()
+	end
+
+	method void UpdateMonsterHPBars()
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if not monsterMgr.isBossBattle then
+				for i, monster in ipairs(monsterMgr.monsterList) do
+					if monster.alive and monster.entityId ~= nil then
+						local mEntity = _EntityService:GetEntity(monster.entityId)
+						if mEntity ~= nil then
+							local mSlider = self.monsterSliders[i]
+							if mSlider == nil or not _EntityService:IsValid(mSlider) then
+								if self.sliderHP ~= nil then
+									mSlider = _SpawnService:SpawnByEntity(self.sliderHP, "MonsterSlider_"..i, Vector3.zero, self.sliderHP.Parent)
+									if mSlider ~= nil then
+										self.monsterSliders[i] = mSlider
+										local uiTrans = mSlider.UITransformComponent
+										if uiTrans ~= nil then
+											uiTrans.RectSize = Vector2(100, 30)
+										end
+									end
+								end
+							end
+							
+							if mSlider ~= nil then
+								mSlider.Enable = true
+								local sliderComp = mSlider.SliderComponent
+								if sliderComp ~= nil then
+									local ratio = 0
+									if monster.maxHP > 0 then ratio = monster.currentHP / monster.maxHP end
+									if ratio < 0 then ratio = 0 end
+									if ratio > 1 then ratio = 1 end
+									sliderComp.Value = ratio
+								end
+								
+								-- Ensure inner text doesn't show player HP
+								local textComps = mSlider:GetChildComponentsByTypeName("TextComponent", true)
+								if textComps ~= nil then
+									for k, txtComp in pairs(textComps) do
+										local displayHP = math.ceil(math.max(0, monster.currentHP))
+										txtComp.Text = tostring(displayHP)
+									end
+								end
+								
+								local uiTrans = mSlider.UITransformComponent
+								if uiTrans ~= nil then
+									local mTrans = mEntity.TransformComponent
+									if mTrans ~= nil then
+										local mPos = mTrans.Position
+										local parentUI = nil
+										if mSlider.Parent ~= nil then parentUI = mSlider.Parent.UITransformComponent end
+										if parentUI ~= nil then
+											local screenPos = _UILogic:WorldToScreenPosition(Vector2(mPos.x, mPos.y - 0.5))
+											uiTrans.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+										end
+									end
+								end
+							end
+						end
+					else
+						local mSlider = self.monsterSliders[i]
+						if mSlider ~= nil and _EntityService:IsValid(mSlider) then
+							mSlider.Enable = false
+							mSlider:Destroy()
+						end
+						self.monsterSliders[i] = nil
+					end
+				end
+			end
+			
+			-- Clean up old sliders
+			for i, mSlider in pairs(self.monsterSliders) do
+				if monsterMgr.isBossBattle or i > #monsterMgr.monsterList then
+					if mSlider ~= nil and _EntityService:IsValid(mSlider) then
+						mSlider.Enable = false
+						mSlider:Destroy()
+					end
+					self.monsterSliders[i] = nil
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateTargetIndicatorPosition(Entity indicator, Vector3 worldPos, boolean visible)
+		if indicator == nil then
+			return
+		end
+		
+		if visible ~= true then
+			indicator.Enable = false
+			return
+		end
+		
+		indicator.Enable = true
+		
+		local uiTransform = indicator.UITransformComponent
+		if uiTransform ~= nil then
+			local parent = indicator.Parent
+			local parentUI = nil
+			if parent ~= nil then
+				parentUI = parent.UITransformComponent
+			end
+			
+			if parentUI ~= nil then
+				local screenPos = _UILogic:WorldToScreenPosition(Vector2(worldPos.x, worldPos.y))
+				uiTransform.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+				return
+			end
+		end
+		
+		local worldTransform = indicator.TransformComponent
+		if worldTransform ~= nil then
+			worldTransform.Position = worldPos
+		end
+	end
+
+	method void UpdateBossSkillUI(string selectedType, number duration)
+		-- 기존 타이머 취소 (있을 경우)
+		if self.shieldTimer ~= nil then
+			_TimerService:ClearTimer(self.shieldTimer)
+			self.shieldTimer = nil
+		end
+		
+		local animDuration = duration
+		if animDuration == nil or animDuration <= 0 then
+			if selectedType == "shield" then
+				animDuration = 0.81
+			else
+				animDuration = 1.5
+			end
+		end
+
+		local skills = {
+			{entity = self.uiBossSkill1, skillType = "hp_dmg"},
+			{entity = self.uiBossSkill2, skillType = "poison"},
+			{entity = self.uiBossSkill4, skillType = "heal"}
+		}
+		
+		for i = 1, #skills do
+			local skill = skills[i]
+			if skill.entity ~= nil then
+				local img = skill.entity.SpriteGUIRendererComponent
+				if img ~= nil then
+					if skill.skillType == selectedType then
+						-- Show and highlight only the selected skill
+						skill.entity.Enable = true
+						img.Color = Color(1, 1, 1, 1)
+					else
+						-- Hide all other skills completely
+						skill.entity.Enable = false
+					end
+				end
+			end
+		end
+		
+		-- 쉴드 스킬 특별 처리 (1.53초 연출 후 반복 엔티티로 전환)
+		if selectedType == "shield" then
+			if self.uiBossSkill3 ~= nil then
+				self.uiBossSkill3.Enable = true
+				local img = self.uiBossSkill3.SpriteGUIRendererComponent
+				if img ~= nil then img.Color = Color(1, 1, 1, 1) end
+			end
+			if self.uiBossSkill3_1 ~= nil then
+				self.uiBossSkill3_1.Enable = false
+			end
+			
+			local switchFunc = function()
+				self.shieldTimer = nil
+				if self.uiBossSkill3 ~= nil then
+					self.uiBossSkill3.Enable = false
+				end
+				if self.uiBossSkill3_1 ~= nil then
+					self.uiBossSkill3_1.Enable = true
+					local loopImg = self.uiBossSkill3_1.SpriteGUIRendererComponent
+					if loopImg ~= nil then loopImg.Color = Color(1, 1, 1, 1) end
+				end
+			end
+			self.shieldTimer = _TimerService:SetTimerOnce(switchFunc, animDuration)
+		else
+			if self.uiBossSkill3 ~= nil then self.uiBossSkill3.Enable = false end
+			
+			-- 다른 스킬 사용 시에도 보스에게 쉴드가 남아있다면 쉴드 유지 엔티티를 끄지 않음
+			local hasShield = false
+			if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+				local monsterMgr = self.battleManager.monsterManager
+				if monsterMgr.isBossBattle and #monsterMgr.monsterList > 0 then
+					local boss = monsterMgr.monsterList[1]
+					if boss ~= nil and boss.isBoss and boss.alive and boss.shieldActive == true then
+						hasShield = true
+					end
+				end
+			end
+			
+			if not hasShield then
+				if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
+			end
+
+			-- 쉴드가 아닌 일반 스킬은 잠시 표시된 후 사라지도록 처리 (패턴에 설정된 duration 적용)
+			local hideOtherSkillFunc = function()
+				self.shieldTimer = nil
+				local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
+				for j = 1, #entities do
+					if entities[j] ~= nil then
+						entities[j].Enable = false
+					end
+				end
+			end
+			self.shieldTimer = _TimerService:SetTimerOnce(hideOtherSkillFunc, animDuration)
+		end
+		
+		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
+	end
+
+	method void ResetBossSkillUI()
+		local hasShield = false
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if monsterMgr.isBossBattle and #monsterMgr.monsterList > 0 then
+				local boss = monsterMgr.monsterList[1]
+				if boss ~= nil and boss.isBoss and boss.alive and boss.shieldActive == true then
+					hasShield = true
+				end
+			end
+		end
+
+		if not hasShield then
+			if self.shieldTimer ~= nil then
+				_TimerService:ClearTimer(self.shieldTimer)
+				self.shieldTimer = nil
+			end
+			if self.uiBossSkill3 ~= nil then self.uiBossSkill3.Enable = false end
+			if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
+		end
+		
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
+		for i = 1, #entities do
+			if entities[i] ~= nil then
+				-- Hide all skill icons completely when boss is not using a skill
+				entities[i].Enable = false
+			end
+		end
+	end
+
+	method void SetBossSkillUIEnable(boolean enable)
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill3_1, self.uiBossSkill4}
+		for i = 1, #entities do
+			if entities[i] ~= nil then
+				entities[i].Enable = enable
+			end
+		end
+	end
+
+	method void ShowClearUI()
+		if self.uiClear ~= nil then
+			self.uiClear.Enable = true
+			self.uiClear:SetVisible(true)
+		end
+	end
+
+	method void ShowFailUI()
+		if self.uiFail ~= nil then
+			self.uiFail.Enable = true
+			self.uiFail:SetVisible(true)
+		end
+	end
+
+end

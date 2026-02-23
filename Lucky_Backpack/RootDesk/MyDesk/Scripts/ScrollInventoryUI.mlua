@@ -1,0 +1,541 @@
+@Component
+script ScrollInventoryUI extends Component
+
+	property string normalScrollIconPath = "/ui/UIGroup/ScrollPanel/ScrollNormal/Img"
+
+	property string guaranteedScrollIconPath = "/ui/UIGroup/ScrollPanel/ScrollGuaranteed/Img"
+
+	property string normalScrollTextPath = "/ui/UIGroup/ScrollPanel/ScrollNormal/TxtCount"
+
+	property string guaranteedScrollTextPath = "/ui/UIGroup/ScrollPanel/ScrollGuaranteed/TxtCount"
+
+	property string inventoryPanelPath = "/ui/UIGroup/InventoryPanel"
+
+	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
+
+	property number disabledAlpha = 0.35
+
+	property any playerManager = nil
+
+	property any normalScrollIcon = nil
+
+	property any guaranteedScrollIcon = nil
+
+	property any normalScrollText = nil
+
+	property any guaranteedScrollText = nil
+
+	property table dragState = {}
+
+	property boolean normalIconBound = false
+
+	property boolean guaranteedIconBound = false
+
+	property any globalTouchHoldHandler = nil
+
+	property any globalTouchReleaseHandler = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self.dragState = {
+			isDragging = false,
+			scrollId = 0,
+			iconEntity = nil,
+			originPos = nil
+		}
+		self:ResolveManager()
+		self:ResolveUIReferences()
+		self:ConnectIconEvents()
+		self:ConnectGlobalTouchEvents()
+		self:UpdateUI()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveManager()
+		if self.playerManager ~= nil then
+			return
+		end
+		
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			self.playerManager = gameSystem.PlayerManager
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveUIReferences()
+		if self.normalScrollIcon == nil then
+			self.normalScrollIcon = _EntityService:GetEntityByPath(self.normalScrollIconPath)
+			if self.normalScrollIcon == nil and self.Entity ~= nil then
+				local normalRoot = self.Entity:GetChildByName("ScrollNormal", true)
+				if normalRoot ~= nil then
+					self.normalScrollIcon = normalRoot:GetChildByName("Img", true)
+				end
+			end
+		end
+		if self.guaranteedScrollIcon == nil then
+			self.guaranteedScrollIcon = _EntityService:GetEntityByPath(self.guaranteedScrollIconPath)
+			if self.guaranteedScrollIcon == nil and self.Entity ~= nil then
+				local guaranteedRoot = self.Entity:GetChildByName("ScrollGuaranteed", true)
+				if guaranteedRoot ~= nil then
+					self.guaranteedScrollIcon = guaranteedRoot:GetChildByName("Img", true)
+				end
+			end
+		end
+		if self.normalScrollText == nil then
+			self.normalScrollText = _EntityService:GetEntityByPath(self.normalScrollTextPath)
+			if self.normalScrollText == nil and self.Entity ~= nil then
+				local normalRoot = self.Entity:GetChildByName("ScrollNormal", true)
+				if normalRoot ~= nil then
+					self.normalScrollText = normalRoot:GetChildByName("TxtCount", true)
+				end
+			end
+		end
+		if self.guaranteedScrollText == nil then
+			self.guaranteedScrollText = _EntityService:GetEntityByPath(self.guaranteedScrollTextPath)
+			if self.guaranteedScrollText == nil and self.Entity ~= nil then
+				local guaranteedRoot = self.Entity:GetChildByName("ScrollGuaranteed", true)
+				if guaranteedRoot ~= nil then
+					self.guaranteedScrollText = guaranteedRoot:GetChildByName("TxtCount", true)
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ConnectIconEvents()
+		if self.normalScrollIcon ~= nil and self.normalIconBound == false then
+			self.normalScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
+				self:BeginScrollDrag(9)
+			end)
+			self.normalIconBound = true
+		end
+		
+		if self.guaranteedScrollIcon ~= nil and self.guaranteedIconBound == false then
+			self.guaranteedScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
+				self:BeginScrollDrag(10)
+			end)
+			self.guaranteedIconBound = true
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ConnectGlobalTouchEvents()
+		if self.globalTouchHoldHandler == nil then
+			self.globalTouchHoldHandler = _InputService:ConnectEvent(ScreenTouchHoldEvent, function(event)
+				self:OnGlobalTouchHold(event)
+			end)
+		end
+		
+		if self.globalTouchReleaseHandler == nil then
+			self.globalTouchReleaseHandler = _InputService:ConnectEvent(ScreenTouchReleaseEvent, function(event)
+				self:OnGlobalTouchRelease(event)
+			end)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnGlobalTouchHold(ScreenTouchHoldEvent event)
+		if event == nil or event.TouchPoint == nil then
+			return
+		end
+		if self.dragState ~= nil and self.dragState.isDragging then
+			self:UpdateDragVisual(event.TouchPoint)
+			return
+		end
+		
+		self:ResolveUIReferences()
+		local touchPoint = event.TouchPoint
+		if self:IsPointInsideEntityRect(self.normalScrollIcon, touchPoint) then
+			self:BeginScrollDrag(9)
+			return
+		end
+		if self:IsPointInsideEntityRect(self.guaranteedScrollIcon, touchPoint) then
+			self:BeginScrollDrag(10)
+			return
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnGlobalTouchRelease(ScreenTouchReleaseEvent event)
+		if self.dragState == nil or self.dragState.isDragging == false then
+			return
+		end
+		if event == nil or event.TouchPoint == nil then
+			self:EndScrollDrag()
+			return
+		end
+		
+		self:OnScrollDragAction(self.dragState.scrollId, event.TouchPoint)
+		self:EndScrollDrag()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginScrollDrag(integer scrollId)
+		if scrollId ~= 9 and scrollId ~= 10 then
+			return
+		end
+		
+		if self.dragState.isDragging then
+			self:EndScrollDrag()
+		end
+		
+		if self:GetScrollCount(scrollId) <= 0 then
+			log("[ScrollInventoryUI] Drag ignored. No scroll available. type=" .. tostring(scrollId))
+			self:UpdateUI()
+			return
+		end
+		
+		local iconEntity = nil
+		if scrollId == 9 then
+			iconEntity = self.normalScrollIcon
+		elseif scrollId == 10 then
+			iconEntity = self.guaranteedScrollIcon
+		end
+		if iconEntity == nil then
+			return
+		end
+		
+		local iconUI = iconEntity.UITransformComponent
+		if iconUI == nil then
+			return
+		end
+		
+		self.dragState.isDragging = true
+		self.dragState.scrollId = scrollId
+		self.dragState.iconEntity = iconEntity
+		self.dragState.originPos = Vector2(iconUI.anchoredPosition.x, iconUI.anchoredPosition.y)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateDragVisual(Vector2 touchPoint)
+		if self.dragState == nil or self.dragState.isDragging == false then
+			return
+		end
+		if self.dragState.iconEntity == nil then
+			return
+		end
+		if touchPoint == nil then
+			return
+		end
+		
+		local iconEntity = self.dragState.iconEntity
+		local iconUI = iconEntity.UITransformComponent
+		local parent = iconEntity.Parent
+		local parentUI = nil
+		if parent ~= nil then
+			parentUI = parent.UITransformComponent
+		end
+		if iconUI == nil or parentUI == nil then
+			return
+		end
+		
+		iconUI.anchoredPosition = _UILogic:ScreenToLocalUIPosition(touchPoint, parentUI)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResetDragVisual()
+		if self.dragState == nil then
+			return
+		end
+		if self.dragState.iconEntity == nil then
+			return
+		end
+		if self.dragState.originPos == nil then
+			return
+		end
+		
+		local iconUI = self.dragState.iconEntity.UITransformComponent
+		if iconUI ~= nil then
+			iconUI.anchoredPosition = Vector2(self.dragState.originPos.x, self.dragState.originPos.y)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EndScrollDrag()
+		self:ResetDragVisual()
+		self.dragState.isDragging = false
+		self.dragState.scrollId = 0
+		self.dragState.iconEntity = nil
+		self.dragState.originPos = nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetScrollCount(integer scrollId)
+		self:ResolveManager()
+		if self.playerManager == nil then
+			return 0
+		end
+		
+		if scrollId == 9 then
+			return self.playerManager.scrollNormal or 0
+		elseif scrollId == 10 then
+			return self.playerManager.scrollGuaranteed or 0
+		end
+		return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetCountText(any textEntity, integer amount)
+		if textEntity ~= nil and textEntity.TextComponent ~= nil then
+			textEntity.TextComponent.Text = "x" .. tostring(amount)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetIconState(any iconEntity, boolean enabled)
+		if iconEntity == nil then
+			return
+		end
+		
+		local renderer = iconEntity.SpriteGUIRendererComponent
+		if renderer ~= nil then
+			local alpha = self.disabledAlpha
+			if enabled then
+				alpha = 1
+			end
+			renderer.Color = Color(1, 1, 1, alpha)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateUI()
+		self:ResolveManager()
+		self:ResolveUIReferences()
+		self:ConnectIconEvents()
+		
+		local normalCount = self:GetScrollCount(9)
+		local guaranteedCount = self:GetScrollCount(10)
+		
+		self:SetCountText(self.normalScrollText, normalCount)
+		self:SetCountText(self.guaranteedScrollText, guaranteedCount)
+		self:SetIconState(self.normalScrollIcon, normalCount > 0)
+		self:SetIconState(self.guaranteedScrollIcon, guaranteedCount > 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnScrollDragAction(integer itemType, Vector2 touchPoint)
+		if itemType ~= 9 and itemType ~= 10 then
+			return
+		end
+		if touchPoint == nil then
+			return
+		end
+		
+		local weaponTarget = self:FindWeaponTarget(touchPoint)
+		if weaponTarget == nil then
+			log("[ScrollInventoryUI] No weapon target at drop point.")
+			return
+		end
+		
+		self:ProcessUpgrade(itemType, weaponTarget)
+	end
+
+	@ExecSpace("ClientOnly")
+	method any FindWeaponTarget(Vector2 touchPoint)
+		local inventoryTarget = self:FindInventoryWeaponTarget(touchPoint)
+		if inventoryTarget ~= nil then
+			return inventoryTarget
+		end
+		return self:FindDisplayAreaWeaponTarget(touchPoint)
+	end
+
+	@ExecSpace("ClientOnly")
+	method any FindInventoryWeaponTarget(Vector2 touchPoint)
+		local inventoryEntity = _EntityService:GetEntityByPath(self.inventoryPanelPath)
+		if inventoryEntity == nil or inventoryEntity.Inventory == nil or inventoryEntity.InventoryUI == nil then
+			return nil
+		end
+		
+		local targetCell = inventoryEntity.InventoryUI:ScreenPosToGridCell(touchPoint, 1, 1, {})
+		if targetCell == nil or targetCell.row <= 0 or targetCell.col <= 0 then
+			return nil
+		end
+		
+		local targetItemId = inventoryEntity.Inventory:GetCellValue(targetCell.row, targetCell.col)
+		if targetItemId <= 1 then
+			return nil
+		end
+		
+		local children = inventoryEntity.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				if itemComp ~= nil and itemComp.itemId == targetItemId and itemComp.itemType == "weapon" then
+					return itemComp
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method any FindDisplayAreaWeaponTarget(Vector2 touchPoint)
+		local displayEntity = _EntityService:GetEntityByPath(self.itemDisplayAreaPath)
+		if displayEntity == nil then
+			return nil
+		end
+		
+		if self:IsPointInsideEntityRect(displayEntity, touchPoint) == false then
+			return nil
+		end
+		
+		local children = displayEntity.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = #children, 1, -1 do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				if itemComp ~= nil and itemComp.itemType == "weapon" and self:IsPointInsideEntityRect(child, touchPoint) then
+					return itemComp
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsPointInsideEntityRect(Entity targetEntity, Vector2 touchPoint)
+		if targetEntity == nil or touchPoint == nil then
+			return false
+		end
+		
+		local targetUI = targetEntity.UITransformComponent
+		if targetUI == nil then
+			return false
+		end
+		local size = targetUI.RectSize
+		if size == nil then
+			return false
+		end
+		
+		local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, targetUI)
+		local halfW = size.x * 0.5
+		local halfH = size.y * 0.5
+		if localPos.x < -halfW or localPos.x > halfW then
+			return false
+		end
+		if localPos.y < -halfH or localPos.y > halfH then
+			return false
+		end
+		return true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ProcessUpgrade(integer scrollId, Component weaponTarget)
+		self:ResolveManager()
+		if self.playerManager == nil then
+			log_error("[Upgrade] PlayerManager not found.")
+			return
+		end
+		if weaponTarget == nil or weaponTarget.itemType ~= "weapon" then
+			log_error("[Upgrade] Invalid target. Weapon required.")
+			return
+		end
+		if weaponTarget.next_upgrade_id <= 0 or weaponTarget.grade == "Legendary" then
+			log_error("[Upgrade] Weapon cannot be upgraded.")
+			return
+		end
+		
+		local successChance = 100
+		if scrollId == 9 then
+			if weaponTarget.grade == "Rare" then
+				successChance = 20
+			elseif weaponTarget.grade == "Epic" then
+				successChance = 10
+			elseif weaponTarget.grade == "Unique" then
+				successChance = 5
+			else
+				successChance = 0
+			end
+		elseif scrollId == 10 then
+			successChance = 100
+		else
+			return
+		end
+		
+		if successChance <= 0 then
+			log_error("[Upgrade] Unsupported grade for this scroll. Grade=" .. tostring(weaponTarget.grade))
+			return
+		end
+		
+		if self.playerManager:UseScroll(scrollId, 1) == false then
+			log("[Upgrade] Not enough scroll. type=" .. tostring(scrollId))
+			self:UpdateUI()
+			return
+		end
+		
+		local roll = math.random(1, 100)
+		local isSuccess = roll <= successChance
+		if isSuccess == false then
+			log("[Upgrade] Upgrade failed. type=" .. tostring(scrollId) .. " grade=" .. tostring(weaponTarget.grade) .. " roll=" .. tostring(roll) .. " chance=" .. tostring(successChance))
+			self:UpdateUI()
+			self:NotifyMainUI()
+			return
+		end
+		
+		local inventoryEntity = _EntityService:GetEntityByPath(self.inventoryPanelPath)
+		local inventory = nil
+		if inventoryEntity ~= nil then
+			inventory = inventoryEntity.Inventory
+		end
+		
+		local prevItemId = weaponTarget.itemId
+		local upgradedItemId = weaponTarget.next_upgrade_id
+		local weaponRow = weaponTarget.gridRow
+		local weaponCol = weaponTarget.gridCol
+		local prevWidth = weaponTarget.width
+		local prevHeight = weaponTarget.height
+		local targetInInventory = weaponRow > 0 and weaponCol > 0 and inventory ~= nil
+		
+		if targetInInventory then
+			inventory:RemoveItemAt(prevItemId, weaponRow, weaponCol, prevWidth, prevHeight)
+		end
+		
+		weaponTarget:InitFromTable(upgradedItemId)
+		
+		local weaponRenderer = weaponTarget.Entity.SpriteGUIRendererComponent
+		if weaponRenderer ~= nil and weaponTarget.spriteRUID ~= nil and weaponTarget.spriteRUID ~= "" and weaponTarget.spriteRUID ~= "NONE" then
+			weaponRenderer.ImageRUID = weaponTarget.spriteRUID
+		end
+		
+		if targetInInventory then
+			local upgradedShape = weaponTarget:GetShapeCells()
+			local placed = inventory:PlaceItem(weaponRow, weaponCol, weaponTarget.itemId, upgradedShape)
+			if placed then
+				weaponTarget:SetGridPosition(weaponRow, weaponCol)
+				if inventoryEntity ~= nil and inventoryEntity.InventoryUI ~= nil then
+					inventoryEntity.InventoryUI:SnapItemToGrid(weaponTarget.Entity, weaponRow, weaponCol, weaponTarget.width, weaponTarget.height, upgradedShape)
+				end
+			else
+				log_warning("[Upgrade] Upgrade succeeded but placement failed. row=" .. tostring(weaponRow) .. " col=" .. tostring(weaponCol))
+			end
+		else
+			weaponTarget:ClearGridPosition()
+		end
+		
+		log("[Upgrade] Upgrade success: " .. tostring(prevItemId) .. " -> " .. tostring(weaponTarget.itemId) .. " type=" .. tostring(scrollId) .. " roll=" .. tostring(roll) .. " chance=" .. tostring(successChance))
+		self.playerManager:SyncInventoryFromGrid()
+		self:UpdateUI()
+		self:NotifyMainUI()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void NotifyMainUI()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil and gameSystem.UIMain ~= nil then
+			gameSystem.UIMain:UpdateUI()
+		end
+	end
+
+end

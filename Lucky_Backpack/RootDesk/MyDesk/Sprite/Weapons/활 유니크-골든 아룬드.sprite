@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://f423e89dc8494b9b859cdb7c33e8e6d4",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/f423e89dc8494b9b859cdb7c33e8e6d4/639074219952074502",
+      "upload_hash": "597E35A242ED6182A3DFA41757908D06C6DDDDB16A26D6E82609B859809BB0C0",
+      "name": "활 유니크-골든 아룬드",
+      "resource_guid": "f423e89dc8494b9b859cdb7c33e8e6d4",
+      "resource_version": "699be82b0313ec79a42c48a3"
+    }
+  }
+}

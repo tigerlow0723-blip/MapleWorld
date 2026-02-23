@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://bd311f37c5ca495eb1e7d3e11d1dd68d",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/bd311f37c5ca495eb1e7d3e11d1dd68d/639074219964826609",
+      "upload_hash": "365BF3289E9298817FCCA6FCFB64E23D24E5EBEFB2FE7EF629C17DDF96F3FEA1",
+      "name": "완드 레전더리-다이몬의 완드",
+      "resource_guid": "bd311f37c5ca495eb1e7d3e11d1dd68d",
+      "resource_version": "699be82c4d4e15e5bea6700a"
+    }
+  }
+}
