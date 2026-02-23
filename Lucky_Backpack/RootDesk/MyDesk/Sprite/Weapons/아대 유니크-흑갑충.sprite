@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://895f79031db343a38290114d257a1ed4",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/895f79031db343a38290114d257a1ed4/639074219961801238",
+      "upload_hash": "7FA2A900176F8E11E9CF51D4CF4466072B987582DE11A477D6FCBC43666B4903",
+      "name": "아대 유니크-흑갑충",
+      "resource_guid": "895f79031db343a38290114d257a1ed4",
+      "resource_version": "699be82c2f2996a26f21b07d"
+    }
+  }
+}

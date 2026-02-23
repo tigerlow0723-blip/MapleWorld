@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://6e3cd36f463741039ea52c1ec3f06c03",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/6e3cd36f463741039ea52c1ec3f06c03/639074219957125722",
+      "upload_hash": "D6BC4F9384FC011649568D912499E5254F2EC35ED12033B409C76E061AA5A32E",
+      "name": "석궁 레전더리-카사 크로우",
+      "resource_guid": "6e3cd36f463741039ea52c1ec3f06c03",
+      "resource_version": "699be82b4d4e15e5bea67007"
+    }
+  }
+}

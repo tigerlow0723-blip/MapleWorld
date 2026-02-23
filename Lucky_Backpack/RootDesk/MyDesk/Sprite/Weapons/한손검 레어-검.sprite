@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://0375321626d740cda7bb3541597c1fda",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/0375321626d740cda7bb3541597c1fda/639074219952097288",
+      "upload_hash": "17A7F9DE5022266CEC7454D7721516E4CDC23007FF2C16BBD45494BCD0F63E29",
+      "name": "한손검 레어-검",
+      "resource_guid": "0375321626d740cda7bb3541597c1fda",
+      "resource_version": "699be82b5e4a0a42e7574a31"
+    }
+  }
+}

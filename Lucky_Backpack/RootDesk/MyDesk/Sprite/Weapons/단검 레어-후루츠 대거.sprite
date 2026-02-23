@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://8f6d17d5f0234197978bdcc0f2549230",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/8f6d17d5f0234197978bdcc0f2549230/639074219952296115",
+      "upload_hash": "623E26AED377328DC9575F55BF58F1C37FC619FE3E8AAB4F30BDECEA445B5F5B",
+      "name": "단검 레어-후루츠 대거",
+      "resource_guid": "8f6d17d5f0234197978bdcc0f2549230",
+      "resource_version": "699be82bf92933a652cbb0a3"
+    }
+  }
+}

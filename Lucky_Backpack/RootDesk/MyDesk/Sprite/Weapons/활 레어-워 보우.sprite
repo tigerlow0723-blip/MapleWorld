@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://8f524c6e29804fcab9508163905baafe",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/8f524c6e29804fcab9508163905baafe/639074219952043035",
+      "upload_hash": "0EA44A334A914CC1543603E08332E70D5FA3EDD3A085E07C500C8ABEC00978BB",
+      "name": "활 레어-워 보우",
+      "resource_guid": "8f524c6e29804fcab9508163905baafe",
+      "resource_version": "699be82b3201639d5a98f691"
+    }
+  }
+}

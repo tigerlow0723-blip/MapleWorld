@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://e84a1efd657f429e94933d383b5fcb51",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/e84a1efd657f429e94933d383b5fcb51/639074219961787371",
+      "upload_hash": "DBB86A992A9FA77A9C928446BF93DDF4C89904E3E67D4B108B21798777B53EB7",
+      "name": "아대 에픽-다크 보닌",
+      "resource_guid": "e84a1efd657f429e94933d383b5fcb51",
+      "resource_version": "699be82cf92933a652cbb0a6"
+    }
+  }
+}
