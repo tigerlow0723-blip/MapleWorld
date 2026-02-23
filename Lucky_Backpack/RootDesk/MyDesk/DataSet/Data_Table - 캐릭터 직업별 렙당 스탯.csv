@@ -1,6 +1,6 @@
 ﻿classId,hpPerLv,atkPerLv,accPerLv,critDmgPerLv,note
-War,15,1,0.5,1,체력특화
-Arc,8,1.5,1.2,1.5,명중률특화
-Mag,6,2.5,0.5,2,공격력특화
-Rog,10,1.8,0.8,3,치피특화
-Pir,12,2,1,2,전반적높음
+War,,,,,체력특화
+Arc,,,,,명중률특화
+Mag,,,,,공격력특화
+Rog,,,,,치피특화
+Pir,,,,,전반적높음

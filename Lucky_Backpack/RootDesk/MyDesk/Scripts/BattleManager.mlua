@@ -210,7 +210,8 @@ script BattleManager extends Component
 			self.playerManager:AddBuff("critDmg", itemData.critDmg, 3)
 		end
 		if (itemData.hpPercent or 0) > 0 then
-			self.playerManager:AddBuff("hpPercent", itemData.hpPercent, 3)
+			local healAmount = self.playerManager.maxHP * (itemData.hpPercent / 100.0)
+			self.playerManager:Heal(healAmount)
 		end
 		
 		log("[BattleManager] Consumable used: " .. tostring(itemData.name))

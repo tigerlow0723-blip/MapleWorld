@@ -57,15 +57,15 @@ script MonsterManager extends Component
 			return
 		end
 		
-		local poolMonsters = dataMgr:GetMonstersByPool(spawnInfo.poolId)
+		local poolMonsters = dataMgr:GetMonstersByPool(stageId)
 		if #poolMonsters == 0 then
-			log_error("[MonsterManager] " .. tostring(spawnInfo.poolId))
+			log_error("[MonsterManager] " .. tostring(stageId))
 			return
 		end
 		
 		--
 		local count = math.random(spawnInfo.minMonsters, spawnInfo.maxMonsters)
-		log("[MonsterManager] Spawn count: " .. tostring(count) .. " (pool: " .. tostring(spawnInfo.poolId) .. ")")
+		log("[MonsterManager] Spawn count: " .. tostring(count) .. " (stage group: " .. tostring(stageId) .. ")")
 		
 		for i = 1, count do
 			--
