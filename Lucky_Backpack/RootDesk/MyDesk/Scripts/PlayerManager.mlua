@@ -47,6 +47,10 @@ script PlayerManager extends Component
 
 	property any inventoryComp = nil
 
+	property boolean synergyDebugLogEnabled = true
+
+	property string lastSynergyDebugSnapshot = ""
+
 	method any ResolveInventoryComp()
 		if self.inventoryComp ~= nil then
 			return self.inventoryComp
@@ -63,6 +67,274 @@ script PlayerManager extends Component
 		end
 		
 		return self.inventoryComp
+	end
+
+	method boolean IsSynergyScrollId(integer itemId)
+		return itemId == 6 or itemId == 7 or itemId == 8
+	end
+
+	method integer RollSynergyAtkByScrollId(integer itemId)
+		if itemId == 6 then
+			return math.random(1, 20)
+		end
+		if itemId == 7 then
+			return math.random(1, 40)
+		end
+		if itemId == 8 then
+			return math.random(1, 100)
+		end
+		return 0
+	end
+
+	method any GetItemComponentById(integer itemId)
+		if itemId == nil or itemId <= 0 then
+			return nil
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil then
+			return nil
+		end
+		
+		local targetName = "InventoryItem_" .. tostring(itemId)
+		local targetEntity = inventoryPanel:GetChildByName(targetName, true)
+		if targetEntity ~= nil and targetEntity.Item ~= nil then
+			return targetEntity.Item
+		end
+		
+		local children = inventoryPanel.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil and child.Item.itemId == itemId then
+				return child.Item
+			end
+		end
+		
+		return nil
+	end
+
+	method boolean DoesItemOccupyCell(any itemComp, integer row, integer col)
+		if itemComp == nil then
+			return false
+		end
+		
+		local baseRow = tonumber(itemComp.gridRow) or -1
+		local baseCol = tonumber(itemComp.gridCol) or -1
+		if baseRow <= 0 or baseCol <= 0 then
+			return false
+		end
+		
+		local shapeCells = itemComp:GetShapeCells()
+		if shapeCells ~= nil and #shapeCells > 0 then
+			for i = 1, #shapeCells do
+				local cell = shapeCells[i]
+				if cell ~= nil then
+					local absRow = baseRow + (tonumber(cell.row) or 0)
+					local absCol = baseCol + (tonumber(cell.col) or 0)
+					if absRow == row and absCol == col then
+						return true
+					end
+				end
+			end
+			return false
+		end
+		
+		local width = math.max(1, tonumber(itemComp.width) or 1)
+		local height = math.max(1, tonumber(itemComp.height) or 1)
+		for r = 0, height - 1 do
+			for c = 0, width - 1 do
+				if baseRow + r == row and baseCol + c == col then
+					return true
+				end
+			end
+		end
+		
+		return false
+	end
+
+	method any GetItemComponentAtGridCell(integer row, integer col)
+		if row <= 0 or col <= 0 then
+			return nil
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil then
+			return nil
+		end
+		
+		local children = inventoryPanel.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				if self:DoesItemOccupyCell(itemComp, row, col) == true then
+					return itemComp
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	method string BuildSynergyScrollKey(any scrollComp, integer fallbackItemId, integer row, integer col)
+		if scrollComp ~= nil and scrollComp.Entity ~= nil then
+			local entityId = scrollComp.Entity.Id
+			if entityId ~= nil then
+				return "entity:" .. tostring(entityId)
+			end
+			local entityPath = tostring(scrollComp.Entity.Path or "")
+			if entityPath ~= "" then
+				return "path:" .. entityPath
+			end
+		end
+		return "cell:" .. tostring(row) .. ":" .. tostring(col) .. ":" .. tostring(fallbackItemId)
+	end
+
+	method integer ResolveSynergyBonusAtkFromComponent(any scrollComp, integer fallbackItemId)
+		local itemId = fallbackItemId or 0
+		if scrollComp ~= nil and scrollComp.itemId ~= nil then
+			itemId = tonumber(scrollComp.itemId) or itemId
+		end
+		if self:IsSynergyScrollId(itemId) == false then
+			return 0
+		end
+		
+		local bonusValue = 0
+		if scrollComp ~= nil then
+			bonusValue = math.max(0, tonumber(scrollComp.bonusSynergyAtk) or 0)
+		end
+		
+		if bonusValue <= 0 then
+			bonusValue = self:RollSynergyAtkByScrollId(itemId)
+			if scrollComp ~= nil then
+				scrollComp.bonusSynergyAtk = bonusValue
+			end
+		end
+		
+		return bonusValue
+	end
+
+	method integer ResolveSynergyBonusAtk(integer itemId)
+		local scrollComp = self:GetItemComponentById(itemId)
+		return self:ResolveSynergyBonusAtkFromComponent(scrollComp, itemId)
+	end
+
+	method integer CalcWeaponSynergyAtk()
+		self.inventoryComp = self:ResolveInventoryComp()
+		if self.inventoryComp == nil then
+			return 0
+		end
+		if self.inventoryComp.placedItems == nil or self.inventoryComp.grid == nil then
+			return 0
+		end
+		
+		local totalBonus = 0
+		local debugEntries = {}
+		local grid = self.inventoryComp.grid
+		local maxRow = self.inventoryComp.maxHeight or #grid
+		local maxCol = self.inventoryComp.maxWidth or 0
+		if maxCol <= 0 and grid[1] ~= nil then
+			maxCol = #grid[1]
+		end
+		
+		for placedItemId, placedInfo in pairs(self.inventoryComp.placedItems) do
+			if placedInfo == nil then
+				continue
+			end
+			
+			local itemData = nil
+			if self.dataManager ~= nil then
+				itemData = self.dataManager:GetItemData(placedItemId)
+			end
+			if itemData == nil then
+				continue
+			end
+			if string.lower(tostring(itemData.type or "")) ~= "weapon" then
+				continue
+			end
+			
+			local shapeCells = placedInfo.shapeCells
+			if shapeCells == nil or #shapeCells == 0 then
+				shapeCells = {}
+				local width = math.max(1, tonumber(itemData.width) or 1)
+				local height = math.max(1, tonumber(itemData.height) or 1)
+				for r = 0, height - 1 do
+					for c = 0, width - 1 do
+						shapeCells[#shapeCells + 1] = {row = r, col = c}
+					end
+				end
+			end
+			
+			local baseRow = tonumber(placedInfo.row) or 0
+			local baseCol = tonumber(placedInfo.col) or 0
+			local usedScrollKeys = {}
+			
+			for i = 1, #shapeCells do
+				local cell = shapeCells[i]
+				if cell == nil then
+					continue
+				end
+				
+				local absRow = baseRow + (tonumber(cell.row) or 0)
+				local absCol = baseCol + (tonumber(cell.col) or 0)
+				
+				local function processNeighbor(neighborRow, neighborCol, sideName)
+					if neighborRow < 1 or neighborRow > maxRow or neighborCol < 1 or neighborCol > maxCol then
+						return
+					end
+					
+					local rowData = grid[neighborRow]
+					if rowData == nil then
+						return
+					end
+					
+					local neighborId = tonumber(rowData[neighborCol]) or 0
+					if self:IsSynergyScrollId(neighborId) == false then
+						return
+					end
+					
+					local neighborComp = self:GetItemComponentAtGridCell(neighborRow, neighborCol)
+					local scrollKey = self:BuildSynergyScrollKey(neighborComp, neighborId, neighborRow, neighborCol)
+					if usedScrollKeys[scrollKey] == true then
+						return
+					end
+					
+					usedScrollKeys[scrollKey] = true
+					local bonusValue = self:ResolveSynergyBonusAtkFromComponent(neighborComp, neighborId)
+					totalBonus += bonusValue
+					debugEntries[#debugEntries + 1] = "weapon=" .. tostring(placedItemId) .. " side=" .. sideName .. " scroll=" .. tostring(neighborId) .. " bonus=+" .. tostring(bonusValue) .. " cell=(" .. tostring(neighborRow) .. "," .. tostring(neighborCol) .. ") key=" .. scrollKey
+				end
+				
+				processNeighbor(absRow, absCol - 1, "left")
+				processNeighbor(absRow, absCol + 1, "right")
+				processNeighbor(absRow - 1, absCol, "up")
+				processNeighbor(absRow + 1, absCol, "down")
+			end
+		end
+		
+		if self.synergyDebugLogEnabled == true then
+			local snapshot = "total=" .. tostring(totalBonus)
+			if #debugEntries > 0 then
+				snapshot = snapshot .. " | " .. table.concat(debugEntries, " ; ")
+			else
+				snapshot = snapshot .. " | no_adjacent_synergy_scroll"
+			end
+			
+			if snapshot ~= self.lastSynergyDebugSnapshot then
+				self.lastSynergyDebugSnapshot = snapshot
+				log("[SynergyDebug] " .. snapshot)
+			end
+		end
+		
+		return totalBonus
 	end
 
 	method void OnBeginPlay()
@@ -85,7 +357,24 @@ script PlayerManager extends Component
 				self.inventory[#self.inventory + 1] = itemData
 			end
 		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel ~= nil and inventoryPanel.Children ~= nil then
+			local children = inventoryPanel.Children
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local comp = child.Item
+					if self:IsSynergyScrollId(tonumber(comp.itemId) or 0) == true then
+						self:ResolveSynergyBonusAtkFromComponent(comp, tonumber(comp.itemId) or 0)
+					end
+				end
+			end
+		end
+		
 		self:RecalcAllStats()
+		-- Trigger adjacency synergy scan right after placement changes.
+		self:CalcWeaponSynergyAtk()
 		-- Clamp currentHP when maxHP changes.
 		if self.currentHP > self.maxHP then
 			self.currentHP = self.maxHP
@@ -176,6 +465,7 @@ script PlayerManager extends Component
 				itemAtkPercent += item.atkPercent or 0
 			end
 		end
+		itemAtk += self:CalcWeaponSynergyAtk()
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then

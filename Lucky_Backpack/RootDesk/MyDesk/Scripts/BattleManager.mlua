@@ -342,6 +342,13 @@ script BattleManager extends Component
 		
 		local finalAtk = self.playerManager:CalcFinalATK(weaponId)
 		
+		local synergyBonus = 0
+		if self.playerManager.CalcWeaponSynergyAtk ~= nil then
+			synergyBonus = self.playerManager:CalcWeaponSynergyAtk()
+		end
+		local preCritAtk = finalAtk
+		log("[DamageDebug] preCritAtk=" .. tostring(preCritAtk) .. " synergyBonus=" .. tostring(synergyBonus))
+		
 		local critRate = self.playerManager:CalcFinalCritRate(weaponId)
 		local roll = math.random(1, 100)
 		if roll <= critRate then
@@ -352,6 +359,7 @@ script BattleManager extends Component
 		end
 		
 		result.damage = math.floor(finalAtk)
+		log("[DamageDebug] finalDamage=" .. tostring(result.damage) .. " critRoll=" .. tostring(roll) .. " critRate=" .. tostring(critRate))
 		return result
 	end
 
