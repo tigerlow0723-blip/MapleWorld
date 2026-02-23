@@ -19,6 +19,8 @@ script ItemTooltipUI extends Component
 
 	property string txtAtkCountPath = "/ui/UIGroup/TooltipPanel/TxtAtkCount"
 
+	property string txtSynergyPath = "/ui/UIGroup/TooltipPanel/TxtSynergy"
+
 	property integer shapePreviewRows = 3
 
 	property integer shapePreviewCols = 3
@@ -50,6 +52,10 @@ script ItemTooltipUI extends Component
 	property any statsText = nil
 
 	property any txtAtkCount = nil
+
+	property any txtSynergy = nil
+
+	property any playerManager = nil
 
 	property boolean tooltipLayoutCached = false
 
@@ -132,6 +138,9 @@ script ItemTooltipUI extends Component
 		if self.txtAtkCount == nil then
 			self.txtAtkCount = _EntityService:GetEntityByPath(self.txtAtkCountPath)
 		end
+		if self.txtSynergy == nil then
+			self.txtSynergy = _EntityService:GetEntityByPath(self.txtSynergyPath)
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -172,6 +181,7 @@ script ItemTooltipUI extends Component
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		if gameSystem ~= nil then
 			self.dataManager = gameSystem.DataManager
+			self.playerManager = gameSystem.PlayerManager
 		end
 	end
 
@@ -200,7 +210,9 @@ script ItemTooltipUI extends Component
 		self:SetTypeText(itemData)
 		self:SetGradeText(itemData)
 		self:SetStatsText(itemData)
-		self:SetAtkCountText(itemId, itemData)
+		self:SetWeaponSynergyText(itemId, itemData, screenPos)
+		self:SetAtkCountText(itemId, itemData, screenPos)
+		self:ApplySynergyTooltipText(itemId, screenPos)
 		self:RedrawShapeGrid(itemData)
 		self:AdjustTooltipPanelToContent()
 		self:MoveTooltip(screenPos)
@@ -208,25 +220,62 @@ script ItemTooltipUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method any FindTooltipItemComponent(integer itemId)
+	method number CalcTooltipDistanceSq(any itemComp, Vector2 screenPos)
+		if itemComp == nil or screenPos == nil then
+			return 999999999
+		end
+		if itemComp.Entity == nil then
+			return 999999999
+		end
+		
+		local ui = itemComp.Entity.UITransformComponent
+		if ui == nil then
+			return 999999999
+		end
+		local parent = itemComp.Entity.Parent
+		if parent == nil then
+			return 999999999
+		end
+		local parentUI = parent.UITransformComponent
+		if parentUI == nil then
+			return 999999999
+		end
+		
+		local worldPos = _UILogic:LocalUIToWorldPosition(ui.anchoredPosition, parentUI)
+		local screen = _UILogic:WorldToScreenPosition(worldPos)
+		if screen == nil then
+			return 999999999
+		end
+		
+		local dx = screenPos.x - screen.x
+		local dy = screenPos.y - screen.y
+		return dx * dx + dy * dy
+	end
+
+	@ExecSpace("ClientOnly")
+	method any FindTooltipItemComponent(integer itemId, Vector2 screenPos)
 		if itemId == nil or itemId <= 0 then
 			return nil
 		end
 		
+		local bestComp = nil
+		local bestDist = 999999999
+		
 		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
 		if inventoryPanel ~= nil then
-			local targetName = "InventoryItem_" .. tostring(itemId)
-			local itemEntity = inventoryPanel:GetChildByName(targetName, true)
-			if itemEntity ~= nil and itemEntity.Item ~= nil then
-				return itemEntity.Item
-			end
-			
 			local invChildren = inventoryPanel.Children
 			if invChildren ~= nil then
 				for i = 1, #invChildren do
 					local child = invChildren[i]
 					if child ~= nil and child.Item ~= nil and child.Item.itemId == itemId then
-						return child.Item
+						if screenPos == nil then
+							return child.Item
+						end
+						local dist = self:CalcTooltipDistanceSq(child.Item, screenPos)
+						if dist < bestDist then
+							bestDist = dist
+							bestComp = child.Item
+						end
 					end
 				end
 			end
@@ -239,13 +288,20 @@ script ItemTooltipUI extends Component
 				for i = 1, #displayChildren do
 					local child = displayChildren[i]
 					if child ~= nil and child.Item ~= nil and child.Item.itemId == itemId then
-						return child.Item
+						if screenPos == nil then
+							return child.Item
+						end
+						local dist = self:CalcTooltipDistanceSq(child.Item, screenPos)
+						if dist < bestDist then
+							bestDist = dist
+							bestComp = child.Item
+						end
 					end
 				end
 			end
 		end
 		
-		return nil
+		return bestComp
 	end
 
 	@ExecSpace("ClientOnly")
@@ -421,7 +477,171 @@ script ItemTooltipUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void SetAtkCountText(integer itemId, table itemData)
+	method boolean IsSynergyScrollId(integer itemId)
+		return itemId == 6 or itemId == 7 or itemId == 8
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolvePlayerManager()
+		if self.playerManager ~= nil then
+			return
+		end
+		
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			self.playerManager = gameSystem.PlayerManager
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetWeaponAdjacencySynergyBonus(integer itemId, Vector2 screenPos)
+		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
+		if itemComp == nil then
+			return 0
+		end
+		
+		local baseRow = tonumber(itemComp.gridRow) or 0
+		local baseCol = tonumber(itemComp.gridCol) or 0
+		if baseRow <= 0 or baseCol <= 0 then
+			return 0
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil or inventoryPanel.Inventory == nil then
+			return 0
+		end
+		
+		local inventory = inventoryPanel.Inventory
+		if inventory.grid == nil then
+			return 0
+		end
+		
+		self:ResolvePlayerManager()
+		
+		local shapeCells = itemComp:GetShapeCells()
+		if shapeCells == nil or #shapeCells == 0 then
+			shapeCells = {}
+			local width = math.max(1, tonumber(itemComp.width) or 1)
+			local height = math.max(1, tonumber(itemComp.height) or 1)
+			for r = 0, height - 1 do
+				for c = 0, width - 1 do
+					shapeCells[#shapeCells + 1] = {row = r, col = c}
+				end
+			end
+		end
+		
+		local maxRow = inventory.maxHeight or #inventory.grid
+		local maxCol = inventory.maxWidth or 0
+		if maxCol <= 0 and inventory.grid[1] ~= nil then
+			maxCol = #inventory.grid[1]
+		end
+		
+		local usedKeys = {}
+		local totalBonus = 0
+		
+		for i = 1, #shapeCells do
+			local cell = shapeCells[i]
+			if cell == nil then
+				continue
+			end
+			
+			local absRow = baseRow + (tonumber(cell.row) or 0)
+			local absCol = baseCol + (tonumber(cell.col) or 0)
+			
+			local function processSide(targetRow, targetCol)
+				if targetRow < 1 or targetRow > maxRow or targetCol < 1 or targetCol > maxCol then
+					return
+				end
+				local rowData = inventory.grid[targetRow]
+				if rowData == nil then
+					return
+				end
+				
+				local scrollId = tonumber(rowData[targetCol]) or 0
+				if self:IsSynergyScrollId(scrollId) == false then
+					return
+				end
+				
+				local scrollComp = nil
+				if self.playerManager ~= nil and self.playerManager.GetItemComponentAtGridCell ~= nil then
+					scrollComp = self.playerManager:GetItemComponentAtGridCell(targetRow, targetCol)
+				end
+				
+				local scrollKey = "cell:" .. tostring(targetRow) .. ":" .. tostring(targetCol) .. ":" .. tostring(scrollId)
+				if self.playerManager ~= nil and self.playerManager.BuildSynergyScrollKey ~= nil then
+					scrollKey = self.playerManager:BuildSynergyScrollKey(scrollComp, scrollId, targetRow, targetCol)
+				end
+				
+				if usedKeys[scrollKey] == true then
+					return
+				end
+				usedKeys[scrollKey] = true
+				
+				local bonusValue = 0
+				if self.playerManager ~= nil and self.playerManager.ResolveSynergyBonusAtkFromComponent ~= nil then
+					bonusValue = self.playerManager:ResolveSynergyBonusAtkFromComponent(scrollComp, scrollId)
+				elseif scrollComp ~= nil then
+					bonusValue = math.max(0, tonumber(scrollComp.bonusSynergyAtk) or 0)
+				end
+				
+				totalBonus += math.max(0, tonumber(bonusValue) or 0)
+			end
+			
+			processSide(absRow, absCol - 1)
+			processSide(absRow, absCol + 1)
+			processSide(absRow - 1, absCol)
+			processSide(absRow + 1, absCol)
+		end
+		
+		return totalBonus
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetWeaponSynergyText(integer itemId, table itemData, Vector2 screenPos)
+		if self.txtSynergy == nil or self.txtSynergy.TextComponent == nil then
+			return
+		end
+		
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "weapon" then
+			self.txtSynergy.TextComponent.Text = ""
+			self.txtSynergy:SetEnable(false)
+			self.txtSynergy:SetVisible(false)
+			return
+		end
+		
+		local bonusValue = self:GetWeaponAdjacencySynergyBonus(itemId, screenPos)
+		self.txtSynergy.TextComponent.Text = "Added ATK: +" .. tostring(bonusValue)
+		self.txtSynergy:SetEnable(true)
+		self.txtSynergy:SetVisible(true)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplySynergyTooltipText(integer itemId, Vector2 screenPos)
+		if self:IsSynergyScrollId(itemId) == false then
+			return
+		end
+		if self.statsText == nil or self.statsText.TextComponent == nil then
+			return
+		end
+		
+		local bonusValue = 0
+		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
+		if itemComp ~= nil then
+			bonusValue = math.max(0, tonumber(itemComp.bonusSynergyAtk) or 0)
+		end
+		
+		local currentText = tostring(self.statsText.TextComponent.Text or "")
+		if currentText ~= "" then
+			currentText = currentText .. "\n"
+		end
+		currentText = currentText .. "<color=#FFD54F>Weapon Synergy: +" .. tostring(bonusValue) .. " (Up/Down/Left/Right)</color>"
+		self.statsText.TextComponent.IsRichText = true
+		self.statsText.TextComponent.Text = currentText
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetAtkCountText(integer itemId, table itemData, Vector2 screenPos)
 		if self.txtAtkCount == nil or self.txtAtkCount.TextComponent == nil then
 			return
 		end
@@ -436,7 +656,7 @@ script ItemTooltipUI extends Component
 		
 		local maxAtkCount = math.max(0, tonumber(itemData.atkCount) or 0)
 		local currentAtkCount = maxAtkCount
-		local itemComp = self:FindTooltipItemComponent(itemId)
+		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
 		if itemComp ~= nil then
 			maxAtkCount = math.max(0, tonumber(itemComp.atkCount) or maxAtkCount)
 			currentAtkCount = math.max(0, tonumber(itemComp.currentAtkCount) or maxAtkCount)

@@ -320,6 +320,12 @@ script BattleManager extends Component
 		if self.playerManager == nil then return 0 end
 		
 		local finalAtk = self.playerManager:CalcFinalATK()
+		local synergyBonus = 0
+		if self.playerManager.CalcWeaponSynergyAtk ~= nil then
+			synergyBonus = self.playerManager:CalcWeaponSynergyAtk()
+		end
+		local preCritAtk = finalAtk
+		log("[DamageDebug] preCritAtk=" .. tostring(preCritAtk) .. " synergyBonus=" .. tostring(synergyBonus))
 		
 		local critRate = self.playerManager:CalcFinalCritRate()
 		local roll = math.random(1, 100)
@@ -329,7 +335,9 @@ script BattleManager extends Component
 			log("[BattleManager] Critical Hit!")
 		end
 		
-		return math.floor(finalAtk)
+		local finalDamage = math.floor(finalAtk)
+		log("[DamageDebug] finalDamage=" .. tostring(finalDamage) .. " critRoll=" .. tostring(roll) .. " critRate=" .. tostring(critRate))
+		return finalDamage
 	end
 
 	method void OnPlayerUseSkill(integer targetMonsterIdx)
