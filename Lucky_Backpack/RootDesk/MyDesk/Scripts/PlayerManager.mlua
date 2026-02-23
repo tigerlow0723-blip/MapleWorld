@@ -441,6 +441,42 @@ script PlayerManager extends Component
 		self.maxCost = self:CalcMaxCost()
 	end
 
+	method table CalcTotalItemStats()
+		local stats = {
+			itemAtk = 0,
+			itemAtkPercent = 0,
+			itemHp = 0,
+			itemHpPercent = 0,
+			itemAcc = 0,
+			itemCritRate = 0,
+			itemCritDmg = 0,
+			itemDef = 0
+		}
+		
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
+				if not isRecoveryItem then
+					stats.itemHp += item.hp or 0
+					stats.itemHpPercent += item.hpPercent or 0
+				end
+				
+				if item.type ~= "weapon" then
+					stats.itemAtk += item.atk or 0
+					stats.itemAtkPercent += item.atkPercent or 0
+					stats.itemAcc += item.accPercent or 0
+					stats.itemCritRate += item.critRate or 0
+					stats.itemCritDmg += item.critDmg or 0
+				end
+				
+				stats.itemDef += item.def or 0
+			end
+		end
+		
+		return stats
+	end
+
 	method number CalcFinalATK(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local lvStat = self.dataManager:GetLevelStats(self.classId)
@@ -452,19 +488,9 @@ script PlayerManager extends Component
 			lvAtk = lvStat.atkPerLv * (self.level - 1)
 		end
 		
-		local itemAtk = 0
-		local itemAtkPercent = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemAtk += item.atk or 0
-				itemAtkPercent += item.atkPercent or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemAtk = stats.itemAtk
+		local itemAtkPercent = stats.itemAtkPercent
 		itemAtk += self:CalcWeaponSynergyAtk()
 		
 		-- Add only the selected weapon stats
@@ -497,18 +523,9 @@ script PlayerManager extends Component
 			lvHp = lvStat.hpPerLv * (self.level - 1)
 		end
 		
-		local itemHp = 0
-		local itemHpPercent = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
-				if not isRecoveryItem then
-					itemHp += item.hp or 0
-					itemHpPercent += item.hpPercent or 0
-				end
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemHp = stats.itemHp
+		local itemHpPercent = stats.itemHpPercent
 		
 		local buffHpPercent = self:GetBuffValue("hpPercent")
 		
@@ -527,17 +544,8 @@ script PlayerManager extends Component
 			lvAcc = lvStat.accPerLv * (self.level - 1)
 		end
 		
-		local itemAcc = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemAcc += item.accPercent or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemAcc = stats.itemAcc
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -560,17 +568,8 @@ script PlayerManager extends Component
 		local correction = self.dataManager:GetCorrectionStats(self.level)
 		
 		local baseCrit = baseStat.critRate
-		local itemCrit = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemCrit += item.critRate or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemCrit = stats.itemCritRate
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -601,17 +600,8 @@ script PlayerManager extends Component
 			lvCritDmg = lvStat.critDmgPerLv * (self.level - 1)
 		end
 		
-		local itemCritDmg = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				-- Skip weapon items; only the selected weapon is applied below
-				if item.type == "weapon" then
-					continue
-				end
-				itemCritDmg += item.critDmg or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local itemCritDmg = stats.itemCritDmg
 		
 		-- Add only the selected weapon stats
 		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
@@ -663,13 +653,8 @@ script PlayerManager extends Component
 
 	method void TakeDamage(number dmg)
 		--
-		local totalDef = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				totalDef += item.def or 0
-			end
-		end
+		local stats = self:CalcTotalItemStats()
+		local totalDef = stats.itemDef
 		
 		local finalDmg = math.max(1, dmg - totalDef)
 		self.currentHP -= finalDmg
