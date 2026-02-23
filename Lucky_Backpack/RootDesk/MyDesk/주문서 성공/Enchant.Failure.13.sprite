@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://26c5f44ebdd1439083a1853026c3c41b",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/26c5f44ebdd1439083a1853026c3c41b/639074220579705706",
+      "upload_hash": "E7572F4FFF7CE3920A0AC1406E1C8951BA83EBE10C4FA1B9915DA2989AB61A26",
+      "name": "Enchant.Failure.13",
+      "resource_guid": "26c5f44ebdd1439083a1853026c3c41b",
+      "resource_version": "699be8694d4e15e5bea6700e"
+    }
+  }
+}
