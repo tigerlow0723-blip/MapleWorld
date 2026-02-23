@@ -47,6 +47,82 @@ script BattleManager extends Component
 		log("[BattleManager] Manager references set")
 	end
 
+	method any ResolveInventoryComp()
+		if self.playerManager ~= nil then
+			if self.playerManager.ResolveInventoryComp ~= nil then
+				local inventoryComp = self.playerManager:ResolveInventoryComp()
+				if inventoryComp ~= nil then
+					return inventoryComp
+				end
+			end
+			if self.playerManager.inventoryComp ~= nil then
+				return self.playerManager.inventoryComp
+			end
+		end
+		
+		local inventoryEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryEntity ~= nil then
+			return inventoryEntity.Inventory
+		end
+		
+		return nil
+	end
+
+	method any FindInventoryItemComponent(integer itemId)
+		if itemId == nil or itemId <= 0 then
+			return nil
+		end
+		
+		local inventoryEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryEntity == nil then
+			return nil
+		end
+		
+		local targetName = "InventoryItem_" .. tostring(itemId)
+		local itemEntity = inventoryEntity:GetChildByName(targetName, true)
+		if itemEntity ~= nil and itemEntity.Item ~= nil then
+			return itemEntity.Item
+		end
+		
+		local children = inventoryEntity.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				if itemComp.itemId == itemId then
+					return itemComp
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	method void ResetWeaponAttackCounts()
+		local inventoryComp = self:ResolveInventoryComp()
+		if inventoryComp == nil or inventoryComp.placedItems == nil then
+			return
+		end
+		
+		for itemId, _ in pairs(inventoryComp.placedItems) do
+			local itemData = nil
+			if self.dataManager ~= nil then
+				itemData = self.dataManager:GetItemData(itemId)
+			end
+			
+			if itemData ~= nil and string.lower(tostring(itemData.type or "")) == "weapon" then
+				local itemComp = self:FindInventoryItemComponent(itemId)
+				if itemComp ~= nil then
+					itemComp.currentAtkCount = math.max(0, tonumber(itemComp.atkCount) or 0)
+				end
+			end
+		end
+	end
+
 	method void StartBattle(integer stageId)
 		self.currentStage = stageId
 		self.battleState = "Battle"
@@ -74,6 +150,7 @@ script BattleManager extends Component
 		
 		--
 		self.playerManager:RestoreCost()
+		self:ResetWeaponAttackCounts()
 		
 		--
 		self.currentTurn = "Player"
@@ -101,6 +178,19 @@ script BattleManager extends Component
 		
 		if itemData.type ~= "weapon" then
 			log("[BattleManager] Cannot attack with a non-weapon item.")
+			return
+		end
+		
+		local itemComp = self:FindInventoryItemComponent(itemId)
+		if itemComp == nil then
+			log_warning("[BattleManager] Item component not found for itemId=" .. tostring(itemId))
+			return
+		end
+		
+		local maxAtkCount = math.max(0, tonumber(itemComp.atkCount) or 0)
+		local currentAtkCount = math.max(0, tonumber(itemComp.currentAtkCount) or maxAtkCount)
+		if maxAtkCount > 0 and currentAtkCount < 1 then
+			log("[BattleManager] No attack count left for itemId=" .. tostring(itemId))
 			return
 		end
 		
@@ -136,6 +226,10 @@ script BattleManager extends Component
 			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage))
 		else
 			log("[Battle] Attack missed or target dead.")
+		end
+		
+		if maxAtkCount > 0 then
+			itemComp.currentAtkCount = math.max(0, currentAtkCount - 1)
 		end
 		
 		self:RefreshUI()
@@ -521,6 +615,7 @@ script BattleManager extends Component
 		--
 		self.currentTurn = "Player"
 		self.playerManager:RestoreCost()
+		self:ResetWeaponAttackCounts()
 		self.monsterManager:TickMonsterDebuffs()
 		self:RefreshUI()
 	end
