@@ -13,6 +13,8 @@ script Inventory extends Component
 
 	property table placedItems = {}
 
+	property integer placedItemSeq = 0
+
 	property integer gridVersion = 0
 
 	method void OnBeginPlay()
@@ -42,8 +44,48 @@ script Inventory extends Component
 		    self:UpdateExpandableCells()
 		
 		    self.placedItems = {}
+		    self.placedItemSeq = 0
 		    self.gridVersion += 1
 		    log("[Inventory] Grid initialized: " .. self.currentWidth .. "x" .. self.currentHeight)
+	end
+
+	method string MakePlacedItemKey(integer itemId)
+		    local key = ""
+		    while true do
+		        self.placedItemSeq += 1
+		        key = tostring(itemId) .. "#" .. tostring(self.placedItemSeq)
+		        if self.placedItems[key] == nil then
+		            break
+		        end
+		    end
+		    return key
+	end
+
+	method table FindPlacedItemEntry(integer itemId)
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo ~= nil then
+		            local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		            if placedItemId == itemId then
+		                return {key = placedKey, info = placedInfo}
+		            end
+		        end
+		    end
+		    return nil
+	end
+
+	method table FindPlacedItemEntryAt(integer itemId, integer row, integer col)
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo ~= nil then
+		            local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		            local placedRow = tonumber(placedInfo.row) or 0
+		            local placedCol = tonumber(placedInfo.col) or 0
+		            local idMatch = (itemId <= 0) or (placedItemId == itemId)
+		            if idMatch and placedRow == row and placedCol == col then
+		                return {key = placedKey, info = placedInfo}
+		            end
+		        end
+		    end
+		    return nil
 	end
 
 	method void UpdateExpandableCells()
@@ -151,7 +193,10 @@ script Inventory extends Component
 		        end
 		    end
 		
-		    self.placedItems[itemId] = {
+		    local placedKey = self:MakePlacedItemKey(itemId)
+		    self.placedItems[placedKey] = {
+		        key = placedKey,
+		        itemId = itemId,
 		        row = row,
 		        col = col,
 		        shapeCells = placedShapeCells
@@ -163,7 +208,13 @@ script Inventory extends Component
 	end
 
 	method boolean RemoveItem(integer itemId)
-		    local info = self.placedItems[itemId]
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found == nil then
+		        log_warning("[Inventory] Item " .. itemId .. " not found in inventory")
+		        return false
+		    end
+		
+		    local info = found.info
 		    if info == nil then
 		        log_warning("[Inventory] Item " .. itemId .. " not found in inventory")
 		        return false
@@ -185,16 +236,20 @@ script Inventory extends Component
 		        end
 		    end
 		
-		    self.placedItems[itemId] = nil
+		    self.placedItems[found.key] = nil
 		    self.gridVersion += 1
 		    log("[Inventory] Removed item " .. itemId)
 		    return true
 	end
 
 	method boolean RemoveItemAt(integer itemId, integer row, integer col, integer w, integer h)
-		    local info = self.placedItems[itemId]
+		    local found = self:FindPlacedItemEntryAt(itemId, row, col)
+		    local info = nil
+		    if found ~= nil then
+		        info = found.info
+		    end
 		    local shapeCells = nil
-		    if info ~= nil and info.row == row and info.col == col then
+		    if info ~= nil then
 		        shapeCells = info.shapeCells
 		    end
 		
@@ -221,8 +276,8 @@ script Inventory extends Component
 		        end
 		    end
 		
-		    if info ~= nil and info.row == row and info.col == col then
-		        self.placedItems[itemId] = nil
+		    if found ~= nil then
+		        self.placedItems[found.key] = nil
 		    end
 		
 		    self.gridVersion += 1
@@ -231,15 +286,14 @@ script Inventory extends Component
 	end
 
 	method boolean ConsumeItem(integer itemId, integer row, integer col, integer w, integer h)
-		    local info = self.placedItems[itemId]
-		    if info ~= nil then
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found ~= nil and found.info ~= nil then
 		        if row > 0 and col > 0 then
 		            return self:RemoveItemAt(itemId, row, col, w, h)
 		        end
 		        return self:RemoveItem(itemId)
 		    end
 		
-		    self.placedItems[itemId] = nil
 		    log("[Inventory] Consumed item " .. itemId)
 		    return true
 	end
@@ -286,13 +340,29 @@ script Inventory extends Component
 	end
 
 	method table GetPlacedItemInfo(integer itemId)
-		    return self.placedItems[itemId]
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found ~= nil then
+		        return found.info
+		    end
+		    return nil
+	end
+
+	method table GetPlacedItemInfoAt(integer itemId, integer row, integer col)
+		    local found = self:FindPlacedItemEntryAt(itemId, row, col)
+		    if found ~= nil then
+		        return found.info
+		    end
+		    return nil
 	end
 
 	method table GetAllItemIds()
 		    local result = {}
-		    for itemId, _ in pairs(self.placedItems) do
-		        result[#result + 1] = itemId
+		    for placedKey, info in pairs(self.placedItems) do
+		        if info ~= nil and info.itemId ~= nil then
+		            result[#result + 1] = tonumber(info.itemId) or tonumber(placedKey) or 0
+		        elseif tonumber(placedKey) ~= nil then
+		            result[#result + 1] = tonumber(placedKey)
+		        end
 		    end
 		    return result
 	end

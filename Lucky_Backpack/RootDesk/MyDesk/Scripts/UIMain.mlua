@@ -55,6 +55,8 @@ script UIMain extends Component
 
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
 
+	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
+
 	property any gameManager = nil
 
 	property any battleManager = nil
@@ -62,6 +64,8 @@ script UIMain extends Component
 	property any playerManager = nil
 
 	property any scrollInventoryUI = nil
+
+	property any rewardUI = nil
 
 	property integer targetMonsterIdx = 0
 	
@@ -72,11 +76,23 @@ script UIMain extends Component
 		self.gameManager = gameMgr
 		self.battleManager = battleMgr
 		self.playerManager = playerMgr
+		self:ResolveRewardUI()
 		
 		self:ConnectEvents()
 		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
 		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
 		log("[UIMain] UI 초기화 완료")
+	end
+
+	method void ResolveRewardUI()
+		if self.rewardUI ~= nil then
+			return
+		end
+		
+		local rewardPanel = _EntityService:GetEntityByPath(self.rewardPanelPath)
+		if rewardPanel ~= nil then
+			self.rewardUI = rewardPanel.RewardUI
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -365,6 +381,17 @@ script UIMain extends Component
 		self:UpdateUI()
 	end
 
+	@EntityEventHandler
+	method void OnPlayerStatChangedEvent(PlayerStatChangedEvent event)
+		self:UpdateUI()
+	end
+
+	@EntityEventHandler
+	method void OnInventoryChangedEvent(InventoryChangedEvent event)
+		self:RefreshScrollInventoryUI()
+		self:UpdateUI()
+	end
+
 	method void UpdateMonsterHPBars()
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 			local monsterMgr = self.battleManager.monsterManager
@@ -398,17 +425,13 @@ script UIMain extends Component
 									sliderComp.Value = ratio
 								end
 								
-								-- Ensure inner text doesn't show player HP
-								if mSlider.TextComponent == nil then
-									-- Cache it on the slider entity if it doesn't have one directly,
-									-- but originally it searches children. We'll just search once and cache.
+								local txtComp = mSlider.TextComponent
+								if txtComp == nil then
 									local textComps = mSlider:GetChildComponentsByTypeName("TextComponent", true)
 									if textComps ~= nil and #textComps > 0 then
-										mSlider.CachedTextComp = textComps[1]
+										txtComp = textComps[1]
 									end
 								end
-								
-								local txtComp = mSlider.CachedTextComp
 								if txtComp ~= nil then
 									local displayHP = math.ceil(math.max(0, monster.currentHP))
 									txtComp.Text = tostring(displayHP)

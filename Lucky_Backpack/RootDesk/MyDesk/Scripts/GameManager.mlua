@@ -31,6 +31,10 @@ script GameManager extends Component
 
 	property any uiMain = nil
 
+	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
+
+	property any rewardUI = nil
+
 	property table pendingRewards = {}
 
 	property string gamePhase = "None"
@@ -120,6 +124,7 @@ script GameManager extends Component
 			self.rewardChestEntity = chestEntity
 			self.rewardChestEntity:SetEnable(false)
 		end
+		self:ResolveRewardUI()
 		
 		--
 		--
@@ -142,6 +147,114 @@ script GameManager extends Component
 		end
 		_TimerService:SetTimerOnce(initFunc, 1.0)
 		log("[GameManager] Init complete. 1 sec auto-start timer set.")
+	end
+
+	method void ResolveRewardUI()
+		if self.rewardUI ~= nil then
+			return
+		end
+		
+		if self.uiMain ~= nil and self.uiMain.ResolveRewardUI ~= nil then
+			self.uiMain:ResolveRewardUI()
+			if self.uiMain.rewardUI ~= nil then
+				self.rewardUI = self.uiMain.rewardUI
+				return
+			end
+		end
+		
+		local rewardPanel = _EntityService:GetEntityByPath(self.rewardPanelPath)
+		if rewardPanel ~= nil then
+			self.rewardUI = rewardPanel.RewardUI
+		end
+	end
+
+	method string BuildRewardSummary(table rewardItems)
+		local summary = ""
+		for i = 1, #rewardItems do
+			local reward = rewardItems[i]
+			if reward ~= nil then
+				local rewardId = reward.id or -1
+				local rewardName = reward.name or "unknown"
+				local rewardType = reward.type or "unknown"
+				if i > 1 then
+					summary = summary .. " | "
+				end
+				summary = summary .. "index=" .. tostring(i - 1) .. ",id=" .. tostring(rewardId) .. ",name=" .. tostring(rewardName) .. ",type=" .. tostring(rewardType)
+			end
+		end
+		return summary
+	end
+
+	method void OpenRewardChest()
+		if self.pendingRewards == nil then
+			self.pendingRewards = {}
+		end
+		
+		self:ResolveRewardUI()
+		if self.rewardUI ~= nil then
+			self.rewardUI.gameManager = self
+			self.rewardUI:ShowRewards(self.pendingRewards)
+		else
+			log_warning("[GameManager] RewardUI component not found.")
+			self:DistributePendingRewardsWithoutPanel()
+		end
+		
+		if self.rewardChestEntity ~= nil then
+			self.rewardChestEntity:SetEnable(false)
+			self.rewardChestEntity:SetVisible(false)
+		end
+		
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+	end
+
+	method void DistributePendingRewardsWithoutPanel()
+		if self.pendingRewards == nil then
+			self.pendingRewards = {}
+		end
+		
+		if self.itemDisplayArea == nil then
+			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
+			if displayAreaEntity ~= nil then
+				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+			end
+		end
+		
+		local normalItemIndex = 0
+		for i = 1, #self.pendingRewards do
+			local rewardInfo = self.pendingRewards[i]
+			if rewardInfo == nil then
+				continue
+			end
+			
+			local itemId = tonumber(rewardInfo.id) or 0
+			local itemType = tostring(rewardInfo.type or "")
+			if itemType == "scroll" or itemId == 9 or itemId == 10 then
+				if self.playerManager ~= nil and itemId > 0 then
+					self.playerManager:AddScroll(itemId, 1)
+				end
+			else
+				if self.itemDisplayArea ~= nil and itemId > 0 then
+					self.itemDisplayArea:CreateItemEntity(itemId, normalItemIndex)
+					normalItemIndex += 1
+				end
+			end
+		end
+		
+		if self.itemDisplayArea ~= nil and normalItemIndex > 0 then
+			if self.itemDisplayArea.Entity ~= nil then
+				self.itemDisplayArea.Entity:SetEnable(true)
+				self.itemDisplayArea.Entity:SetVisible(true)
+			end
+			if self.itemDisplayArea.ArrangeItems ~= nil then
+				self.itemDisplayArea:ArrangeItems()
+			end
+		end
+		
+		self.pendingRewards = {}
+		self.gamePhase = "Preparation"
+		self.canEndPreparation = true
 	end
 
 	method void StartGame(string classId)
@@ -329,32 +442,19 @@ script GameManager extends Component
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
 		self.pendingRewards = {}
+		if self.itemManager ~= nil then
+			self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
+		end
+		
+		local rewardSummary = self:BuildRewardSummary(self.pendingRewards)
+		log("[RewardLog][GameManager] pending_rewards index=-1 id=-1 name=pending_rewards type=mixed count=" .. tostring(#self.pendingRewards) .. " items=" .. rewardSummary)
 		
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)
+			self.rewardChestEntity:SetVisible(true)
 			log("[GameManager] Reward chest appeared.")
 		else
-			if self.itemDisplayArea ~= nil then
-				-- Fallback path when chest entity is missing.
-				self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
-				log("[GameManager] Reward items " .. tostring(#self.pendingRewards) .. " dropped!")
-				local rewardSummary = ""
-				for i = 1, #self.pendingRewards do
-					local reward = self.pendingRewards[i]
-					if reward ~= nil then
-						local rewardId = reward.id or -1
-						local rewardName = reward.name or "unknown"
-						local rewardType = reward.type or "unknown"
-						if i > 1 then
-							rewardSummary = rewardSummary .. " | "
-						end
-						rewardSummary = rewardSummary .. "index=" .. tostring(i - 1) .. ",id=" .. tostring(rewardId) .. ",name=" .. tostring(rewardName) .. ",type=" .. tostring(rewardType)
-					end
-				end
-				log("[RewardLog][GameManager] pending_rewards index=-1 id=-1 name=pending_rewards type=mixed count=" .. tostring(#self.pendingRewards) .. " items=" .. rewardSummary)
-				self.itemDisplayArea:DisplayItems(self.pendingRewards)
-				log("[GameManager] No reward chest entity, displaying on UI directly.")
-			end
+			self:OpenRewardChest()
 		end
 		
 		log("[GameManager] Please sort inventory and check chest rewards.")

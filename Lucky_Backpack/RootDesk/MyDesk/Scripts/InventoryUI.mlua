@@ -156,9 +156,12 @@ script InventoryUI extends Component
 		        end
 		    end
 		
-		    for itemId, info in pairs(inventory.placedItems) do
+		    for placedKey, info in pairs(inventory.placedItems) do
 		        if info ~= nil then
-		            self:SpawnItemInGrid(itemId, info.row, info.col, 0, 0)
+		            local placedItemId = tonumber(info.itemId) or tonumber(placedKey) or 0
+		            if placedItemId > 0 then
+		                self:SpawnItemInGrid(placedItemId, info.row, info.col, 0, 0)
+		            end
 		        end
 		    end
 	end
@@ -234,6 +237,29 @@ script InventoryUI extends Component
 		        return nil
 		    end
 		    return gameSystem.GameManager.itemDisplayArea
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveInventoryEventBroadcaster()
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem ~= nil then
+		        return gameSystem
+		    end
+		    return self.Entity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EmitInventoryChangedEvent()
+		    local broadcaster = self:ResolveInventoryEventBroadcaster()
+		    if broadcaster == nil then
+		        return
+		    end
+		    broadcaster:SendEvent(InventoryChangedEvent())
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsInventoryUsableConsumable(integer itemId)
+		    return itemId == 2 or itemId == 3 or itemId == 4 or itemId == 5
 	end
 
 	@ExecSpace("ClientOnly")
@@ -944,9 +970,12 @@ script InventoryUI extends Component
 		
 		            if itemComp.itemType == "weapon" then
 		                battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
-		                if uiMain ~= nil then uiMain:UpdateUI() end
+		                self:EmitInventoryChangedEvent()
 		                return
 		            elseif itemComp.itemType == "consumable" then
+		                if self:IsInventoryUsableConsumable(itemComp.itemId) == false then
+		                    return
+		                end
 		                local used = battleManager:OnPlayerUseConsumableById(itemComp.itemId)
 		                if used then
 		                    local inventory = self.Entity.Inventory
@@ -960,8 +989,8 @@ script InventoryUI extends Component
 		                        itemEntity:Destroy()
 		                    end
 		                    self:RenderGrid()
+		                    self:EmitInventoryChangedEvent()
 		                end
-		                if uiMain ~= nil then uiMain:UpdateUI() end
 		                return
 		            else
 		                return
@@ -1052,7 +1081,9 @@ script InventoryUI extends Component
 		
 		    local inventory = self.Entity.Inventory
 		    if inventory ~= nil and itemComp:IsPlaced() then
-		        inventory:RemoveItem(itemComp.itemId)
+		        local itemW = math.max(1, tonumber(itemComp.width) or 1)
+		        local itemH = math.max(1, tonumber(itemComp.height) or 1)
+		        inventory:RemoveItemAt(itemComp.itemId, itemComp.gridRow, itemComp.gridCol, itemW, itemH)
 		        local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		        if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
 		            gameSystem.PlayerManager:SyncInventoryFromGrid()
@@ -1171,10 +1202,9 @@ script InventoryUI extends Component
 		
 		    local inventory = self.Entity.Inventory
 		    if inventory ~= nil and self.dragState.originRow > 0 and self.dragState.originCol > 0 then
-		        local placedInfo = inventory:GetPlacedItemInfo(itemComp.itemId)
-		        if placedInfo ~= nil then
-		            inventory:RemoveItem(itemComp.itemId)
-		        end
+		        local itemW = math.max(1, tonumber(itemComp.width) or 1)
+		        local itemH = math.max(1, tonumber(itemComp.height) or 1)
+		        inventory:RemoveItemAt(itemComp.itemId, self.dragState.originRow, self.dragState.originCol, itemW, itemH)
 		    end
 		
 		    itemComp:ClearGridPosition()
@@ -1183,6 +1213,7 @@ script InventoryUI extends Component
 		    if gameSystem.PlayerManager ~= nil then
 		        gameSystem.PlayerManager:SyncInventoryFromGrid()
 		    end
+		    self:EmitInventoryChangedEvent()
 		
 		    return true
 	end
@@ -1247,18 +1278,14 @@ script InventoryUI extends Component
 		        return false
 		    end
 		
-		    local soldItemId = itemEntity.Item.itemId
 		    if isvalid(itemEntity) then
 		        itemEntity:Destroy()
 		    end
 		
-		    local inventory = self.Entity.Inventory
-		    if inventory ~= nil then
-		        inventory.placedItems[soldItemId] = nil
-		    end
 		    if gameSystem.PlayerManager ~= nil then
 		        gameSystem.PlayerManager:SyncInventoryFromGrid()
 		    end
+		    self:EmitInventoryChangedEvent()
 		
 		    return true
 	end
@@ -1336,6 +1363,7 @@ script InventoryUI extends Component
 		            if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
 		                gameSystem.PlayerManager:SyncInventoryFromGrid()
 		            end
+		            self:EmitInventoryChangedEvent()
 		            return
 		        end
 		    end
@@ -1425,6 +1453,7 @@ script InventoryUI extends Component
 		            if itemEntity ~= nil then
 		                itemEntity:Destroy()
 		            end
+		            self:EmitInventoryChangedEvent()
 		            self:EndDrag()
 		            return
 		        end
@@ -1449,6 +1478,7 @@ script InventoryUI extends Component
 		        if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
 		            gameSystem.PlayerManager:SyncInventoryFromGrid()
 		        end
+		        self:EmitInventoryChangedEvent()
 		    else
 		        self:ReturnToOrigin()
 		    end
