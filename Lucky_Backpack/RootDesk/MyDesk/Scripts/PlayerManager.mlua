@@ -152,7 +152,7 @@ script PlayerManager extends Component
 		self.maxCost = self:CalcMaxCost()
 	end
 
-	method number CalcFinalATK()
+	method number CalcFinalATK(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local lvStat = self.dataManager:GetLevelStats(self.classId)
 		local correction = self.dataManager:GetCorrectionStats(self.level)
@@ -168,8 +168,21 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
+				-- Skip weapon items; only the selected weapon is applied below
+				if item.type == "weapon" then
+					continue
+				end
 				itemAtk += item.atk or 0
 				itemAtkPercent += item.atkPercent or 0
+			end
+		end
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemAtk += weaponData.atk or 0
+				itemAtkPercent += weaponData.atkPercent or 0
 			end
 		end
 		
@@ -213,7 +226,7 @@ script PlayerManager extends Component
 		return finalHp
 	end
 
-	method number CalcFinalACC()
+	method number CalcFinalACC(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local lvStat = self.dataManager:GetLevelStats(self.classId)
 		local correction = self.dataManager:GetCorrectionStats(self.level)
@@ -228,7 +241,19 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
+				-- Skip weapon items; only the selected weapon is applied below
+				if item.type == "weapon" then
+					continue
+				end
 				itemAcc += item.accPercent or 0
+			end
+		end
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemAcc += weaponData.accPercent or 0
 			end
 		end
 		
@@ -240,7 +265,7 @@ script PlayerManager extends Component
 		return baseAcc + lvAcc + itemAcc + corrAcc
 	end
 
-	method number CalcFinalCritRate()
+	method number CalcFinalCritRate(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local correction = self.dataManager:GetCorrectionStats(self.level)
 		
@@ -249,7 +274,19 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
+				-- Skip weapon items; only the selected weapon is applied below
+				if item.type == "weapon" then
+					continue
+				end
 				itemCrit += item.critRate or 0
+			end
+		end
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemCrit += weaponData.critRate or 0
 			end
 		end
 		
@@ -263,7 +300,7 @@ script PlayerManager extends Component
 		return baseCrit + itemCrit + corrCrit + buffCrit
 	end
 
-	method number CalcFinalCritDMG()
+	method number CalcFinalCritDMG(integer weaponItemId)
 		local baseStat = self.dataManager:GetBaseStats(self.classId)
 		local lvStat = self.dataManager:GetLevelStats(self.classId)
 		local correction = self.dataManager:GetCorrectionStats(self.level)
@@ -278,7 +315,19 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
+				-- Skip weapon items; only the selected weapon is applied below
+				if item.type == "weapon" then
+					continue
+				end
 				itemCritDmg += item.critDmg or 0
+			end
+		end
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemCritDmg += weaponData.critDmg or 0
 			end
 		end
 		

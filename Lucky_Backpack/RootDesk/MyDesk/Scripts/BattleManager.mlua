@@ -128,13 +128,6 @@ script BattleManager extends Component
 		self.battleState = "Battle"
 		self.playerDotEffects = {}
 		
-		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
-			self.gameManager.uiMain.targetMonsterIdx = 1
-			if self.monsterManager ~= nil then
-				self.monsterManager:UpdateTargetHighlight(1)
-			end
-		end
-		
 		log("========================================")
 		log("[BattleManager] === Battle Start! Stage " .. tostring(stageId) .. " ===")
 		log("========================================")
@@ -146,6 +139,15 @@ script BattleManager extends Component
 		else
 			--
 			self.monsterManager:SpawnMonsters(stageId, self.dataManager)
+		end
+		
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil and self.monsterManager ~= nil then
+			local firstTarget = self.monsterManager:GetFirstAliveMonsterIndex()
+			if firstTarget <= 0 then
+				firstTarget = 1
+			end
+			self.gameManager.uiMain.targetMonsterIdx = firstTarget
+			self.monsterManager:UpdateTargetHighlight(firstTarget)
 		end
 		
 		--
@@ -194,36 +196,46 @@ script BattleManager extends Component
 			return
 		end
 		
-		if targetMonsterIdx == nil or targetMonsterIdx == 0 then
-			targetMonsterIdx = 1
-		end
-		
 		-- Validate target monster before attack.
 		if self.monsterManager == nil then
 			log("[BattleManager] MonsterManager is nil.")
 			return
 		end
 		
+		if targetMonsterIdx == nil or targetMonsterIdx <= 0 then
+			targetMonsterIdx = self.monsterManager:GetFirstAliveMonsterIndex()
+		end
+		
 		local targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
 		if targetMonster == nil or targetMonster.alive == false then
-			log("[BattleManager] Target monster is missing or already dead: " .. tostring(targetMonsterIdx))
-			return
+			targetMonsterIdx = self.monsterManager:GetFirstAliveMonsterIndex()
+			targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
+			if targetMonster == nil or targetMonster.alive == false then
+				log("[BattleManager] Target monster is missing or already dead: " .. tostring(targetMonsterIdx))
+				return
+			end
+			if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+				self.gameManager.uiMain.targetMonsterIdx = targetMonsterIdx
+				self.monsterManager:UpdateTargetHighlight(targetMonsterIdx)
+			end
 		end
 		
 		if self.playerManager:UseCost(itemData.cost) == false then
 			return
 		end
 		
-		local damage = self:CalculatePlayerDamage(itemData)
-		local accuracy = self.playerManager:CalcFinalACC()
+		local dmgResult = self:CalculatePlayerDamage(itemData)
+		local damage = dmgResult.damage
+		local isCritical = dmgResult.critical
+		local accuracy = self.playerManager:CalcFinalACC(itemId)
 		
-		log("[BattleManager DEBUG] Attack attempt(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
+		log("[BattleManager DEBUG] Attack attempt(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Critical=" .. tostring(isCritical) .. " Acc=" .. tostring(accuracy))
 		
 		self.playerManager:PlayPlayerAnim("Attack", itemId)
 		
-		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
+		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy, isCritical)
 		if result ~= nil then
-			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage))
+			log("[Battle] Attack hit! Target: " .. tostring(targetMonsterIdx) .. " Dmg: " .. tostring(result.damage) .. " Critical: " .. tostring(isCritical))
 		else
 			log("[Battle] Attack missed or target dead.")
 		end
@@ -316,25 +328,55 @@ script BattleManager extends Component
 		return true
 	end
 
-	method number CalculatePlayerDamage(table itemData)
-		if self.playerManager == nil then return 0 end
+	method table CalculatePlayerDamage(table itemData)
+		local result = {}
+		result.damage = 0
+		result.critical = false
 		
-		local finalAtk = self.playerManager:CalcFinalATK()
+		if self.playerManager == nil then return result end
 		
-		local critRate = self.playerManager:CalcFinalCritRate()
+		local weaponId = 0
+		if itemData ~= nil and itemData.id ~= nil then
+			weaponId = itemData.id
+		end
+		
+		local finalAtk = self.playerManager:CalcFinalATK(weaponId)
+		
+		local critRate = self.playerManager:CalcFinalCritRate(weaponId)
 		local roll = math.random(1, 100)
 		if roll <= critRate then
-			local critDmg = self.playerManager:CalcFinalCritDMG()
+			local critDmg = self.playerManager:CalcFinalCritDMG(weaponId)
 			finalAtk = finalAtk * (critDmg / 100)
+			result.critical = true
 			log("[BattleManager] Critical Hit!")
 		end
 		
-		return math.floor(finalAtk)
+		result.damage = math.floor(finalAtk)
+		return result
 	end
 
 	method void OnPlayerUseSkill(integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
 			return
+		end
+		if self.monsterManager == nil then
+			return
+		end
+		
+		if targetMonsterIdx == nil or targetMonsterIdx <= 0 then
+			targetMonsterIdx = self.monsterManager:GetFirstAliveMonsterIndex()
+		end
+		local targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
+		if targetMonster == nil or targetMonster.alive == false then
+			targetMonsterIdx = self.monsterManager:GetFirstAliveMonsterIndex()
+			targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
+		end
+		if targetMonster == nil or targetMonster.alive == false then
+			return
+		end
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+			self.gameManager.uiMain.targetMonsterIdx = targetMonsterIdx
+			self.monsterManager:UpdateTargetHighlight(targetMonsterIdx)
 		end
 		
 		local skillData = self.playerManager:UseSkill(self.dataManager)
@@ -351,7 +393,7 @@ script BattleManager extends Component
 			if skillData.alwaysHit == 1 then
 				acc = 999
 			end
-			local result = self.monsterManager:DamageMonster(targetMonsterIdx, skillData.skillDmg, acc)
+			local result = self.monsterManager:DamageMonster(targetMonsterIdx, skillData.skillDmg, acc, false)
 			log("[BattleManager] " .. tostring(skillData.skillDmg))
 		end
 		if skillData.incomingDmgUp > 0 and targetMonsterIdx > 0 then

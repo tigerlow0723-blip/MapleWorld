@@ -22,6 +22,10 @@ script MonsterManager extends Component
 	property string targetIndicatorPath = "/ui/UIGroup/TargetIndicator"
 
 	property string targetIndicatorImageRUID = ""
+	
+	property string targetIndicatorBoundRUID = ""
+	
+	property boolean targetIndicatorWasVisible = false
 
 	property number lastDamage = 0
 
@@ -92,6 +96,7 @@ script MonsterManager extends Component
 			monster.modelID = template.modelID or ""
 			monster.alive = true
 			monster.deathDelay = template.deathDelay or 0.7
+			monster.arrowOffsetY = template.arrowOffsetY or 1.2
 			monster.dotEffects = {}
 			monster.incomingDmgUp = 0
 			monster.incomingDmgUpTurn = 0
@@ -159,7 +164,7 @@ script MonsterManager extends Component
 		log("[MonsterManager] 보스 ?�폰: " .. boss.name .. " HP:" .. tostring(boss.maxHP) .. " Phase: 1")
 	end
 
-	method table DamageMonster(integer index, number damage, number accuracy)
+	method table DamageMonster(integer index, number damage, number accuracy, boolean isCritical)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
 			return nil
@@ -200,7 +205,7 @@ script MonsterManager extends Component
 		end
 		monster.currentHP -= finalDmg
 		result.damage = finalDmg
-		self:ProcessMonsterHitVisual(monster, finalDmg)
+		self:ProcessMonsterHitVisual(monster, finalDmg, isCritical)
 		
 		-- Removed NameTag HP Update
 		
@@ -283,7 +288,7 @@ script MonsterManager extends Component
 	end
 
 
-	method void ProcessMonsterHitVisual(table monster, number damage)
+	method void ProcessMonsterHitVisual(table monster, number damage, boolean isCritical)
 		if monster == nil then
 			return
 		end
@@ -314,7 +319,11 @@ script MonsterManager extends Component
 		end
 		
 		if hitComp ~= nil then
-			hitComp:OnHit(targetEntity, math.ceil(damage), false, "Attack", 1)
+			local critical = false
+			if isCritical == true then
+				critical = true
+			end
+			hitComp:OnHit(targetEntity, math.ceil(damage), critical, "Attack", 1)
 		else
 			log_warning("[MonsterManager] HitComponent not found on monster: " .. tostring(targetEntityId))
 		end
@@ -514,6 +523,16 @@ script MonsterManager extends Component
 			end
 		end
 		return count
+	end
+	
+	method integer GetFirstAliveMonsterIndex()
+		for i = 1, #self.monsterList do
+			local monster = self.monsterList[i]
+			if monster ~= nil and monster.alive == true then
+				return i
+			end
+		end
+		return 0
 	end
 
 	method boolean IsAllDead()
@@ -820,10 +839,26 @@ script MonsterManager extends Component
 			if self.targetIndicator ~= nil then
 				-- If indicator is an image UI entity, allow runtime RUID binding from inspector.
 				local gui = self.targetIndicator.SpriteGUIRendererComponent
-				if gui ~= nil and self.targetIndicatorImageRUID ~= nil and self.targetIndicatorImageRUID ~= "" then
-					gui.ImageRUID = self.targetIndicatorImageRUID
+				if gui ~= nil then
+					if self.targetIndicatorImageRUID ~= nil and self.targetIndicatorImageRUID ~= "" then
+						gui.ImageRUID = self.targetIndicatorImageRUID
+						self.targetIndicatorBoundRUID = self.targetIndicatorImageRUID
+					else
+						self.targetIndicatorBoundRUID = tostring(gui.ImageRUID or "")
+					end
+					gui.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+					if gui.PlayRate == nil or gui.PlayRate <= 0 then
+						gui.PlayRate = 1
+					end
+				end
+				-- Scale the arrow to half size
+				local uiTrans = self.targetIndicator.UITransformComponent
+				if uiTrans ~= nil then
+					local curSize = uiTrans.RectSize
+					uiTrans.RectSize = Vector2(curSize.x * 0.5, curSize.y)
 				end
 				self.targetIndicator.Enable = false
+				self.targetIndicatorWasVisible = false
 			else
 				log_warning("[MonsterManager] TargetIndicator UI not found: " .. tostring(self.targetIndicatorPath))
 			end
@@ -857,15 +892,48 @@ script MonsterManager extends Component
 					else
 						self.targetIndicator.Enable = false
 					end
+					self.targetIndicatorWasVisible = false
 				else
 					local targetPos = validTargetEntity.TransformComponent.Position
-					local worldPos = Vector3(targetPos.x, targetPos.y + 1.2, 1)
+					local arrowOffset = 1.2
+					local targetMonster = self.monsterList[targetIndex]
+					if targetMonster ~= nil and targetMonster.arrowOffsetY ~= nil then
+						arrowOffset = targetMonster.arrowOffsetY
+					end
+					local worldPos = Vector3(targetPos.x, targetPos.y + arrowOffset, 1)
+					local wasVisible = self.targetIndicatorWasVisible
 					if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
 						self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, worldPos, true)
 					else
 						self.targetIndicator.Enable = true
 						self.targetIndicator.TransformComponent.Position = worldPos
 					end
+					-- Keep loop/play settings, but avoid re-binding the same RUID every update.
+					local gui = self.targetIndicator.SpriteGUIRendererComponent
+					if gui ~= nil then
+						gui.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+						if gui.PlayRate == nil or gui.PlayRate <= 0 then
+							gui.PlayRate = 1
+						end
+						local ruid = self.targetIndicatorImageRUID
+						if ruid ~= nil and ruid ~= "" and ruid ~= self.targetIndicatorBoundRUID then
+							gui.ImageRUID = ruid
+							self.targetIndicatorBoundRUID = ruid
+						elseif wasVisible == false then
+							-- Trigger animation start once when indicator becomes visible.
+							local activeRUID = ruid
+							if activeRUID == nil or activeRUID == "" then
+								activeRUID = gui.ImageRUID
+							end
+							if activeRUID ~= nil and tostring(activeRUID) ~= "" then
+								-- Some runtimes do not restart anim when assigning the same RUID.
+								-- Toggle through empty once to force clip player refresh.
+								gui.ImageRUID = ""
+								gui.ImageRUID = activeRUID
+							end
+						end
+					end
+					self.targetIndicatorWasVisible = true
 				end
 			else
 				if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
@@ -873,6 +941,7 @@ script MonsterManager extends Component
 				else
 					self.targetIndicator.Enable = false
 				end
+				self.targetIndicatorWasVisible = false
 			end
 		end
 	end
