@@ -494,10 +494,12 @@ script ScrollInventoryUI extends Component
 		local upgradedItemId = weaponTarget.next_upgrade_id
 		local weaponRow = weaponTarget.gridRow
 		local weaponCol = weaponTarget.gridCol
+		local prevWidth = weaponTarget.width
+		local prevHeight = weaponTarget.height
 		local targetInInventory = weaponRow > 0 and weaponCol > 0 and inventory ~= nil
 		
 		if targetInInventory then
-			inventory:RemoveItem(prevItemId)
+			inventory:RemoveItemAt(prevItemId, weaponRow, weaponCol, prevWidth, prevHeight)
 		end
 		
 		weaponTarget:InitFromTable(upgradedItemId)
@@ -516,7 +518,7 @@ script ScrollInventoryUI extends Component
 					inventoryEntity.InventoryUI:SnapItemToGrid(weaponTarget.Entity, weaponRow, weaponCol, weaponTarget.width, weaponTarget.height, upgradedShape)
 				end
 			else
-				log_error("[Upgrade] Upgrade succeeded but placement failed.")
+				log_warning("[Upgrade] Upgrade succeeded but placement failed. row=" .. tostring(weaponRow) .. " col=" .. tostring(weaponCol))
 			end
 		else
 			weaponTarget:ClearGridPosition()
