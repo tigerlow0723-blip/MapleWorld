@@ -1,5 +1,5 @@
 ﻿id,type,name,width,height,cost,atk,min_atk,max_atk,atkPercent,accPercent (%),critRate (%),critDmg (%),hp,hpPercent,def,Spawn_Group,desc,imageRUID,shapeMask,grade,next_upgrade_id
-1001,weapon,목검,1,3,5,20,20,20,0,100,50,100,0,0,0,1,기본 레어 두손검,443d2cc27cb942d7be1184dd108702b3,1/11/1,Rare,1002
+1001,weapon,목검,1,3,5,20,20,20,0,100,50,100,0,0,0,1,기본 레어 두손검,1f27f34b0b974c3cba2366d8fe293743,1/1/1,Rare,1002
 1002,weapon,쟈드,1,3,5,30,30,30,0,100,60,100,0,0,0,0,기본 에픽 두손검,79fd66f45ef64a21a1485b4f37874912,1/1/1,Epic,1003
 1003,weapon,청운검,1,3,5,40,40,40,0,100,65,100,0,0,0,0,기본 유니크 두손검,f05e0b3788854c7e8391b934b31a1ec2,1/1/1,Unique,1004
 1004,weapon,라 투헨더,1,3,5,50,50,50,0,100,70,100,0,0,0,0,기본 레전더리 두손검,9e66af3009ee464eb5419d918d65f3ec,1/1/1,Legendary,
