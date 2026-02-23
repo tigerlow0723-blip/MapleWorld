@@ -201,6 +201,8 @@ script MonsterManager extends Component
 		result.damage = finalDmg
 		self:ProcessMonsterHitVisual(monster, finalDmg)
 		
+		-- Removed NameTag HP Update
+		
 		log("[MonsterManager] " .. monster.name .. " took damage: " .. tostring(finalDmg) .. ", HP: " .. tostring(monster.currentHP))
 		--
 		local animTargetId = monster.animEntityId
@@ -436,11 +438,13 @@ script MonsterManager extends Component
 		-- 보스 ?�신 ?�???�킬 처리 (shield, heal)
 		if self.lastStatus == "shield" then
 			boss.shieldActive = true
-			log("[MonsterManager] 보스가 ?��?방어�??�쳤?�니??")
+			log("[MonsterManager] 보스가 ??방어??쳤?니??")
 		elseif self.lastStatus == "heal" then
 			local healAmount = math.floor(boss.maxHP * (self.lastDamage / 100.0))
 			boss.currentHP = math.min(boss.maxHP, boss.currentHP + healAmount)
-			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?�복?�습?�다! (?�재 HP: " .. tostring(boss.currentHP) .. ")")
+			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?복?습?다! (?재 HP: " .. tostring(boss.currentHP) .. ")")
+			
+			-- Removed NameTag HP Update
 		end
 		
 		-- Update Boss Skill UI highlight
@@ -584,6 +588,12 @@ script MonsterManager extends Component
 			end
 			
 			monster.entityId = entity.Id
+			
+			local nameTag = entity.NameTagComponent
+			if nameTag ~= nil then
+				nameTag.Enable = false
+			end
+			
 			local sprite = entity.SpriteRendererComponent
 			if sprite ~= nil then
 				sprite.FlipX = false
