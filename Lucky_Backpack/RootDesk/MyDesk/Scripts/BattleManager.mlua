@@ -122,11 +122,11 @@ script BattleManager extends Component
 		end
 		
 		local damage = self:CalculatePlayerDamage(itemData)
-		local accuracy = self.playerManager.acc or 0
+		local accuracy = self.playerManager:CalcFinalACC()
 		
 		log("[BattleManager DEBUG] Attack attempt(ID): ItemId=" .. tostring(itemId) .. " Target=" .. tostring(targetMonsterIdx) .. " Dmg=" .. tostring(damage) .. " Acc=" .. tostring(accuracy))
 		
-		self.playerManager:PlayPlayerAnim("Attack")
+		self.playerManager:PlayPlayerAnim("Attack", itemId)
 		
 		local result = self.monsterManager:DamageMonster(targetMonsterIdx, damage, accuracy)
 		if result ~= nil then
@@ -196,20 +196,12 @@ script BattleManager extends Component
 	method number CalculatePlayerDamage(table itemData)
 		if self.playerManager == nil then return 0 end
 		
-		--
-		local baseAtk = self.playerManager.atk
-		local itemAtk = itemData.atk or 0
+		local finalAtk = self.playerManager:CalcFinalATK()
 		
-		--
-		--
-		
-		local finalAtk = baseAtk + itemAtk
-		
-		--
-		local critRate = self.playerManager.critRate
+		local critRate = self.playerManager:CalcFinalCritRate()
 		local roll = math.random(1, 100)
 		if roll <= critRate then
-			local critDmg = self.playerManager.critDmg
+			local critDmg = self.playerManager:CalcFinalCritDMG()
 			finalAtk = finalAtk * (critDmg / 100)
 			log("[BattleManager] Critical Hit!")
 		end
@@ -230,7 +222,7 @@ script BattleManager extends Component
 		--
 		if skillData.skillDmg > 0 and targetMonsterIdx > 0 then
 			--
-			self.playerManager:PlayPlayerAnim("Attack")
+			self.playerManager:PlayPlayerAnim("Attack", 0)
 			
 			local acc = 100
 			if skillData.alwaysHit == 1 then
