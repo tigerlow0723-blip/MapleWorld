@@ -9484,7 +9484,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "2d183f2a7f3048546921a16002d411da"
+                "DataId": "96392b1df6724d43abab0ec1988aa7c4"
               },
               "OverrideSorting": false,
               "Enable": true
@@ -10083,7 +10083,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 16,
