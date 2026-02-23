@@ -394,7 +394,6 @@ script PlayerManager extends Component
 		
 		self.inventoryComp = self:ResolveInventoryComp()
 		
-		
 		if self.inventoryComp ~= nil then
 			self.inventoryComp:InitGrid()
 		end

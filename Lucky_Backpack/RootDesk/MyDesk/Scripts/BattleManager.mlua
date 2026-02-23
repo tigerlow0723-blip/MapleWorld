@@ -658,8 +658,18 @@ script BattleManager extends Component
 		log("[BattleManager] >>> Monster Turn End -> Player Turn Start <<<")
 		
 		-- Hide boss skill UI if it was shown during the attack
+		-- But keep shield effect visible until player hits the boss
 		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
-			self.gameManager.uiMain:ResetBossSkillUI()
+			local shieldStillActive = false
+			if self.monsterManager ~= nil and self.monsterManager.isBossBattle then
+				local boss = self.monsterManager.monsterList[1]
+				if boss ~= nil and boss.shieldActive == true then
+					shieldStillActive = true
+				end
+			end
+			if not shieldStillActive then
+				self.gameManager.uiMain:ResetBossSkillUI()
+			end
 		end
 		
 		--

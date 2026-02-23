@@ -21,7 +21,11 @@ script UIMain extends Component
 
 	property Entity uiBossSkill3 = nil
 
+	property Entity uiBossSkill3_1 = nil
+
 	property Entity uiBossSkill4 = nil
+
+	property any shieldTimer = nil
 
 	property Entity btnTurnEnd = nil
 
@@ -53,6 +57,12 @@ script UIMain extends Component
 
 	property Entity btnBackFromShop = nil
 
+	property Entity uiClear = nil
+
+	property Entity uiFail = nil
+
+	property Entity btnRetry = nil
+
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
 
 	property any gameManager = nil
@@ -75,6 +85,14 @@ script UIMain extends Component
 		
 		self:ConnectEvents()
 		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
+		
+		if self.uiClear ~= nil then
+			self.uiClear.Enable = false
+		end
+		if self.uiFail ~= nil then
+			self.uiFail.Enable = false
+		end
+		
 		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
 		log("[UIMain] UI 초기화 완료")
 	end
@@ -480,11 +498,25 @@ script UIMain extends Component
 		end
 	end
 
-	method void UpdateBossSkillUI(string selectedType)
+	method void UpdateBossSkillUI(string selectedType, number duration)
+		-- 기존 타이머 취소 (있을 경우)
+		if self.shieldTimer ~= nil then
+			_TimerService:ClearTimer(self.shieldTimer)
+			self.shieldTimer = nil
+		end
+		
+		local animDuration = duration
+		if animDuration == nil or animDuration <= 0 then
+			if selectedType == "shield" then
+				animDuration = 0.81
+			else
+				animDuration = 1.5
+			end
+		end
+
 		local skills = {
 			{entity = self.uiBossSkill1, skillType = "hp_dmg"},
 			{entity = self.uiBossSkill2, skillType = "poison"},
-			{entity = self.uiBossSkill3, skillType = "shield"},
 			{entity = self.uiBossSkill4, skillType = "heal"}
 		}
 		
@@ -504,11 +536,87 @@ script UIMain extends Component
 				end
 			end
 		end
+		
+		-- 쉴드 스킬 특별 처리 (1.53초 연출 후 반복 엔티티로 전환)
+		if selectedType == "shield" then
+			if self.uiBossSkill3 ~= nil then
+				self.uiBossSkill3.Enable = true
+				local img = self.uiBossSkill3.SpriteGUIRendererComponent
+				if img ~= nil then img.Color = Color(1, 1, 1, 1) end
+			end
+			if self.uiBossSkill3_1 ~= nil then
+				self.uiBossSkill3_1.Enable = false
+			end
+			
+			local switchFunc = function()
+				self.shieldTimer = nil
+				if self.uiBossSkill3 ~= nil then
+					self.uiBossSkill3.Enable = false
+				end
+				if self.uiBossSkill3_1 ~= nil then
+					self.uiBossSkill3_1.Enable = true
+					local loopImg = self.uiBossSkill3_1.SpriteGUIRendererComponent
+					if loopImg ~= nil then loopImg.Color = Color(1, 1, 1, 1) end
+				end
+			end
+			self.shieldTimer = _TimerService:SetTimerOnce(switchFunc, animDuration)
+		else
+			if self.uiBossSkill3 ~= nil then self.uiBossSkill3.Enable = false end
+			
+			-- 다른 스킬 사용 시에도 보스에게 쉴드가 남아있다면 쉴드 유지 엔티티를 끄지 않음
+			local hasShield = false
+			if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+				local monsterMgr = self.battleManager.monsterManager
+				if monsterMgr.isBossBattle and #monsterMgr.monsterList > 0 then
+					local boss = monsterMgr.monsterList[1]
+					if boss ~= nil and boss.isBoss and boss.alive and boss.shieldActive == true then
+						hasShield = true
+					end
+				end
+			end
+			
+			if not hasShield then
+				if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
+			end
+
+			-- 쉴드가 아닌 일반 스킬은 잠시 표시된 후 사라지도록 처리 (패턴에 설정된 duration 적용)
+			local hideOtherSkillFunc = function()
+				self.shieldTimer = nil
+				local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
+				for j = 1, #entities do
+					if entities[j] ~= nil then
+						entities[j].Enable = false
+					end
+				end
+			end
+			self.shieldTimer = _TimerService:SetTimerOnce(hideOtherSkillFunc, animDuration)
+		end
+		
 		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
 	end
 
 	method void ResetBossSkillUI()
-		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
+		local hasShield = false
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if monsterMgr.isBossBattle and #monsterMgr.monsterList > 0 then
+				local boss = monsterMgr.monsterList[1]
+				if boss ~= nil and boss.isBoss and boss.alive and boss.shieldActive == true then
+					hasShield = true
+				end
+			end
+		end
+
+		if not hasShield then
+			if self.shieldTimer ~= nil then
+				_TimerService:ClearTimer(self.shieldTimer)
+				self.shieldTimer = nil
+			end
+			if self.uiBossSkill3 ~= nil then self.uiBossSkill3.Enable = false end
+			if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
+		end
+		
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
 		for i = 1, #entities do
 			if entities[i] ~= nil then
 				-- Hide all skill icons completely when boss is not using a skill
@@ -518,11 +626,25 @@ script UIMain extends Component
 	end
 
 	method void SetBossSkillUIEnable(boolean enable)
-		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill4}
+		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill3_1, self.uiBossSkill4}
 		for i = 1, #entities do
 			if entities[i] ~= nil then
 				entities[i].Enable = enable
 			end
+		end
+	end
+
+	method void ShowClearUI()
+		if self.uiClear ~= nil then
+			self.uiClear.Enable = true
+			self.uiClear:SetVisible(true)
+		end
+	end
+
+	method void ShowFailUI()
+		if self.uiFail ~= nil then
+			self.uiFail.Enable = true
+			self.uiFail:SetVisible(true)
 		end
 	end
 

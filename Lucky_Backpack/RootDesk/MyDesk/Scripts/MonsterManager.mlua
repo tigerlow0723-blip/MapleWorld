@@ -194,7 +194,11 @@ script MonsterManager extends Component
 			result.hit = false
 			result.damage = 0
 			monster.shieldActive = false
-			log("[MonsterManager] 보스???��?방어가 ?�레?�어??공격??막아?�습?�다!")
+			log("[MonsterManager] 보스의 절대방어가 플레이어의 공격을 막아냈습니다!")
+			-- Reset shield UI effect when shield is consumed
+			if self.uiMain ~= nil and self.uiMain.ResetBossSkillUI ~= nil then
+				self.uiMain:ResetBossSkillUI()
+			end
 			return result
 		end
 		
@@ -470,7 +474,7 @@ script MonsterManager extends Component
 		
 		-- Update Boss Skill UI highlight
 		if self.uiMain ~= nil and self.uiMain.UpdateBossSkillUI ~= nil then
-			self.uiMain:UpdateBossSkillUI(self.lastStatus)
+			self.uiMain:UpdateBossSkillUI(self.lastStatus, pattern.duration)
 		end
 		
 		local animTargetId = boss.animEntityId
