@@ -399,12 +399,19 @@ script UIMain extends Component
 								end
 								
 								-- Ensure inner text doesn't show player HP
-								local textComps = mSlider:GetChildComponentsByTypeName("TextComponent", true)
-								if textComps ~= nil then
-									for k, txtComp in pairs(textComps) do
-										local displayHP = math.ceil(math.max(0, monster.currentHP))
-										txtComp.Text = tostring(displayHP)
+								if mSlider.TextComponent == nil then
+									-- Cache it on the slider entity if it doesn't have one directly,
+									-- but originally it searches children. We'll just search once and cache.
+									local textComps = mSlider:GetChildComponentsByTypeName("TextComponent", true)
+									if textComps ~= nil and #textComps > 0 then
+										mSlider.CachedTextComp = textComps[1]
 									end
+								end
+								
+								local txtComp = mSlider.CachedTextComp
+								if txtComp ~= nil then
+									local displayHP = math.ceil(math.max(0, monster.currentHP))
+									txtComp.Text = tostring(displayHP)
 								end
 								
 								local uiTrans = mSlider.UITransformComponent
