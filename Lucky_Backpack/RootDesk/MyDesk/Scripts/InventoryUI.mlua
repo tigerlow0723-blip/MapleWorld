@@ -272,6 +272,48 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method void ApplyShapeRectSize(Entity itemEntity, Component itemComp, table shapeCells, integer w, integer h)
+		    if itemEntity == nil then
+		        return
+		    end
+		    local itemUI = itemEntity.UITransformComponent
+		    if itemUI == nil then
+		        return
+		    end
+		
+		    local bounds = self:GetShapeBounds(shapeCells, w, h)
+		    local spacing = self:GetGridCellSpacing()
+		    local cellW = self.cellSize
+		    local cellH = self.cellSize
+		    if spacing ~= nil then
+		        if spacing.x ~= nil and spacing.x > 0 then
+		            cellW = spacing.x
+		        end
+		        if spacing.y ~= nil and spacing.y > 0 then
+		            cellH = spacing.y
+		        end
+		    end
+		
+		    if cellW <= 0 then cellW = 1 end
+		    if cellH <= 0 then cellH = 1 end
+		
+		    local displayCols = bounds.maxCol - bounds.minCol + 1
+		    local displayRows = bounds.maxRow - bounds.minRow + 1
+		    if itemComp ~= nil then
+		        if itemComp.displayBoundsCols ~= nil and itemComp.displayBoundsCols > 0 then
+		            displayCols = itemComp.displayBoundsCols
+		        end
+		        if itemComp.displayBoundsRows ~= nil and itemComp.displayBoundsRows > 0 then
+		            displayRows = itemComp.displayBoundsRows
+		        end
+		    end
+		
+		    local boundsW = displayCols * cellW
+		    local boundsH = displayRows * cellH
+		    itemUI.RectSize = Vector2(math.max(2, boundsW), math.max(2, boundsH))
+	end
+
+	@ExecSpace("ClientOnly")
 	method void SpawnItemInGrid(integer itemId, integer row, integer col, integer w, integer h)
 		    local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
 		    if templateEntity == nil then
@@ -301,17 +343,7 @@ script InventoryUI extends Component
 		
 		        itemComp:SetGridPosition(row, col)
 		        local shapeCells = itemComp:GetShapeCells()
-		        local resizeCellSize = self.cellSize
-		        if resizeCellSize <= 0 then
-		            resizeCellSize = 1
-		        end
-		        local spawnBounds = self:GetShapeBounds(shapeCells, itemComp.width, itemComp.height)
-		        local spawnBoundsW = (spawnBounds.maxCol - spawnBounds.minCol + 1) * resizeCellSize
-		        local spawnBoundsH = (spawnBounds.maxRow - spawnBounds.minRow + 1) * resizeCellSize
-		        local itemUI = itemEntity.UITransformComponent
-		        if itemUI ~= nil then
-		            itemUI.RectSize = Vector2(math.max(2, spawnBoundsW), math.max(2, spawnBoundsH))
-		        end
+		        self:ApplyShapeRectSize(itemEntity, itemComp, shapeCells, itemComp.width, itemComp.height)
 		        self:SnapItemToGrid(itemEntity, row, col, itemComp.width, itemComp.height, shapeCells)
 		        self:BindTooltipEvents(itemEntity, itemComp)
 		    end
@@ -1261,6 +1293,12 @@ script InventoryUI extends Component
 		    self.dragState.itemWidth = itemComp.width
 		    self.dragState.itemHeight = itemComp.height
 		    self.dragState.shapeCells = itemComp:GetShapeCells()
+		    self:ApplyShapeRectSize(self.dragState.itemEntity, itemComp, self.dragState.shapeCells, self.dragState.itemWidth, self.dragState.itemHeight)
+		    local displayArea = self:ResolveItemDisplayArea()
+		    if displayArea ~= nil and displayArea.BuildShapeHitCells ~= nil then
+		        displayArea:BuildShapeHitCells(self.dragState.itemEntity, itemComp)
+		        self:SyncShapeHitModeWithParent(self.dragState.itemEntity, self.dragState.itemEntity.Parent)
+		    end
 		
 		    if self.dragState.lastTouchPoint == nil then
 		        return
@@ -1314,6 +1352,12 @@ script InventoryUI extends Component
 		        elseif itemComp.spawnPosition ~= nil then
 		            uiTransform.anchoredPosition = Vector2(itemComp.spawnPosition.x, itemComp.spawnPosition.y)
 		        end
+		    end
+		    local shapeCells = itemComp:GetShapeCells()
+		    self:ApplyShapeRectSize(itemEntity, itemComp, shapeCells, itemComp.width, itemComp.height)
+		    local displayArea = self:ResolveItemDisplayArea()
+		    if displayArea ~= nil and displayArea.BuildShapeHitCells ~= nil then
+		        displayArea:BuildShapeHitCells(itemEntity, itemComp)
 		    end
 		    self:SyncShapeHitModeWithParent(itemEntity, itemEntity.Parent)
 		
@@ -1449,13 +1493,8 @@ script InventoryUI extends Component
 		    local maxRow = bounds.maxRow
 		    local minCol = bounds.minCol
 		    local maxCol = bounds.maxCol
-		    local resizeCellSize = self.cellSize
-		    if resizeCellSize <= 0 then
-		        resizeCellSize = 1
-		    end
-		    local boundsW = (maxCol - minCol + 1) * resizeCellSize
-		    local boundsH = (maxRow - minRow + 1) * resizeCellSize
-		    uiTransform.RectSize = Vector2(math.max(2, boundsW), math.max(2, boundsH))
+		    local itemComp = itemEntity.Item
+		    self:ApplyShapeRectSize(itemEntity, itemComp, shapeCells, w, h)
 		    local spacing = self:GetGridCellSpacing()
 		    local pitchX = spacing.x
 		    local pitchY = spacing.y
