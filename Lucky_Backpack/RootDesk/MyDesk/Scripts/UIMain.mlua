@@ -328,8 +328,12 @@ script UIMain extends Component
 		end
 		
 		if self.btnTurnEnd ~= nil then
-			-- 플레이어 턴이면서 Battle 상태일 때만 활성화할 수도 있으나, 일단 phase 기준
-			self.btnTurnEnd.Enable = (phase == "Battle")
+			-- Only show turn end button during player's turn in battle
+			local isPlayerTurn = false
+			if phase == "Battle" and self.battleManager ~= nil and self.battleManager.currentTurn == "Player" then
+				isPlayerTurn = true
+			end
+			self.btnTurnEnd.Enable = isPlayerTurn
 		end
 		
 		-- 4. 미니게임 서브 메뉴 가시성 제어
