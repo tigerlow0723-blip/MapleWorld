@@ -362,6 +362,10 @@ script ItemDisplayArea extends Component
 		
 		local boundsW = (maxCol - minCol + 1) * cellSize
 		local boundsH = (maxRow - minRow + 1) * cellSize
+		local itemUI = itemEntity.UITransformComponent
+		if itemUI ~= nil then
+			itemUI.RectSize = Vector2(math.max(2, boundsW), math.max(2, boundsH))
+		end
 		
 		local createdCount = 0
 		local cellAlpha = 0.02

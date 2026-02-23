@@ -301,6 +301,17 @@ script InventoryUI extends Component
 		
 		        itemComp:SetGridPosition(row, col)
 		        local shapeCells = itemComp:GetShapeCells()
+		        local resizeCellSize = self.cellSize
+		        if resizeCellSize <= 0 then
+		            resizeCellSize = 1
+		        end
+		        local spawnBounds = self:GetShapeBounds(shapeCells, itemComp.width, itemComp.height)
+		        local spawnBoundsW = (spawnBounds.maxCol - spawnBounds.minCol + 1) * resizeCellSize
+		        local spawnBoundsH = (spawnBounds.maxRow - spawnBounds.minRow + 1) * resizeCellSize
+		        local itemUI = itemEntity.UITransformComponent
+		        if itemUI ~= nil then
+		            itemUI.RectSize = Vector2(math.max(2, spawnBoundsW), math.max(2, spawnBoundsH))
+		        end
 		        self:SnapItemToGrid(itemEntity, row, col, itemComp.width, itemComp.height, shapeCells)
 		        self:BindTooltipEvents(itemEntity, itemComp)
 		    end
@@ -1438,6 +1449,13 @@ script InventoryUI extends Component
 		    local maxRow = bounds.maxRow
 		    local minCol = bounds.minCol
 		    local maxCol = bounds.maxCol
+		    local resizeCellSize = self.cellSize
+		    if resizeCellSize <= 0 then
+		        resizeCellSize = 1
+		    end
+		    local boundsW = (maxCol - minCol + 1) * resizeCellSize
+		    local boundsH = (maxRow - minRow + 1) * resizeCellSize
+		    uiTransform.RectSize = Vector2(math.max(2, boundsW), math.max(2, boundsH))
 		    local spacing = self:GetGridCellSpacing()
 		    local pitchX = spacing.x
 		    local pitchY = spacing.y
