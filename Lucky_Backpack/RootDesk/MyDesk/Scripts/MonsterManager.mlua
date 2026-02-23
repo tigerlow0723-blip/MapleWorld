@@ -822,14 +822,26 @@ script MonsterManager extends Component
 		--
 		if self.targetIndicator ~= nil then
 			if validTargetEntity ~= nil then
-				--
-				local targetPos = validTargetEntity.TransformComponent.Position
-				local worldPos = Vector3(targetPos.x, targetPos.y + 1.2, 1)
-				if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
-					self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, worldPos, true)
+				local isBoss = false
+				if self.monsterList[targetIndex] ~= nil then
+					isBoss = self.monsterList[targetIndex].isBoss == true
+				end
+				
+				if isBoss then
+					if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
+						self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, Vector3(0, 0, 0), false)
+					else
+						self.targetIndicator.Enable = false
+					end
 				else
-					self.targetIndicator.Enable = true
-					self.targetIndicator.TransformComponent.Position = worldPos
+					local targetPos = validTargetEntity.TransformComponent.Position
+					local worldPos = Vector3(targetPos.x, targetPos.y + 1.2, 1)
+					if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
+						self.uiMain:UpdateTargetIndicatorPosition(self.targetIndicator, worldPos, true)
+					else
+						self.targetIndicator.Enable = true
+						self.targetIndicator.TransformComponent.Position = worldPos
+					end
 				end
 			else
 				if self.uiMain ~= nil and self.uiMain.UpdateTargetIndicatorPosition ~= nil then
