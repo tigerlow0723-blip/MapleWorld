@@ -113,7 +113,7 @@ script RewardManager extends Component
 		
 		-- 플레이어 스탯 재계산
 		self.playerManager:RecalcAllStats()
-		log("[RewardManager] 최종 공격력: " .. tostring(self.playerManager:CalcFinalATK()))
+		log("[RewardManager] 최종 공격력: " .. tostring(self.playerManager:CalcFinalATK(0)))
 		log("[RewardManager] 최종 체력: " .. tostring(self.playerManager.maxHP))
 		log("[RewardManager] 최대 코스트: " .. tostring(self.playerManager.maxCost))
 	end
