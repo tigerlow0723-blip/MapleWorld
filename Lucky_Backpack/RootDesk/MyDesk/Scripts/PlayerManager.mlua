@@ -140,7 +140,15 @@ script PlayerManager extends Component
 	end
 
 	method void RecalcAllStats()
+		local prevMaxHP = self.maxHP
 		self.maxHP = self:CalcFinalHP()
+		
+		-- Increase currentHP by the amount maxHP increased (or decreased if items were removed)
+		if prevMaxHP ~= 0 and self.maxHP ~= prevMaxHP then
+			local hpDiff = self.maxHP - prevMaxHP
+			self.currentHP = math.min(self.maxHP, math.max(1, self.currentHP + hpDiff))
+		end
+		
 		self.maxCost = self:CalcMaxCost()
 	end
 
@@ -191,8 +199,11 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
-				itemHp += item.hp or 0
-				itemHpPercent += item.hpPercent or 0
+				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
+				if not isRecoveryItem then
+					itemHp += item.hp or 0
+					itemHpPercent += item.hpPercent or 0
+				end
 			end
 		end
 		
@@ -292,15 +303,7 @@ script PlayerManager extends Component
 			corrCost = correction.maxCost
 		end
 		
-		local itemCost = 0
-		for i = 1, #self.inventory do
-			local item = self.inventory[i]
-			if item ~= nil then
-				itemCost += item.cost or 0
-			end
-		end
-		
-		return baseCost + corrCost + itemCost
+		return baseCost + corrCost
 	end
 
 	method void RestoreCost()
