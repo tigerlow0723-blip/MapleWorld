@@ -439,6 +439,12 @@ script GameManager extends Component
 
 	method void OnBattleVictory()
 		log("[GameManager] === Battle Victory! Enter Preparation Phase ===")
+		
+		if self.currentStage == 10 then
+			self:GameClear()
+			return
+		end
+
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
 		self.pendingRewards = {}
@@ -534,6 +540,9 @@ script GameManager extends Component
 		log("========================================")
 		log("[GameManager] Game Clear")
 		log("========================================")
+		if self.uiMain ~= nil then
+			self.uiMain:ShowClearUI()
+		end
 	end
 
 	method void GameOver()
@@ -541,6 +550,9 @@ script GameManager extends Component
 		log("========================================")
 		log("[GameManager] Game Over")
 		log("========================================")
+		if self.uiMain ~= nil then
+			self.uiMain:ShowFailUI()
+		end
 	end
 
 end

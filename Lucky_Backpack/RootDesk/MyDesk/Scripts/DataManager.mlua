@@ -462,6 +462,17 @@ script DataManager extends Component
 					pattern.turn = tonumber(dsPattern:GetCell(i, "turn")) or 0
 					pattern.patternRuid = dsPattern:GetCell(i, "Patten_RUID") or ""
 					
+					-- 연출 시간 추가 (duration 컬럼이 없으면 기본값 사용, 쉴드면 0.81초, 그 외는 1.5초)
+					local durationValue = tonumber(dsPattern:GetCell(i, "duration"))
+					if durationValue == nil or durationValue <= 0 then
+						if pattern.effectType == "shield" then
+							durationValue = 0.81
+						else
+							durationValue = 1.5
+						end
+					end
+					pattern.duration = durationValue
+					
 					local patterns = self.BossTable[key]
 					patterns[#patterns + 1] = pattern
 				end

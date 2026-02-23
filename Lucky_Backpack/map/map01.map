@@ -927,6 +927,12 @@
                 "EntityId": "6604f8f2-74e6-477d-a424-e718faedf318",
                 "Version2": false
               },
+              "uiBossSkill3_1": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "84be20b3-2b90-492f-9c21-d1dabb3fdb9d",
+                "Version2": false
+              },
               "uiBossSkill4": {
                 "tempEntityId": null,
                 "IsRelative": false,
@@ -1015,6 +1021,24 @@
                 "tempEntityId": null,
                 "IsRelative": false,
                 "EntityId": "3fd77465-c684-4941-aef6-62036e7939e6",
+                "Version2": false
+              },
+              "uiClear": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "cdfba131-c165-4d50-9706-1397399e7ed1",
+                "Version2": false
+              },
+              "uiFail": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "8217d332-2ff8-47bf-86f8-b13918ac8160",
+                "Version2": false
+              },
+              "btnRetry": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "49f77c33-7a84-4d49-bb9e-0120aacf0296",
                 "Version2": false
               }
             }
