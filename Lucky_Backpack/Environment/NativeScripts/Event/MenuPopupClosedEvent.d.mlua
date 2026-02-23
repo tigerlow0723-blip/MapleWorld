@@ -1,8 +1,0 @@
----@sealed
----@description "This event occurs upon closing the menu pop-up."
-@Event
-script MenuPopupClosedEvent extends EventType
-
-	constructor MenuPopupClosedEvent() end
-
-end

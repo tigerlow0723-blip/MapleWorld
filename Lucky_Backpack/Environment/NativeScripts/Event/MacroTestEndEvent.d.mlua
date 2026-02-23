@@ -1,5 +1,0 @@
----@sealed
-@Event
-script MacroTestEndEvent extends EventType
-
-end

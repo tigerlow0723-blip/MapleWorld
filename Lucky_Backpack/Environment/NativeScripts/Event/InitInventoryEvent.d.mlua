@@ -1,7 +1,0 @@
----@sealed
-@Event
-script InitInventoryEvent extends EventType
-
-	constructor InitInventoryEvent() end
-
-end

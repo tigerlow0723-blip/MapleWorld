@@ -1,8 +1,0 @@
----@sealed
----@description "The event that takes place upon failing to load a web page."
-@Event
-script WebLoadFailEvent extends EventType
-
-	constructor WebLoadFailEvent() end
-
-end
