@@ -25,6 +25,8 @@ script Item extends Component
 
 	property integer currentAtkCount = 0
 
+	property integer bonusSynergyAtk = 0
+
 	property integer atkPercent = 0
 
 	property integer accPercent = 0
@@ -239,6 +241,10 @@ script Item extends Component
 		
 		    self.currentAtkCount = self.atkCount
 		
+		    if self:IsSynergyScrollId(self.itemId) == true and self.bonusSynergyAtk == 0 then
+		        self.bonusSynergyAtk = self:RollSynergyAtk(self.itemId)
+		    end
+		
 		    local shapeMask = itemData.shapeMask or ""
 		    self.shapeMatrix = self:ParseShapeMask(shapeMask)
 		
@@ -319,6 +325,25 @@ script Item extends Component
 		        if rowId ~= nil and rowId == id then
 		            return row
 		        end
+		    end
+		    return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsSynergyScrollId(integer id)
+		    return id == 6 or id == 7 or id == 8
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer RollSynergyAtk(integer id)
+		    if id == 6 then
+		        return math.random(1, 20)
+		    end
+		    if id == 7 then
+		        return math.random(1, 40)
+		    end
+		    if id == 8 then
+		        return math.random(1, 100)
 		    end
 		    return 0
 	end
