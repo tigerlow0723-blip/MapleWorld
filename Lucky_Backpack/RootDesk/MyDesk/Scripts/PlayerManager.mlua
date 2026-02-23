@@ -615,9 +615,47 @@ script PlayerManager extends Component
 	end
 
 	@ExecSpace("Client")
-	method void PlayPlayerAnim(string stateName)
+	method void PlayPlayerAnim(string stateName, integer itemId)
 		local player = _UserService.LocalPlayer
 		if player == nil then return end
+		
+		if stateName == "Attack" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
+			local itemData = self.dataManager:GetItemData(itemId)
+			if itemData ~= nil and itemData.desc ~= nil then
+				local desc = itemData.desc
+				local actionName = ""
+				
+				if string.find(desc, "두손검") then actionName = "swingT1"
+				elseif string.find(desc, "한손검") then actionName = "swingO1"
+				elseif string.find(desc, "완드") then actionName = "swingO2"
+				elseif string.find(desc, "스태프") then actionName = "swingO2"
+				elseif string.find(desc, "활") then actionName = "shoot1"
+				elseif string.find(desc, "석궁") then actionName = "shoot2"
+				elseif string.find(desc, "단검") then actionName = "stabO1"
+				elseif string.find(desc, "아대") then actionName = "swingO1"
+				end
+				
+				if actionName ~= "" then
+					local body = player
+					if player.AvatarRendererComponent ~= nil then
+						body = player.AvatarRendererComponent:GetBodyEntity()
+						if body == nil then body = player end
+					end
+					
+					local event = ActionStateChangedEvent(actionName, actionName, 1, SpriteAnimClipPlayType.Onetime)
+					body:SendEvent(event)
+					
+					_TimerService:SetTimerOnce(function()
+						if _EntityService:IsValid(body) then
+							local idleEvent = ActionStateChangedEvent("stand1", "stand1", 1, SpriteAnimClipPlayType.Loop)
+							body:SendEvent(idleEvent)
+						end
+					end, 0.6)
+					return
+				end
+			end
+		end
+
 		local stateComp = player.StateComponent
 		if stateComp ~= nil then
 			stateComp:ChangeState(stateName)
