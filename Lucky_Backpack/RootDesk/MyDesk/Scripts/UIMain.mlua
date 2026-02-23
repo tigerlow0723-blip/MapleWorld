@@ -64,6 +64,8 @@ script UIMain extends Component
 	property any scrollInventoryUI = nil
 
 	property integer targetMonsterIdx = 0
+	
+	property table monsterSliders = {}
 
 	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
 		log("[UIMain] InitializeUI 호출됨")
@@ -75,6 +77,11 @@ script UIMain extends Component
 		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
 		self:UpdateUI() -- 초기 상태 UI 갱신 (명시적 호출)
 		log("[UIMain] UI 초기화 완료")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnUpdate(number delta)
+		self:UpdateMonsterHPBars()
 	end
 
 	method void ConnectEvents()
@@ -217,6 +224,9 @@ script UIMain extends Component
 			end
 		end
 		
+		-- 1.5. Monster HP Bars (Cloned Sliders mapped to World Space)
+		self:UpdateMonsterHPBars()
+		
 		-- 2. Cost 게이지 업데이트
 		if self.sliderCost ~= nil then
 			local maxCost = self.playerManager.maxCost
@@ -349,6 +359,87 @@ script UIMain extends Component
 		end
 		
 		self:UpdateUI()
+	end
+
+	method void UpdateMonsterHPBars()
+		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+			local monsterMgr = self.battleManager.monsterManager
+			if not monsterMgr.isBossBattle then
+				for i, monster in ipairs(monsterMgr.monsterList) do
+					if monster.alive and monster.entityId ~= nil then
+						local mEntity = _EntityService:GetEntity(monster.entityId)
+						if mEntity ~= nil then
+							local mSlider = self.monsterSliders[i]
+							if mSlider == nil or not _EntityService:IsValid(mSlider) then
+								if self.sliderHP ~= nil then
+									mSlider = _SpawnService:SpawnByEntity(self.sliderHP, "MonsterSlider_"..i, Vector3.zero, self.sliderHP.Parent)
+									if mSlider ~= nil then
+										self.monsterSliders[i] = mSlider
+										local uiTrans = mSlider.UITransformComponent
+										if uiTrans ~= nil then
+											uiTrans.RectSize = Vector2(100, 30)
+										end
+									end
+								end
+							end
+							
+							if mSlider ~= nil then
+								mSlider.Enable = true
+								local sliderComp = mSlider.SliderComponent
+								if sliderComp ~= nil then
+									local ratio = 0
+									if monster.maxHP > 0 then ratio = monster.currentHP / monster.maxHP end
+									if ratio < 0 then ratio = 0 end
+									if ratio > 1 then ratio = 1 end
+									sliderComp.Value = ratio
+								end
+								
+								-- Ensure inner text doesn't show player HP
+								local textComps = mSlider:GetChildComponentsByTypeName("TextComponent", true)
+								if textComps ~= nil then
+									for k, txtComp in pairs(textComps) do
+										local displayHP = math.ceil(math.max(0, monster.currentHP))
+										txtComp.Text = tostring(displayHP)
+									end
+								end
+								
+								local uiTrans = mSlider.UITransformComponent
+								if uiTrans ~= nil then
+									local mTrans = mEntity.TransformComponent
+									if mTrans ~= nil then
+										local mPos = mTrans.Position
+										local parentUI = nil
+										if mSlider.Parent ~= nil then parentUI = mSlider.Parent.UITransformComponent end
+										if parentUI ~= nil then
+											local screenPos = _UILogic:WorldToScreenPosition(Vector2(mPos.x, mPos.y - 0.5))
+											uiTrans.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+										end
+									end
+								end
+							end
+						end
+					else
+						local mSlider = self.monsterSliders[i]
+						if mSlider ~= nil and _EntityService:IsValid(mSlider) then
+							mSlider.Enable = false
+							mSlider:Destroy()
+						end
+						self.monsterSliders[i] = nil
+					end
+				end
+			end
+			
+			-- Clean up old sliders
+			for i, mSlider in pairs(self.monsterSliders) do
+				if monsterMgr.isBossBattle or i > #monsterMgr.monsterList then
+					if mSlider ~= nil and _EntityService:IsValid(mSlider) then
+						mSlider.Enable = false
+						mSlider:Destroy()
+					end
+					self.monsterSliders[i] = nil
+				end
+			end
+		end
 	end
 
 	@ExecSpace("ClientOnly")

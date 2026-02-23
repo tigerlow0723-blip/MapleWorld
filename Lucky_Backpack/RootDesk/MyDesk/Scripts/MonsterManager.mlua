@@ -91,6 +91,7 @@ script MonsterManager extends Component
 			monster.rewardGold = template.goldDrop or template.rewardGold or 0
 			monster.modelID = template.modelID or ""
 			monster.alive = true
+			monster.deathDelay = template.deathDelay or 0.7
 			monster.dotEffects = {}
 			monster.incomingDmgUp = 0
 			monster.incomingDmgUpTurn = 0
@@ -201,6 +202,8 @@ script MonsterManager extends Component
 		result.damage = finalDmg
 		self:ProcessMonsterHitVisual(monster, finalDmg)
 		
+		-- Removed NameTag HP Update
+		
 		log("[MonsterManager] " .. monster.name .. " took damage: " .. tostring(finalDmg) .. ", HP: " .. tostring(monster.currentHP))
 		--
 		local animTargetId = monster.animEntityId
@@ -244,23 +247,34 @@ script MonsterManager extends Component
 					
 					self:SpawnVisual(monster, 1, true)
 				else
-					-- Boss Dead (Phase 3 defeated)
+					-- Boss Dead (Phase 3 defeated) - play die animation then destroy
 					if oldEntityId ~= nil then
-						local entity = _EntityService:GetEntity(oldEntityId)
-						if entity ~= nil then
-							entity:Destroy()
-							log("[MonsterManager] " .. oldEntityId)
-						end
+						self:PlayEntityState(oldEntityId, "DIE", 0)
+						local capturedId = oldEntityId
+						local delay = monster.deathDelay or 0.7
+						_TimerService:SetTimerOnce(function()
+							local e = _EntityService:GetEntity(capturedId)
+							if e ~= nil then
+								e:Destroy()
+							end
+						end, delay)
+						log("[MonsterManager] Boss defeated, destroying after delay: " .. oldEntityId)
 					end
 				end
 			else
-				-- Normal Monster Dead
-				if monster.entityId ~= nil then
-					local entity = _EntityService:GetEntity(monster.entityId)
-					if entity ~= nil then
-						entity:Destroy()
-						log("[MonsterManager] " .. monster.entityId)
-					end
+				-- Normal Monster Dead - play die animation then destroy
+				local dieEntityId = monster.animEntityId or monster.entityId
+				if dieEntityId ~= nil then
+					self:PlayEntityState(dieEntityId, "DIE", 0)
+					local capturedId = monster.entityId
+					local delay = monster.deathDelay or 0.7
+					_TimerService:SetTimerOnce(function()
+						local e = _EntityService:GetEntity(capturedId)
+						if e ~= nil then
+							e:Destroy()
+						end
+					end, delay)
+					log("[MonsterManager] Monster defeated, destroying after delay: " .. tostring(capturedId))
 				end
 			end
 		end
@@ -436,11 +450,13 @@ script MonsterManager extends Component
 		-- 보스 ?�신 ?�???�킬 처리 (shield, heal)
 		if self.lastStatus == "shield" then
 			boss.shieldActive = true
-			log("[MonsterManager] 보스가 ?��?방어�??�쳤?�니??")
+			log("[MonsterManager] 보스가 ??방어??쳤?니??")
 		elseif self.lastStatus == "heal" then
 			local healAmount = math.floor(boss.maxHP * (self.lastDamage / 100.0))
 			boss.currentHP = math.min(boss.maxHP, boss.currentHP + healAmount)
-			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?�복?�습?�다! (?�재 HP: " .. tostring(boss.currentHP) .. ")")
+			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?복?습?다! (?재 HP: " .. tostring(boss.currentHP) .. ")")
+			
+			-- Removed NameTag HP Update
 		end
 		
 		-- Update Boss Skill UI highlight
@@ -519,13 +535,15 @@ script MonsterManager extends Component
 		log("[MonsterManager] " .. tostring(totalExp) .. " Gold: " .. tostring(totalGold))
 	end
 
-	method void ClearAll()
-		for i = 1, #self.monsterList do
-			local mon = self.monsterList[i]
-			if mon.entityId ~= nil then
-				local entity = _EntityService:GetEntity(mon.entityId)
-				if entity ~= nil then
-					_EntityService:Destroy(entity)
+	method void ClearAll(boolean skipDestroy)
+		if skipDestroy ~= true then
+			for i = 1, #self.monsterList do
+				local mon = self.monsterList[i]
+				if mon.entityId ~= nil then
+					local entity = _EntityService:GetEntity(mon.entityId)
+					if entity ~= nil then
+						_EntityService:Destroy(entity)
+					end
 				end
 			end
 		end
@@ -584,6 +602,12 @@ script MonsterManager extends Component
 			end
 			
 			monster.entityId = entity.Id
+			
+			local nameTag = entity.NameTagComponent
+			if nameTag ~= nil then
+				nameTag.Enable = false
+			end
+			
 			local sprite = entity.SpriteRendererComponent
 			if sprite ~= nil then
 				sprite.FlipX = false

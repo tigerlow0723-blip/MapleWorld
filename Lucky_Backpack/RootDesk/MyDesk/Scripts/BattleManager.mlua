@@ -141,7 +141,10 @@ script BattleManager extends Component
 		self:RefreshUI()
 		
 		if self.monsterManager:IsAllDead() then
-			self:EndBattle("Victory")
+			local deathDelay = targetMonster.deathDelay or 0.7
+			_TimerService:SetTimerOnce(function()
+				self:EndBattle("Victory")
+			end, deathDelay)
 			return
 		end
 		
@@ -269,7 +272,14 @@ script BattleManager extends Component
 		
 		--
 		if self.monsterManager:IsAllDead() then
-			self:EndBattle("Victory")
+			local killedMonster = self.monsterManager.monsterList[targetMonsterIdx]
+			local deathDelay = 0.7
+			if killedMonster ~= nil then
+				deathDelay = killedMonster.deathDelay or 0.7
+			end
+			_TimerService:SetTimerOnce(function()
+				self:EndBattle("Victory")
+			end, deathDelay)
 			return
 		end
 		
@@ -546,7 +556,7 @@ script BattleManager extends Component
 		log("========================================")
 		
 		--
-		self.monsterManager:ClearAll()
+		self.monsterManager:ClearAll(true)
 		self.playerDotEffects = {}
 		
 		--

@@ -399,6 +399,7 @@ script DataManager extends Component
 				data.rewardGold = tonumber(ds:GetCell(i, "rewardGold")) or 0
 				data.goldDrop = tonumber(ds:GetCell(i, "goldDrop")) or data.rewardGold
 				data.modelID = ds:GetCell(i, "ModelID") or ""
+				data.deathDelay = tonumber(ds:GetCell(i, "deathDelay")) or 0.7
 				self.MonsterTable[id] = data
 			end
 		end
