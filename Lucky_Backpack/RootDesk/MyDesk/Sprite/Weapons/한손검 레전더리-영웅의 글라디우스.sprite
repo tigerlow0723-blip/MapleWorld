@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://5e22ff7869c445bcac8e40f899af3233",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/5e22ff7869c445bcac8e40f899af3233/639074219952143193",
+      "upload_hash": "21BC8503DC6BEC3278B733973A0AF922DBB7E71263FC57C2035C4CF00C0E0269",
+      "name": "한손검 레전더리-영웅의 글라디우스",
+      "resource_guid": "5e22ff7869c445bcac8e40f899af3233",
+      "resource_version": "699be82b094359a56fa244d5"
+    }
+  }
+}
