@@ -347,7 +347,7 @@ script ScrollInventoryUI extends Component
 			return nil
 		end
 		
-		local targetCell = inventoryEntity.InventoryUI:ScreenPosToGridCell(touchPoint, 1, 1)
+		local targetCell = inventoryEntity.InventoryUI:ScreenPosToGridCell(touchPoint, 1, 1, {})
 		if targetCell == nil or targetCell.row <= 0 or targetCell.col <= 0 then
 			return nil
 		end
