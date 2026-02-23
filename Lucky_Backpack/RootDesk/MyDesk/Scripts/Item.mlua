@@ -21,6 +21,10 @@ script Item extends Component
 
 	property integer cost = 0
 
+	property integer atkCount = 0
+
+	property integer currentAtkCount = 0
+
 	property integer atkPercent = 0
 
 	property integer accPercent = 0
@@ -178,6 +182,7 @@ script Item extends Component
 		    self.def = tonumber(itemData.def) or 0
 		    self.hp = tonumber(itemData.hp) or 0
 		    self.cost = tonumber(itemData.cost) or 0
+		    self.atkCount = math.max(0, tonumber(itemData.atkCount) or 0)
 		    self.atkPercent = tonumber(itemData.atkPercent) or 0
 		    self.accPercent = tonumber(itemData.accPercent) or 0
 		    self.critRate = tonumber(itemData.critRate) or 0
@@ -217,8 +222,22 @@ script Item extends Component
 		            if okNext and nextUpgradeValue ~= nil and nextUpgradeValue ~= "" then
 		                self.next_upgrade_id = tonumber(nextUpgradeValue) or 0
 		            end
+		
+		            local okAtkCount, atkCountValue = pcall(function()
+		                return weaponDataSet:GetCell(row, "atkCount")
+		            end)
+		            if okAtkCount == false or atkCountValue == nil or atkCountValue == "" then
+		                okAtkCount, atkCountValue = pcall(function()
+		                    return weaponDataSet:GetCell(row, 7)
+		                end)
+		            end
+		            if okAtkCount and atkCountValue ~= nil and atkCountValue ~= "" then
+		                self.atkCount = math.max(0, tonumber(atkCountValue) or 0)
+		            end
 		        end
 		    end
+		
+		    self.currentAtkCount = self.atkCount
 		
 		    local shapeMask = itemData.shapeMask or ""
 		    self.shapeMatrix = self:ParseShapeMask(shapeMask)
