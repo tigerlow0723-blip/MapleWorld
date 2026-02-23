@@ -399,7 +399,7 @@ script UIMain extends Component
 								if textComps ~= nil then
 									for k, txtComp in pairs(textComps) do
 										local displayHP = math.ceil(math.max(0, monster.currentHP))
-										txtComp.Text = tostring(displayHP) .. "/" .. tostring(math.ceil(monster.maxHP))
+										txtComp.Text = tostring(displayHP)
 									end
 								end
 								
