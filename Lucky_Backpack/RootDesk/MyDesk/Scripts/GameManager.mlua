@@ -408,7 +408,32 @@ script GameManager extends Component
 			return
 		end
 		
-		self:ProceedToStage()
+		log("[GameManager] Shop closed. Skipping preparation, going directly to battle (Stage " .. tostring(self.currentStage) .. ")")
+		
+		-- Update background for the new stage
+		self:UpdateBackground()
+		
+		-- Skip preparation phase and directly start battle
+		if self.currentStage == 5 then
+			self:EnterMiniGameShop()
+		elseif self.currentStage == 10 then
+			self:EnterBossBattle()
+			-- For boss, auto-trigger battle start after a short delay
+			local autoStartFunc = function()
+				self:TriggerBattleStart()
+			end
+			_TimerService:SetTimerOnce(autoStartFunc, 0.5)
+		else
+			-- Keep phase as "Shop" so the battle start button stays hidden
+			-- Set to "Preparation" only at the moment of auto-start
+			self.canEndPreparation = false
+			local autoStartFunc = function()
+				self.gamePhase = "Preparation"
+				self:TriggerBattleStart()
+			end
+			_TimerService:SetTimerOnce(autoStartFunc, 0.5)
+		end
+		
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
