@@ -31,9 +31,9 @@ script DataManager extends Component
 
 	property table DiceImageTable2 = {}
 
-	property string DiceRollRUID1 = ""
+	property table DiceRollTable = {}
 
-	property string DiceRollRUID2 = ""
+	property table DiceRollTable2 = {}
 
 	property number DiceRollDelay = 1
 
@@ -907,8 +907,8 @@ script DataManager extends Component
 	method void LoadDiceImageTable()
 		self.DiceImageTable = {}
 		self.DiceImageTable2 = {}
-		self.DiceRollRUID1 = ""
-		self.DiceRollRUID2 = ""
+		self.DiceRollTable = {}
+		self.DiceRollTable2 = {}
 		self.DiceRollDelay = 1
 		self.DiceResultDelay = 1.2
 		
@@ -944,28 +944,24 @@ script DataManager extends Component
 				end
 			end
 			
-			if self.DiceRollRUID1 == "" then
-				local roll1 = self:GetCellString(ds, i, "dice1_roll_ruid", "dice_1_roll_ruid")
+			local roll1 = self:GetCellString(ds, i, "dice1_roll_ruid", "dice_1_roll_ruid")
 				if roll1 == "" then
 					roll1 = self:GetCellString(ds, i, "roll1_ruid", "dice_roll_ruid")
 				end
-				if roll1 ~= "" then
-					self.DiceRollRUID1 = roll1
+				if roll1 ~= "" and idx >= 1 and idx <= 7 then
+					self.DiceRollTable[idx] = roll1
 				end
-			end
 			
-			if self.DiceRollRUID2 == "" then
 				local roll2 = self:GetCellString(ds, i, "dice2_roll_ruid", "dice_2_roll_ruid")
 				if roll2 == "" then
 					roll2 = self:GetCellString(ds, i, "roll2_ruid", "")
 				end
 				if roll2 == "" then
-					roll2 = self.DiceRollRUID1
+					roll2 = roll1
 				end
-				if roll2 ~= "" then
-					self.DiceRollRUID2 = roll2
+				if roll2 ~= "" and idx >= 1 and idx <= 7 then
+					self.DiceRollTable2[idx] = roll2
 				end
-			end
 			
 			if self.DiceRollDelay == 1 then
 				local rollDelayText = self:GetCellString(ds, i, "roll_delay", "dice_roll_delay")
@@ -991,7 +987,7 @@ script DataManager extends Component
 		for _ in pairs(self.DiceImageTable) do c1 = c1 + 1 end
 		local c2 = 0
 		for _ in pairs(self.DiceImageTable2) do c2 = c2 + 1 end
-		log("[DataManager] Dice images loaded: d1=" .. tostring(c1) .. " d2=" .. tostring(c2) .. " roll1=" .. tostring(self.DiceRollRUID1 ~= "") .. " roll2=" .. tostring(self.DiceRollRUID2 ~= "") .. " rollDelay=" .. tostring(self.DiceRollDelay) .. " resultDelay=" .. tostring(self.DiceResultDelay))
+		log("[DataManager] Dice images loaded: d1=" .. tostring(c1) .. " d2=" .. tostring(c2) .. " roll1=" .. tostring(self.DiceRollTable ~= nil) .. " roll2=" .. tostring(self.DiceRollTable2 ~= nil) .. " rollDelay=" .. tostring(self.DiceRollDelay) .. " resultDelay=" .. tostring(self.DiceResultDelay))
 	end
 end
 

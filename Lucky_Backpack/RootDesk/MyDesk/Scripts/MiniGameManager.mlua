@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script MiniGameManager extends Component
 
 	property any gameManager = nil
@@ -210,6 +210,7 @@ script MiniGameManager extends Component
 			self.uiMain:UpdateUI()
 		end
 
+		log("[MiniGameManager-DEBUG] PlayOddEven: rollDisplayDuration=" .. tostring(self.rollDisplayDuration) .. " resultDisplayDuration=" .. tostring(self.resultDisplayDuration) .. " subState=" .. tostring(self.subState))
 		local rollDelay = self.rollDisplayDuration or 1
 		if rollDelay < 0 then
 			rollDelay = 0

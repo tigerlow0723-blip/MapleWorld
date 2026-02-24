@@ -1103,8 +1103,6 @@
                 "EntityId": "e10c4931-d02e-4533-a2e6-38f313f16049",
                 "Version2": false
               },
-              "stage5DiceRollRUID1": "/ui/UIGroup/stage_5_game/diceimg",
-              "stage5DiceRollRUID2": "/ui/UIGroup/stage_5_game/diceimg_2",
               "uiClear": {
                 "tempEntityId": null,
                 "IsRelative": false,
