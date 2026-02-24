@@ -31,55 +31,39 @@ script UIMain extends Component
 
 	property Entity btnBattleStart = nil
 
+	property Entity uiPlayerTurn = nil
+
+	property Entity uiMonsterTurn = nil
+
+	property Entity uiBossTurn = nil
+
 	property Entity txtStage = nil
 
 	property Entity uiStage5_1 = nil
-
 	property Entity uiStage5_2 = nil
-
 	property Entity uiStage5_3 = nil
-
 	property Entity btnPlayOddEven = nil
-
 	property Entity btnEnterShop = nil
-
 	property Entity btnExitMiniGame = nil
-
 	property Entity btnOdd = nil
-
 	property Entity btnEven = nil
-
 	property Entity btnBackFromPlay = nil
-
 	property Entity btnSellAllOre = nil
-
 	property Entity btnSellAllGoldBar = nil
-
 	property Entity btnBackFromShop = nil
-
 	property Entity uiClear = nil
-
 	property Entity uiFail = nil
-
 	property Entity btnRetry = nil
-
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
-
 	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
-
 	property any gameManager = nil
-
 	property any battleManager = nil
-
 	property any playerManager = nil
-
 	property any scrollInventoryUI = nil
-
 	property any rewardUI = nil
-
 	property integer targetMonsterIdx = 0
-	
 	property table monsterSliders = {}
+	property integer lastBossPhase = 0
 
 	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
 		log("[UIMain] InitializeUI 호출됨")
@@ -237,7 +221,16 @@ script UIMain extends Component
 		
 		-- 타겟 강조 갱신 (몬스터가 죽거나 스테이지가 바뀌었을 때 등을 대비)
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
-			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+			local canShowTarget = false
+			if self.gameManager ~= nil and self.gameManager.gamePhase == "Battle" and self.targetMonsterIdx ~= nil and self.targetMonsterIdx > 0 then
+				canShowTarget = true
+			end
+			
+			if canShowTarget == true then
+				self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+			else
+				self.battleManager.monsterManager:UpdateTargetHighlight(0)
+			end
 		end
 		
 		-- 1. HP 게이지 업데이트
@@ -304,32 +297,62 @@ script UIMain extends Component
 				end
 				
 				if boss ~= nil then
-					local maxTotalHP = boss.hpPhase1 + boss.hpPhase2 + boss.hpPhase3
-					local currentTotalHP = 0
+					local currentMaxHP = boss.maxHP
+					local currentHP = boss.currentHP
+					local currentPhase = monsterMgr.currentBossPhase
 					
-					if monsterMgr.currentBossPhase == 1 then
-						currentTotalHP = boss.currentHP + boss.hpPhase2 + boss.hpPhase3
-					elseif monsterMgr.currentBossPhase == 2 then
-						currentTotalHP = boss.currentHP + boss.hpPhase3
-					elseif monsterMgr.currentBossPhase == 3 then
-						currentTotalHP = boss.currentHP
+					-- Detect if boss phase just changed so we can force animation from 0
+					local phaseChanged = false
+					if self.lastBossPhase == nil or self.lastBossPhase ~= currentPhase then
+						self.lastBossPhase = currentPhase
+						phaseChanged = true
 					end
 					
 					if self.sliderBossHP ~= nil then
 						local slider = self.sliderBossHP.SliderComponent
 						if slider ~= nil then
-							if maxTotalHP > 0 then
-								slider.Value = currentTotalHP / maxTotalHP
-							else
-								slider.Value = 0
+							local targetRatio = 0
+							if currentMaxHP > 0 then
+								targetRatio = currentHP / currentMaxHP
 							end
-						end
-					end
-					
-					if self.txtBossHP ~= nil then
-						local txt = self.txtBossHP.TextComponent
-						if txt ~= nil then
-							txt.Text = math.ceil(currentTotalHP) .. "/" .. math.ceil(maxTotalHP)
+							
+							if phaseChanged then
+								slider.Value = 0 -- Force start from 0
+							end
+							
+							-- If the difference is significant (e.g., phase change full heal), animate it
+							if phaseChanged or math.abs(slider.Value - targetRatio) > 0.05 then
+								local startVal = slider.Value
+								-- Text Animation state capture
+								local startHPVal = startVal * currentMaxHP
+								
+								_TweenLogic:PlayTween(0, 1, 1.0, EaseType.QuadEaseOut, function(t)
+									if _EntityService:IsValid(self.sliderBossHP) then
+										local s = self.sliderBossHP.SliderComponent
+										if s ~= nil then
+											-- Lerp the slider
+											s.Value = startVal + (targetRatio - startVal) * t
+										end
+									end
+									
+									if self.txtBossHP ~= nil and _EntityService:IsValid(self.txtBossHP) then
+										local txt = self.txtBossHP.TextComponent
+										if txt ~= nil then
+											-- Lerp the text
+											local animHP = startHPVal + (currentHP - startHPVal) * t
+											txt.Text = math.ceil(animHP) .. "/" .. math.ceil(currentMaxHP)
+										end
+									end
+								end)
+							else
+								slider.Value = targetRatio
+								if self.txtBossHP ~= nil then
+									local txt = self.txtBossHP.TextComponent
+									if txt ~= nil then
+										txt.Text = math.ceil(currentHP) .. "/" .. math.ceil(currentMaxHP)
+									end
+								end
+							end
 						end
 					end
 				else
@@ -368,6 +391,36 @@ script UIMain extends Component
 				isPlayerTurn = true
 			end
 			self.btnTurnEnd.Enable = isPlayerTurn
+		end
+		
+		-- Turn Indicator UI Control
+		if phase == "Battle" and self.battleManager ~= nil then
+			local currentTurn = self.battleManager.currentTurn
+			if self.uiPlayerTurn ~= nil then
+				self.uiPlayerTurn.Enable = (currentTurn == "Player")
+			end
+			
+			local isBossBattle = false
+			if self.battleManager.monsterManager ~= nil and self.battleManager.monsterManager.isBossBattle then
+				isBossBattle = true
+			end
+			
+			if currentTurn == "Monster" then
+				if isBossBattle then
+					if self.uiBossTurn ~= nil then self.uiBossTurn.Enable = true end
+					if self.uiMonsterTurn ~= nil then self.uiMonsterTurn.Enable = false end
+				else
+					if self.uiBossTurn ~= nil then self.uiBossTurn.Enable = false end
+					if self.uiMonsterTurn ~= nil then self.uiMonsterTurn.Enable = true end
+				end
+			else
+				if self.uiBossTurn ~= nil then self.uiBossTurn.Enable = false end
+				if self.uiMonsterTurn ~= nil then self.uiMonsterTurn.Enable = false end
+			end
+		else
+			if self.uiPlayerTurn ~= nil then self.uiPlayerTurn.Enable = false end
+			if self.uiMonsterTurn ~= nil then self.uiMonsterTurn.Enable = false end
+			if self.uiBossTurn ~= nil then self.uiBossTurn.Enable = false end
 		end
 		
 		-- 4. 미니게임 서브 메뉴 가시성 제어

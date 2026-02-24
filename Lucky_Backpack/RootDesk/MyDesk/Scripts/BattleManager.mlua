@@ -25,6 +25,8 @@ script BattleManager extends Component
 
 	property table playerDotEffects = {}
 
+	property integer deferredTargetInitTimerId = 0
+
 	method void RefreshUI()
 		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
 			self.gameManager.uiMain:UpdateUI()
@@ -148,14 +150,7 @@ script BattleManager extends Component
 			self.monsterManager:SpawnMonsters(stageId, self.dataManager)
 		end
 		
-		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil and self.monsterManager ~= nil then
-			local firstTarget = self.monsterManager:GetFirstAliveMonsterIndex()
-			if firstTarget <= 0 then
-				firstTarget = 1
-			end
-			self.gameManager.uiMain.targetMonsterIdx = firstTarget
-			self.monsterManager:UpdateTargetHighlight(firstTarget)
-		end
+		self:BeginDeferredTargetInit()
 		
 		--
 		self.playerManager:RestoreCost()
@@ -164,6 +159,47 @@ script BattleManager extends Component
 		--
 		self.currentTurn = "Player"
 		log("[BattleManager] >>> Player Turn Start <<<")
+	end
+
+	method void BeginDeferredTargetInit()
+		if self.monsterManager == nil or self.gameManager == nil or self.gameManager.uiMain == nil then
+			return
+		end
+		
+		self.gameManager.uiMain.targetMonsterIdx = 0
+		self.monsterManager:UpdateTargetHighlight(0)
+		if self.deferredTargetInitTimerId > 0 then
+			_TimerService:ClearTimer(self.deferredTargetInitTimerId)
+			self.deferredTargetInitTimerId = 0
+		end
+		
+		local tryInit = nil
+		tryInit = function()
+			if self.battleState ~= "Battle" then
+				self.deferredTargetInitTimerId = 0
+				return
+			end
+			
+			local ready = true
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil then
+				ready = self.monsterManager:IsSpawnEntranceFinished()
+			end
+			
+			if not ready then
+				self.deferredTargetInitTimerId = _TimerService:SetTimerOnce(tryInit, 0.05)
+				return
+			end
+			
+			local firstTarget = self.monsterManager:GetFirstAliveMonsterIndex()
+			if firstTarget <= 0 then
+				firstTarget = 1
+			end
+			self.gameManager.uiMain.targetMonsterIdx = firstTarget
+			self.monsterManager:UpdateTargetHighlight(firstTarget)
+			self.deferredTargetInitTimerId = 0
+		end
+		
+		tryInit()
 	end
 
 	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
@@ -699,6 +735,14 @@ script BattleManager extends Component
 		if self.monsterTurnTimerId > 0 then
 			_TimerService:ClearTimer(self.monsterTurnTimerId)
 			self.monsterTurnTimerId = 0
+		end
+		if self.deferredTargetInitTimerId > 0 then
+			_TimerService:ClearTimer(self.deferredTargetInitTimerId)
+			self.deferredTargetInitTimerId = 0
+		end
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil and self.monsterManager ~= nil then
+			self.gameManager.uiMain.targetMonsterIdx = 0
+			self.monsterManager:UpdateTargetHighlight(0)
 		end
 		
 		log("========================================")
