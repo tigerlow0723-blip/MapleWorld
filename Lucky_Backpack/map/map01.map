@@ -1019,6 +1019,12 @@
                 "EntityId": "90a7c34d-c761-44a8-bffb-07f814ac4113",
                 "Version2": false
               },
+              "uiStage5_game": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "22b69d11-98bd-48b0-bbd8-97e9d6a8c847",
+                "Version2": false
+              },
               "btnPlayOddEven": {
                 "tempEntityId": null,
                 "IsRelative": false,
@@ -1052,13 +1058,13 @@
               "btnBackFromPlay": {
                 "tempEntityId": null,
                 "IsRelative": false,
-                "EntityId": "f5cc518f-8b3f-4cd7-a8a8-e3733be33d99",
+                "EntityId": "3fd77465-c684-4941-aef6-62036e7939e6",
                 "Version2": false
               },
               "btnSellAllOre": {
                 "tempEntityId": null,
                 "IsRelative": false,
-                "EntityId": "1fb1ab1c-e3c4-4a42-9ba0-0b0746abe6e9",
+                "EntityId": "549a5bea-dd31-4201-ad4c-0959d03e80df",
                 "Version2": false
               },
               "btnSellAllGoldBar": {
@@ -1073,6 +1079,32 @@
                 "EntityId": "3fd77465-c684-4941-aef6-62036e7939e6",
                 "Version2": false
               },
+              "stage5DiceImageEntity": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "7379dc9b-fbf7-487c-89e1-db93e05c85d4",
+                "Version2": false
+              },
+              "stage5DiceImageEntity2": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "d1b7ea03-2815-4e86-ac54-cb5fba286324",
+                "Version2": false
+              },
+              "stage5DiceRollEntity": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "9311e7f2-2f44-4735-9f18-222aafdb79f3",
+                "Version2": false
+              },
+              "stage5DiceRollEntity2": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "e10c4931-d02e-4533-a2e6-38f313f16049",
+                "Version2": false
+              },
+              "stage5DiceRollRUID1": "/ui/UIGroup/stage_5_game/diceimg",
+              "stage5DiceRollRUID2": "/ui/UIGroup/stage_5_game/diceimg_2",
               "uiClear": {
                 "tempEntityId": null,
                 "IsRelative": false,

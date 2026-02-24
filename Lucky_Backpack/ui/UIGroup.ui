@@ -5952,6 +5952,398 @@
         }
       },
       {
+        "id": "22b69d11-98bd-48b0-bbd8-97e9d6a8c847",
+        "path": "/ui/UIGroup/stage_5_game",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "stage_5_game",
+          "path": "/ui/UIGroup/stage_5_game",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 13,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "22b69d11-98bd-48b0-bbd8-97e9d6a8c847",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 491.206848,
+                "y": 413.881775
+              },
+              "OffsetMin": {
+                "x": -411.607422,
+                "y": 40.9704132
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 902.8143,
+                "y": 372.911377
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 39.7997,
+                "y": 227.4261
+              },
+              "Position": {
+                "x": 39.7997,
+                "y": 227.4261,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "9311e7f2-2f44-4735-9f18-222aafdb79f3",
+        "path": "/ui/UIGroup/stage_5_game/rollani",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "rollani",
+          "path": "/ui/UIGroup/stage_5_game/rollani",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "9311e7f2-2f44-4735-9f18-222aafdb79f3",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -48.0396576,
+                "y": 136.096191
+              },
+              "OffsetMin": {
+                "x": -307.238342,
+                "y": -111.7308
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 259.1987,
+                "y": 247.827
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -177.639,
+                "y": 12.1827
+              },
+              "Position": {
+                "x": -177.639,
+                "y": 12.1827,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "7379dc9b-fbf7-487c-89e1-db93e05c85d4",
+        "path": "/ui/UIGroup/stage_5_game/diceimg",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "diceimg",
+          "path": "/ui/UIGroup/stage_5_game/diceimg",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "7379dc9b-fbf7-487c-89e1-db93e05c85d4",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -48.0396576,
+                "y": 136.096191
+              },
+              "OffsetMin": {
+                "x": -307.238342,
+                "y": -111.7308
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 259.1987,
+                "y": 247.827
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -177.639,
+                "y": 12.1827
+              },
+              "Position": {
+                "x": -177.639,
+                "y": 12.1827,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "e10c4931-d02e-4533-a2e6-38f313f16049",
+        "path": "/ui/UIGroup/stage_5_game/rollani_2",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "rollani_2",
+          "path": "/ui/UIGroup/stage_5_game/rollani_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "9311e7f2-2f44-4735-9f18-222aafdb79f3",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 252.917755,
+                "y": 136.096191
+              },
+              "OffsetMin": {
+                "x": -6.280945,
+                "y": -111.7308
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 259.1987,
+                "y": 247.827
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 123.318405,
+                "y": 12.1827
+              },
+              "Position": {
+                "x": 123.318405,
+                "y": 12.1827,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "d1b7ea03-2815-4e86-ac54-cb5fba286324",
+        "path": "/ui/UIGroup/stage_5_game/diceimg_2",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "diceimg_2",
+          "path": "/ui/UIGroup/stage_5_game/diceimg_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 3,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "7379dc9b-fbf7-487c-89e1-db93e05c85d4",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 252.917755,
+                "y": 136.096191
+              },
+              "OffsetMin": {
+                "x": -6.280945,
+                "y": -111.7308
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 259.1987,
+                "y": 247.827
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 123.318405,
+                "y": 12.1827
+              },
+              "Position": {
+                "x": 123.318405,
+                "y": 12.1827,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
         "id": "54a2c8e0-1ccd-4697-b61b-c267afb572f7",
         "path": "/ui/UIGroup/ShopPanel",
         "componentNames": "MOD.Core.UITransformComponent,script.ShopUI",
@@ -5962,7 +6354,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 13,
+          "displayOrder": 14,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -9339,7 +9731,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 14,
+          "displayOrder": 15,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -9421,7 +9813,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 15,
+          "displayOrder": 16,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -9788,7 +10180,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 16,
+          "displayOrder": 17,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -10353,7 +10745,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 17,
+          "displayOrder": 18,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -11151,7 +11543,7 @@
           "enable": false,
           "visible": true,
           "localize": true,
-          "displayOrder": 18,
+          "displayOrder": 19,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -13237,7 +13629,7 @@
           "enable": false,
           "visible": true,
           "localize": true,
-          "displayOrder": 19,
+          "displayOrder": 20,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -13320,7 +13712,7 @@
           "enable": false,
           "visible": true,
           "localize": true,
-          "displayOrder": 20,
+          "displayOrder": 21,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -13559,7 +13951,7 @@
           "enable": false,
           "visible": true,
           "localize": true,
-          "displayOrder": 21,
+          "displayOrder": 22,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -13969,7 +14361,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 22,
+          "displayOrder": 23,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -14068,7 +14460,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 23,
+          "displayOrder": 24,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -14167,7 +14559,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 24,
+          "displayOrder": 25,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
@@ -14267,7 +14659,7 @@
           "enable": true,
           "visible": false,
           "localize": true,
-          "displayOrder": 25,
+          "displayOrder": 26,
           "pathConstraints": "///",
           "revision": 1,
           "origin": {
