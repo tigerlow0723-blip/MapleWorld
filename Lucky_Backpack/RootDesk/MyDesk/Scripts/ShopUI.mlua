@@ -428,15 +428,10 @@ script ShopUI extends Component
 		        imageRenderer = cardEntity.SpriteGUIRendererComponent
 		    end
 		
-		    local bgRenderer = cardEntity.SpriteGUIRendererComponent
-		
-		    if itemData == nil then
-		        if bgRenderer ~= nil then
-		            bgRenderer.Color = Color(0.85, 0.85, 0.85, 1)
-		        end
-		        if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
-		            txtNameEntity.TextComponent.Text = "Sold Out"
-		            txtNameEntity.TextComponent.FontColor = Color(0.3, 0.3, 0.3, 1)
+	    if itemData == nil then
+	        if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
+	            txtNameEntity.TextComponent.Text = "Sold Out"
+	            txtNameEntity.TextComponent.FontColor = Color(0.3, 0.3, 0.3, 1)
 		        end
 		        if txtPriceEntity ~= nil and txtPriceEntity.TextComponent ~= nil then
 		            txtPriceEntity.TextComponent.Text = ""
@@ -447,14 +442,10 @@ script ShopUI extends Component
 		        return
 		    end
 		
-		    if bgRenderer ~= nil then
-		        bgRenderer.Color = self:GetCardBackgroundColor(itemData)
-		    end
-		
-		    if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
-		        local displayName = itemData.name or ""
-		        if displayName == "" then displayName = "Unknown" end
-		        txtNameEntity.TextComponent.Text = displayName
+	    if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
+	        local displayName = itemData.name or ""
+	        if displayName == "" then displayName = "Unknown" end
+	        txtNameEntity.TextComponent.Text = displayName
 		        txtNameEntity.TextComponent.FontColor = Color(0, 0, 0, 1)
 		    end
 		
@@ -472,22 +463,6 @@ script ShopUI extends Component
 		            imageRenderer.ImageRUID = ""
 		            imageRenderer.Color = Color(1, 1, 1, 0)
 		        end
-		    end
-	end
-
-	@ExecSpace("ClientOnly")
-	method Color GetCardBackgroundColor(table itemData)
-		    if itemData == nil then
-		        return Color(1, 1, 1, 1)
-		    end
-		
-		    local itemType = tostring(itemData.type or "")
-		    if itemType == "weapon" then
-		        return Color(0.62, 0.86, 1.0, 1)
-		    elseif itemType == "armor" then
-		        return Color(0.56, 0.93, 0.56, 1)
-		    else
-		        return Color(1.0, 0.93, 0.52, 1)
 		    end
 	end
 
@@ -541,11 +516,22 @@ script ShopUI extends Component
 		        return
 		    end
 		
-		    local purchasedItemId = tonumber(itemData.id) or 0
-		    if purchasedItemId == 9 or purchasedItemId == 10 then
-		        self.playerManager:AddScroll(purchasedItemId, 1)
-		        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))
-		    else
+	    local purchasedItemId = tonumber(itemData.id) or 0
+	    local isPorkItem = (purchasedItemId == 11 or purchasedItemId == 12) and (itemData.type == "consumable")
+	    if isPorkItem then
+	        local hpPercent = tonumber(itemData.hpPercent) or 0
+	        if hpPercent > 0 then
+	            local maxHp = tonumber(self.playerManager.maxHP) or 0
+	            local healAmount = maxHp * (hpPercent / 100.0)
+	            if healAmount > 0 then
+	                self.playerManager:Heal(healAmount)
+	            end
+	        end
+	        log("[ShopUI] Pork immediately consumed upon purchase. itemId: " .. tostring(purchasedItemId))
+	    elseif purchasedItemId == 9 or purchasedItemId == 10 then
+	        self.playerManager:AddScroll(purchasedItemId, 1)
+	        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))
+	    else
 		        if self.itemDisplayArea ~= nil then
 		            if self.itemDisplayArea.Entity ~= nil then
 		                self.itemDisplayArea.Entity:SetEnable(true)
