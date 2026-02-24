@@ -312,6 +312,21 @@ script BattleManager extends Component
 			return
 		end
 		
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot act while monsters are spawning.")
+				return
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot act while boss is changing phases.")
+				return
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot act while monsters are dying.")
+				return
+			end
+		end
+		
 		if self.playerManager.isDead == true then
 			return
 		end
@@ -443,6 +458,21 @@ script BattleManager extends Component
 			return false
 		end
 		
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot act while monsters are spawning.")
+				return false
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot act while boss is changing phases.")
+				return false
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot act while monsters are dying.")
+				return false
+			end
+		end
+		
 		if self.playerManager == nil or self.playerManager.isDead == true then
 			return false
 		end
@@ -492,6 +522,20 @@ script BattleManager extends Component
 	method boolean OnPlayerUsePotionByComponent(any potionComp)
 		if self.currentTurn ~= "Player" then
 			return false
+		end
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot act while monsters are spawning.")
+				return false
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot act while boss is changing phases.")
+				return false
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot act while monsters are dying.")
+				return false
+			end
 		end
 		if self.playerManager == nil or self.playerManager.isDead == true then
 			return false
@@ -562,6 +606,20 @@ script BattleManager extends Component
 	method boolean OnPlayerUseArmorByComponent(any armorComp)
 		if self.currentTurn ~= "Player" then
 			return false
+		end
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot act while monsters are spawning.")
+				return false
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot act while boss is changing phases.")
+				return false
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot act while monsters are dying.")
+				return false
+			end
 		end
 		if self.playerManager == nil or self.playerManager.isDead == true then
 			return false
@@ -708,6 +766,20 @@ script BattleManager extends Component
 		if self.currentTurn ~= "Player" then
 			return
 		end
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot act while monsters are spawning.")
+				return
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot act while boss is changing phases.")
+				return
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot act while monsters are dying.")
+				return
+			end
+		end
 		if self.monsterManager == nil then
 			return
 		end
@@ -795,6 +867,21 @@ script BattleManager extends Component
 	method void EndPlayerTurn()
 		if self.currentTurn ~= "Player" then
 			return
+		end
+		
+		if self.monsterManager ~= nil then
+			if self.monsterManager.IsSpawnEntranceFinished ~= nil and self.monsterManager:IsSpawnEntranceFinished() == false then
+				log("[BattleManager] Cannot pass turn while monsters are spawning.")
+				return
+			end
+			if self.monsterManager.isPhaseTransitioning == true then
+				log("[BattleManager] Cannot pass turn while boss is changing phases.")
+				return
+			end
+			if self.monsterManager.isDyingAnimating == true then
+				log("[BattleManager] Cannot pass turn while monsters are dying.")
+				return
+			end
 		end
 		
 		log("[BattleManager] >>> Player Turn End -> Monster Turn Start <<<")

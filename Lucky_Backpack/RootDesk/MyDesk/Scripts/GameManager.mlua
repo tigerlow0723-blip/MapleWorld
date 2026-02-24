@@ -178,11 +178,14 @@ script GameManager extends Component
 		_TimerService:SetTimerOnce(initBgFunc, 0.1)
 		
 		local initFunc = function()
-			log("[GameManager] Auto-start timer executing. Attempting StartGame...")
-			self:StartGame("War")
+			log("[GameManager] Initialization complete. Showing Main Menu.")
+			self.gameState = "Title"
+			if self.uiMain ~= nil and self.uiMain.ShowMainMenu ~= nil then
+				self.uiMain:ShowMainMenu()
+			end
 		end
 		_TimerService:SetTimerOnce(initFunc, 1.0)
-		log("[GameManager] Init complete. 1 sec auto-start timer set.")
+		log("[GameManager] Init complete. 1 sec timer set to show Main Menu.")
 	end
 
 	method void ResolveRewardUI()
@@ -449,11 +452,9 @@ script GameManager extends Component
 		self:QueueStageEntryCinematic()
 	end
 
-	@ExecSpace("ClientOnly")
+	@ExecSpace("Client")
 	method void QueueStageEntryCinematic()
-		if not self:IsClient() then
-			return
-		end
+		log("[GameManager] QueueStageEntryCinematic called")
 		
 		local delay = self.stageEntryCinematicDelay or 0
 		if delay <= 0 then
@@ -482,6 +483,7 @@ script GameManager extends Component
 	method any ResolveStagePlayerEntity()
 		local player = _UserService.LocalPlayer
 		if player == nil then
+			log_warning("[GameManager] ResolveStagePlayerEntity: _UserService.LocalPlayer is nil")
 			return nil
 		end
 		
@@ -601,9 +603,7 @@ script GameManager extends Component
 
 	@ExecSpace("ClientOnly")
 	method void PlayPlayerStageIntro()
-		if not self:IsClient() then
-			return
-		end
+		log("[GameManager] PlayPlayerStageIntro started")
 		
 		local player = self:ResolveStagePlayerEntity()
 		if player == nil or player.TransformComponent == nil then
@@ -673,11 +673,8 @@ script GameManager extends Component
 		_TimerService:SetTimerOnce(moveStep, stepDelay)
 	end
 
-	@ExecSpace("ClientOnly")
+	@ExecSpace("Client")
 	method void RestorePlayerToStageAnchor()
-		if not self:IsClient() then
-			return
-		end
 		if self.hasStagePlayerAnchor ~= true then
 			return
 		end
@@ -716,9 +713,7 @@ script GameManager extends Component
 
 	@ExecSpace("ClientOnly")
 	method void PlayPlayerStageOutro()
-		if not self:IsClient() then
-			return
-		end
+		log("[GameManager] PlayPlayerStageOutro started")
 		
 		local player = self:ResolveStagePlayerEntity()
 		if player == nil or player.TransformComponent == nil then
@@ -783,9 +778,7 @@ script GameManager extends Component
 	end
 
 	method void AdvanceStageAfterShopExit()
-		if self:IsClient() then
-			self:RestorePlayerToStageAnchor()
-		end
+		self:RestorePlayerToStageAnchor()
 		
 		self.currentStage += 1
 		if self.currentStage > 10 then
@@ -961,7 +954,7 @@ script GameManager extends Component
 	method void EnterMiniGameShop()
 		log("[GameManager] === Enter Stage 5 mini-game shop ===")
 		if self.miniGameManager == nil then
-			self:OnStageComplete()
+			self:CloseShop()
 			return
 		end
 		
@@ -970,9 +963,10 @@ script GameManager extends Component
 			log("[GameManager] No golden ore available.")
 			_UIToast:ShowMessage("No golden ore available.")
 			local nextFunc = function()
-				self:OnStageComplete()
+				self:CloseShop()
 			end
-			_TimerService:SetTimerOnce(nextFunc, 1.5)
+			local introDuration = (self.stageIntroPlayerWalkDuration or 1) + (self.stageEntryCinematicDelay or 0.05)
+			_TimerService:SetTimerOnce(nextFunc, introDuration + 1.5)
 		else
 			self.gamePhase = "MiniGame"
 			self.miniGameManager:StartMiniGamePhase()
@@ -1055,10 +1049,7 @@ script GameManager extends Component
 			shopPanel:SetVisible(false)
 		end
 
-		if self:IsClient() then
-			self:PlayStageFadeOut()
-			self:PlayPlayerStageOutro()
-		end
+		self:ClientPlayShopOutro()
 		
 		local transitionDelay = self.stageOutroFadeDuration
 		if transitionDelay == nil or transitionDelay < 0 then
@@ -1075,6 +1066,13 @@ script GameManager extends Component
 	end
 
 
+
+	@ExecSpace("Client")
+	method void ClientPlayShopOutro()
+		log("[GameManager] ClientPlayShopOutro called")
+		self:PlayStageFadeOut()
+		self:PlayPlayerStageOutro()
+	end
 
 	method void OnStageComplete()
 		self.currentStage += 1
