@@ -211,9 +211,7 @@ script ShopUI extends Component
 		        local price = math.max(0, tonumber(itemData.price) or tonumber(itemData.cost) or 0)
 		        local minAtk = tonumber(itemData.minAtk) or tonumber(itemData.min_atk) or 0
 		        local maxAtk = tonumber(itemData.maxAtk) or tonumber(itemData.max_atk) or 0
-		        local hp = tonumber(itemData.hp) or 0
-		        local hpPercent = tonumber(itemData.hpPercent) or 0
-		        local isRewardDrop = tonumber(itemData.isRewardDrop) or 1
+		        local itemSpawnGroup = tonumber(itemData.spawnGroup) or 1
 		
 		        if itemType == "scroll" then
 		            local hasAtkRange = (minAtk > 0 or maxAtk > 0)
@@ -264,7 +262,7 @@ script ShopUI extends Component
 		                end
 		            end
 		        elseif itemType == "consumable" then
-		            if isRewardDrop == 0 and (hp > 0 or hpPercent > 0) then
+		            if itemSpawnGroup == 0 then
 		                if slots.shopConsumable == nil then
 		                    slots.shopConsumable = itemData
 		                end
@@ -583,11 +581,8 @@ script ShopUI extends Component
 		        return false
 		    end
 		
-		    local isShopOnly = ((tonumber(itemData.isRewardDrop) or 1) == 0)
-		    local hpValue = tonumber(itemData.hp) or 0
-		    local hpPercentValue = tonumber(itemData.hpPercent) or 0
-		    local isRecoverItem = (hpValue > 0) or (hpPercentValue > 0)
-		    return isShopOnly and isRecoverItem
+		    local itemSpawnGroup = tonumber(itemData.spawnGroup) or 1
+		    return itemSpawnGroup == 0
 	end
 
 	@ExecSpace("ClientOnly")

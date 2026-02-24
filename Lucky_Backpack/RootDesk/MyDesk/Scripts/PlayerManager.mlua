@@ -550,21 +550,18 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
-				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
-				if not isRecoveryItem then
+				local itemType = string.lower(tostring(item.type or ""))
+				local isArmor = (itemType == "armor")
+				if isArmor then
 					stats.itemHp += item.hp or 0
 					stats.itemHpPercent += item.hpPercent or 0
-				end
-				
-				if item.type ~= "weapon" then
 					stats.itemAtk += item.atk or 0
 					stats.itemAtkPercent += item.atkPercent or 0
 					stats.itemAcc += item.accPercent or 0
 					stats.itemCritRate += item.critRate or 0
 					stats.itemCritDmg += item.critDmg or 0
+					stats.itemDef += item.def or 0
 				end
-				
-				stats.itemDef += item.def or 0
 			end
 		end
 		
