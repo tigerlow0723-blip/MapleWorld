@@ -604,9 +604,12 @@ script BattleManager extends Component
 		local critDmgBuff = tonumber(armorComp.armorCritDmg) or 0
 		local weaponCostBuff = tonumber(armorComp.armorWeaponCost) or 0
 		local potionHpRecoveryBuff = tonumber(armorComp.armorHpRecoveryPercent) or 0
+		local sourceRow = tonumber(armorComp.gridRow) or 0
+		local sourceCol = tonumber(armorComp.gridCol) or 0
 		
 		local targets = self:CollectAdjacentInventoryItems(armorComp)
 		local appliedCount = 0
+		local debugEntries = {}
 		for i = 1, #targets do
 			local targetComp = targets[i]
 			if targetComp == nil then
@@ -614,18 +617,39 @@ script BattleManager extends Component
 			end
 			
 			local targetType = string.lower(tostring(targetComp.itemType or ""))
+			local targetItemId = tonumber(targetComp.itemId) or 0
+			local targetRow = tonumber(targetComp.gridRow) or 0
+			local targetCol = tonumber(targetComp.gridCol) or 0
 			if targetType == "weapon" then
 				targetComp.tempArmorAtkPercent = (tonumber(targetComp.tempArmorAtkPercent) or 0) + atkPercentBuff
 				targetComp.tempArmorCritRate = (tonumber(targetComp.tempArmorCritRate) or 0) + critRateBuff
 				targetComp.tempArmorCritDmg = (tonumber(targetComp.tempArmorCritDmg) or 0) + critDmgBuff
 				targetComp.tempArmorWeaponCost = (tonumber(targetComp.tempArmorWeaponCost) or 0) + weaponCostBuff
+				debugEntries[#debugEntries + 1] = "weapon id=" .. tostring(targetItemId)
+					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " atk%=" .. tostring(atkPercentBuff)
+					.. " critRate%=" .. tostring(critRateBuff)
+					.. " critDmg%=" .. tostring(critDmgBuff)
+					.. " weaponCost=" .. tostring(weaponCostBuff)
 				appliedCount += 1
 			elseif targetType == "potion" then
 				targetComp.tempArmorPotionHpPercent = (tonumber(targetComp.tempArmorPotionHpPercent) or 0) + potionHpRecoveryBuff
+				debugEntries[#debugEntries + 1] = "potion id=" .. tostring(targetItemId)
+					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " hpRecovery%=" .. tostring(potionHpRecoveryBuff)
 				appliedCount += 1
 			end
 		end
 		
+		local detailText = "no_adjacent_target"
+		if #debugEntries > 0 then
+			detailText = table.concat(debugEntries, " | ")
+		end
+		log("[ArmorSynergyDebug] sourceArmor id=" .. tostring(itemId)
+			.. " cell=(" .. tostring(sourceRow) .. "," .. tostring(sourceCol) .. ")"
+			.. " remain=" .. tostring(armorComp.armorRemainingCount)
+			.. " applied=" .. tostring(appliedCount)
+			.. " details=" .. detailText)
 		log("[BattleManager] Armor activated. itemId=" .. tostring(itemId) .. " targets=" .. tostring(appliedCount))
 		self:RefreshUI()
 		return true

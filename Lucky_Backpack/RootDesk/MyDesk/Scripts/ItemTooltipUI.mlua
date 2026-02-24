@@ -547,6 +547,26 @@ script ItemTooltipUI extends Component
 			appendLine("Crit Damage: " .. tostring(critDmg) .. "%")
 		end
 		
+		if itemType == "weapon" and itemComp ~= nil then
+			local armorAtkPercent = tonumber(itemComp.tempArmorAtkPercent) or 0
+			local armorCritRate = tonumber(itemComp.tempArmorCritRate) or 0
+			local armorCritDmg = tonumber(itemComp.tempArmorCritDmg) or 0
+			local armorWeaponCost = tonumber(itemComp.tempArmorWeaponCost) or 0
+			
+			if armorAtkPercent ~= 0 then
+				appendLine("<color=#FFD54F>Armor Synergy: ATK " .. self:FormatSignedPercent(armorAtkPercent) .. "</color>")
+			end
+			if armorCritRate ~= 0 then
+				appendLine("<color=#FFD54F>Armor Synergy: Crit Rate " .. self:FormatSignedPercent(armorCritRate) .. "</color>")
+			end
+			if armorCritDmg ~= 0 then
+				appendLine("<color=#FFD54F>Armor Synergy: Crit DMG " .. self:FormatSignedPercent(armorCritDmg) .. "</color>")
+			end
+			if armorWeaponCost ~= 0 then
+				appendLine("<color=#FFD54F>Armor Synergy: MP Cost " .. self:FormatSignedNumber(armorWeaponCost) .. "</color>")
+			end
+		end
+		
 		local cost = tonumber(itemData.cost) or 0
 		if itemType == "weapon" then
 			appendLine("<color=#87CEEB>MP Cost on Attack: " .. tostring(cost) .. "</color>")
