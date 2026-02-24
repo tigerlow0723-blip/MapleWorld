@@ -398,8 +398,10 @@ script ItemTooltipUI extends Component
 			return "Consumable"
 		elseif lower == "expand" then
 			return "Inventory Expansion"
-		elseif lower == "scroll" then
-			return "Scroll"
+		elseif lower == "atk_scroll" then
+			return "Attack Scroll"
+		elseif lower == "grade_scroll" then
+			return "Grade Scroll"
 		elseif lower == "goods" then
 			return "Goods/Material"
 		end
@@ -652,7 +654,7 @@ script ItemTooltipUI extends Component
 			return false
 		end
 		local itemType = string.lower(tostring(itemData.type or ""))
-		if itemType ~= "scroll" then
+		if itemType ~= "atk_scroll" then
 			return false
 		end
 		local minAtk = tonumber(itemData.minAtk) or 0

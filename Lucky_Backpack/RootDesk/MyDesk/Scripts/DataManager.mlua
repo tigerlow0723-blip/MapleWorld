@@ -238,8 +238,6 @@ script DataManager extends Component
 			headers["text"] = true
 			headers["imageRUID"] = true
 			headers["shapeMask"] = true
-			headers["isRewardDrop"] = true
-			headers["rewardDrop"] = true
 			return headers
 		end
 		
@@ -638,7 +636,6 @@ script DataManager extends Component
 								data.armorSynergyTarget = "none"
 							end
 						end
-						data.isRewardDrop = getNumber("isRewardDrop", "rewardDrop", 1)
 						data.imageRUID = getString("imageRUID", "")
 						data.grade = getString("grade", "")
 						data.nextUpgradeId = getNumber("next_upgrade_id", "", 0)

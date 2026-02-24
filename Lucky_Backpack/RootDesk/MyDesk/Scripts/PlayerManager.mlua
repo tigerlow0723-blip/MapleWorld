@@ -93,7 +93,7 @@ script PlayerManager extends Component
 			return result
 		end
 		local itemType = string.lower(tostring(itemData.type or ""))
-		if itemType ~= "scroll" then
+		if itemType ~= "atk_scroll" then
 			return result
 		end
 		local minAtk = tonumber(itemData.minAtk) or 0
@@ -550,21 +550,18 @@ script PlayerManager extends Component
 		for i = 1, #self.inventory do
 			local item = self.inventory[i]
 			if item ~= nil then
-				local isRecoveryItem = (item.type == "consumable") and ((item.hp or 0) > 0 or (item.hpPercent or 0) > 0)
-				if not isRecoveryItem then
+				local itemType = string.lower(tostring(item.type or ""))
+				local isArmor = (itemType == "armor")
+				if isArmor then
 					stats.itemHp += item.hp or 0
 					stats.itemHpPercent += item.hpPercent or 0
-				end
-				
-				if item.type ~= "weapon" then
 					stats.itemAtk += item.atk or 0
 					stats.itemAtkPercent += item.atkPercent or 0
 					stats.itemAcc += item.accPercent or 0
 					stats.itemCritRate += item.critRate or 0
 					stats.itemCritDmg += item.critDmg or 0
+					stats.itemDef += item.def or 0
 				end
-				
-				stats.itemDef += item.def or 0
 			end
 		end
 		
@@ -836,9 +833,9 @@ script PlayerManager extends Component
 			return
 		end
 		
-		if typeId == 9 then
+		if typeId == 10 then
 			self.scrollNormal = (self.scrollNormal or 0) + amount
-		elseif typeId == 10 then
+		elseif typeId == 11 then
 			self.scrollGuaranteed = (self.scrollGuaranteed or 0) + amount
 		else
 			return
@@ -854,9 +851,9 @@ script PlayerManager extends Component
 		end
 		
 		local current = 0
-		if typeId == 9 then
+		if typeId == 10 then
 			current = self.scrollNormal or 0
-		elseif typeId == 10 then
+		elseif typeId == 11 then
 			current = self.scrollGuaranteed or 0
 		else
 			return false
@@ -867,7 +864,7 @@ script PlayerManager extends Component
 			return false
 		end
 		
-		if typeId == 9 then
+		if typeId == 10 then
 			self.scrollNormal = current - amount
 		else
 			self.scrollGuaranteed = current - amount

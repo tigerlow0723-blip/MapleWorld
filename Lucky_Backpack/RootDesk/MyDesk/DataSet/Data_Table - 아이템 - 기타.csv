@@ -1,14 +1,14 @@
-﻿id,type,name,grade,cost,count,shapeMask,hp,hpPercent,atk,def,atkPercent,accPercent,critRate,critDmg,min_atk,max_atk,min_critRate,max_critRate,min_critDmg,max_critDmg,spawn_Group,spawn_rate,imageRUID,desc,text,price,isRewardDrop,rewardDrop
-2,expand,인벤토리 확장,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,2860136c06ab075439721c027de365af,인벤토리 확장,,,1,
-3,potion,빨간 물약,,1,,1,50,0,0,0,0,0,0,0,0,0,,,,,1,,323920d2805d4ec1aa85eca9e3e1cab2,기본 레어 회복 물약,,,1,
-4,potion,하얀 물약,,1,,1,75,0,0,0,0,0,0,0,0,0,,,,,1,,b8254e6cd0ba4b82b160e2f2c2cfd72a,기본 에픽 회복 물약,,,1,
-5,potion,엘릭서,,1,,1,0,50,0,0,0,0,0,0,0,0,,,,,1,,4fd08a6fa90b45448435cf22dba91c1f,기본 유니크 회복 물약,,,1,
-6,potion,파워 엘릭서,,1,,1,0,100,0,0,0,0,0,0,0,0,,,,,1,,6f7f0a4fadfe4c0cb7565a8bb187cf5e,기본 레전더리 회복 물약,,,1,
-7,scroll,하급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,20,,,,,1,,feeb87aba18243d4b15e853f63ee7b12,공격력 주문서,,100,1,
-8,scroll,중급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,40,,,,,1,,f46cf3b6cf104f9ba3ff2a4a331fd443,공격력 주문서,,500,1,
-9,scroll,상급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,100,,,,,1,,e4eecc56521f46ddad3885cc902b2cff,공격력 주문서,,2000,1,
-10,scroll,장비 등급 주문서,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,1,,e56a72e2e2ef400091c1fc5b70b0aa47,장비 등급 주문서,,50,1,
-11,scroll,장비 등급 확정 주문서,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,8aeb3c58f2b4453f8979556c4904ccf3,장비 등급 확정 주문서,,1500,1,
-12,consumable,돼지고기,,0,,1,0,25,0,0,0,0,0,0,0,0,,,,,0,,e3cc3e68f52f41c9bba92b0dd075ada5,상점 회복 음식,,150,0,
-13,goods,금의 원석,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,4bad190b58cf42ec9ea619b8060ba865,미니게임 재화,,500,1,
-14,goods,금괴,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,c23750942e9b4cf18c2b4aee246fadd0,미니게임 재화,,,0,
+﻿id,type,name,grade,cost,count,shapeMask,hp,hpPercent,atk,def,atkPercent,accPercent,critRate,critDmg,min_atk,max_atk,min_critRate,max_critRate,min_critDmg,max_critDmg,spawn_Group,spawn_rate,imageRUID,desc,text,price
+2,expand,인벤토리 확장,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,2,,2860136c06ab075439721c027de365af,인벤토리 확장,,
+3,potion,빨간 물약,,1,,1,50,0,0,0,0,0,0,0,0,0,,,,,1,,323920d2805d4ec1aa85eca9e3e1cab2,기본 레어 회복 물약,,
+4,potion,하얀 물약,,1,,1,75,0,0,0,0,0,0,0,0,0,,,,,1,,b8254e6cd0ba4b82b160e2f2c2cfd72a,기본 에픽 회복 물약,,
+5,potion,엘릭서,,1,,1,0,50,0,0,0,0,0,0,0,0,,,,,1,,4fd08a6fa90b45448435cf22dba91c1f,기본 유니크 회복 물약,,
+6,potion,파워 엘릭서,,1,,1,0,100,0,0,0,0,0,0,0,0,,,,,1,,6f7f0a4fadfe4c0cb7565a8bb187cf5e,기본 레전더리 회복 물약,,
+7,atk_scroll,하급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,20,,,,,1,,889fef99b18242e88104e898f3dc41fb,공격력 주문서,,100
+8,atk_scroll,중급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,40,,,,,1,,7f1e54e095ff452796e2113da1cf6981,공격력 주문서,,500
+9,atk_scroll,상급 무기 공격력 주문서,,0,,1,0,0,0,0,0,0,0,0,1,100,,,,,1,,3091201fce73475292daa3a32b21f755,공격력 주문서,,2000
+10,grade_scroll,장비 등급 주문서,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,1,,e56a72e2e2ef400091c1fc5b70b0aa47,장비 등급 주문서,,50
+11,grade_scroll,장비 등급 확정 주문서,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,8aeb3c58f2b4453f8979556c4904ccf3,장비 등급 확정 주문서,,1500
+12,consumable,돼지고기,,0,,1,0,25,0,0,0,0,0,0,0,0,,,,,0,,e3cc3e68f52f41c9bba92b0dd075ada5,상점 회복 음식,,150
+13,goods,금의 원석,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,4bad190b58cf42ec9ea619b8060ba865,미니게임 재화,,500
+14,goods,금괴,,0,,1,0,0,0,0,0,0,0,0,0,0,,,,,0,,c23750942e9b4cf18c2b4aee246fadd0,미니게임 재화,,

@@ -106,14 +106,14 @@ script ScrollInventoryUI extends Component
 	method void ConnectIconEvents()
 		if self.normalScrollIcon ~= nil and self.normalIconBound == false then
 			self.normalScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
-				self:BeginScrollDrag(9)
+				self:BeginScrollDrag(10)
 			end)
 			self.normalIconBound = true
 		end
 		
 		if self.guaranteedScrollIcon ~= nil and self.guaranteedIconBound == false then
 			self.guaranteedScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
-				self:BeginScrollDrag(10)
+				self:BeginScrollDrag(11)
 			end)
 			self.guaranteedIconBound = true
 		end
@@ -147,11 +147,11 @@ script ScrollInventoryUI extends Component
 		self:ResolveUIReferences()
 		local touchPoint = event.TouchPoint
 		if self:IsPointInsideEntityRect(self.normalScrollIcon, touchPoint) then
-			self:BeginScrollDrag(9)
+			self:BeginScrollDrag(10)
 			return
 		end
 		if self:IsPointInsideEntityRect(self.guaranteedScrollIcon, touchPoint) then
-			self:BeginScrollDrag(10)
+			self:BeginScrollDrag(11)
 			return
 		end
 	end
@@ -172,7 +172,7 @@ script ScrollInventoryUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void BeginScrollDrag(integer scrollId)
-		if scrollId ~= 9 and scrollId ~= 10 then
+		if scrollId ~= 10 and scrollId ~= 11 then
 			return
 		end
 		
@@ -187,9 +187,9 @@ script ScrollInventoryUI extends Component
 		end
 		
 		local iconEntity = nil
-		if scrollId == 9 then
+		if scrollId == 10 then
 			iconEntity = self.normalScrollIcon
-		elseif scrollId == 10 then
+		elseif scrollId == 11 then
 			iconEntity = self.guaranteedScrollIcon
 		end
 		if iconEntity == nil then
@@ -267,9 +267,9 @@ script ScrollInventoryUI extends Component
 			return 0
 		end
 		
-		if scrollId == 9 then
+		if scrollId == 10 then
 			return self.playerManager.scrollNormal or 0
-		elseif scrollId == 10 then
+		elseif scrollId == 11 then
 			return self.playerManager.scrollGuaranteed or 0
 		end
 		return 0
@@ -304,8 +304,8 @@ script ScrollInventoryUI extends Component
 		self:ResolveUIReferences()
 		self:ConnectIconEvents()
 		
-		local normalCount = self:GetScrollCount(9)
-		local guaranteedCount = self:GetScrollCount(10)
+		local normalCount = self:GetScrollCount(10)
+		local guaranteedCount = self:GetScrollCount(11)
 		
 		self:SetCountText(self.normalScrollText, normalCount)
 		self:SetCountText(self.guaranteedScrollText, guaranteedCount)
@@ -315,7 +315,7 @@ script ScrollInventoryUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void OnScrollDragAction(integer itemType, Vector2 touchPoint)
-		if itemType ~= 9 and itemType ~= 10 then
+		if itemType ~= 10 and itemType ~= 11 then
 			return
 		end
 		if touchPoint == nil then
@@ -448,7 +448,7 @@ script ScrollInventoryUI extends Component
 		end
 		
 		local successChance = 100
-		if scrollId == 9 then
+		if scrollId == 10 then
 			if weaponTarget.grade == "Rare" then
 				successChance = 20
 			elseif weaponTarget.grade == "Epic" then
@@ -458,7 +458,7 @@ script ScrollInventoryUI extends Component
 			else
 				successChance = 0
 			end
-		elseif scrollId == 10 then
+		elseif scrollId == 11 then
 			successChance = 100
 		else
 			return
