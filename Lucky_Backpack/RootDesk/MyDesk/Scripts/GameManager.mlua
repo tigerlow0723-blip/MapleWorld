@@ -41,6 +41,40 @@ script GameManager extends Component
 
 	property boolean canEndPreparation = false
 
+	property Entity stageFadeEntity = nil
+
+	property string stageFadePath = "/ui/UIGroup/StageFade"
+
+	property number stageFadeDuration = 1
+
+	property number stageFadeMaxAlpha = 0.65
+
+	property number stageIntroPlayerWalkDuration = 1
+
+	property number stageIntroPlayerOffsetX = 2.2
+
+	property integer stageIntroPlayerWalkSteps = 95
+
+	property number stageOutroFadeDuration = 1
+
+	property number stageOutroPlayerWalkDuration = 1
+
+	property number stageOutroPlayerOffsetX = 2.2
+
+	property integer stageOutroPlayerWalkSteps = 30
+
+	property boolean isStageTransitioning = false
+
+	property boolean hasStagePlayerAnchor = false
+
+	property number stagePlayerAnchorX = 0
+
+	property number stagePlayerAnchorY = 0
+
+	property boolean stageCinematicMoveWasEnabled = false
+
+	property boolean stageCinematicRigidWasEnabled = false
+
 	method void OnInitialize()
 		log("[GameManager] OnInitialize executed (Console check: Server/Client)")
 		
@@ -308,6 +342,8 @@ script GameManager extends Component
 		--
 		--
 		self:UpdateBackground()
+		self:PlayStageFadeIn()
+		self:PlayPlayerStageIntro()
 	end
 
 	method void ProceedToStage()
@@ -330,6 +366,400 @@ script GameManager extends Component
 		end
 		
 		self:UpdateBackground()
+		self:PlayStageFadeIn()
+		self:PlayPlayerStageIntro()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetEntityWorldPosition(any entity, number xPos, number yPos)
+		if entity == nil or entity.TransformComponent == nil then
+			return
+		end
+		local curPos = entity.TransformComponent.WorldPosition
+		entity.TransformComponent.WorldPosition = Vector3(xPos, yPos, curPos.z)
+		entity.TransformComponent.Position = Vector3(xPos, yPos, curPos.z)
+	end
+
+	@ExecSpace("ClientOnly")
+	method any ResolveStagePlayerEntity()
+		local player = _UserService.LocalPlayer
+		if player == nil then
+			return nil
+		end
+		
+		return player
+	end
+
+	@ExecSpace("ClientOnly")
+	method any ResolveStagePlayerAnimEntity(any playerRoot)
+		local target = playerRoot
+		if target == nil then
+			target = _UserService.LocalPlayer
+		end
+		if target == nil then
+			return nil
+		end
+		
+		local avatar = target.AvatarRendererComponent
+		if avatar ~= nil and avatar.GetBodyEntity ~= nil then
+			local body = avatar:GetBodyEntity()
+			if body ~= nil and body.TransformComponent ~= nil then
+				target = body
+			end
+		end
+		
+		return target
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginPlayerCinematic(any playerRoot)
+		if playerRoot == nil then
+			return
+		end
+		
+		local moveComp = playerRoot.MovementComponent
+		if moveComp ~= nil then
+			self.stageCinematicMoveWasEnabled = moveComp.Enable == true
+			moveComp.Enable = false
+		else
+			self.stageCinematicMoveWasEnabled = false
+		end
+		
+		local rigidComp = playerRoot.RigidbodyComponent
+		if rigidComp ~= nil then
+			self.stageCinematicRigidWasEnabled = rigidComp.Enable == true
+			rigidComp.Enable = false
+			rigidComp.MoveVelocity = Vector2.zero
+			rigidComp:SetForce(Vector2.zero)
+		else
+			self.stageCinematicRigidWasEnabled = false
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EndPlayerCinematic(any playerRoot)
+		if playerRoot == nil then
+			return
+		end
+		
+		local moveComp = playerRoot.MovementComponent
+		if moveComp ~= nil then
+			moveComp.Enable = self.stageCinematicMoveWasEnabled
+		end
+		
+		local rigidComp = playerRoot.RigidbodyComponent
+		if rigidComp ~= nil then
+			rigidComp.Enable = self.stageCinematicRigidWasEnabled
+			if rigidComp.Enable == true then
+				rigidComp.MoveVelocity = Vector2.zero
+				rigidComp:SetForce(Vector2.zero)
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayPlayerWalkAnim(any playerRoot)
+		if playerRoot == nil then
+			return
+		end
+		
+		local animTarget = self:ResolveStagePlayerAnimEntity(playerRoot)
+		if animTarget ~= nil then
+			pcall(function()
+				animTarget:SendEvent(ActionStateChangedEvent("walk1", "walk1", 1, SpriteAnimClipPlayType.Loop))
+			end)
+			
+			local stateAnim = animTarget.StateAnimationComponent
+			if stateAnim ~= nil then
+				pcall(function()
+					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("move", "stand"))
+				end)
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayPlayerStandAnim(any playerRoot)
+		if playerRoot == nil then
+			return
+		end
+		
+		local animTarget = self:ResolveStagePlayerAnimEntity(playerRoot)
+		if animTarget ~= nil then
+			pcall(function()
+				animTarget:SendEvent(ActionStateChangedEvent("stand1", "stand1", 1, SpriteAnimClipPlayType.Loop))
+			end)
+			
+			local stateAnim = animTarget.StateAnimationComponent
+			if stateAnim ~= nil then
+				pcall(function()
+					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("stand", "move"))
+				end)
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayPlayerStageIntro()
+		if not self:IsClient() then
+			return
+		end
+		
+		local player = self:ResolveStagePlayerEntity()
+		if player == nil or player.TransformComponent == nil then
+			return
+		end
+		
+		local duration = self.stageIntroPlayerWalkDuration or 0
+		local steps = self.stageIntroPlayerWalkSteps or 1
+		if steps <= 0 then
+			steps = 1
+		end
+		if duration <= 0 then
+			return
+		end
+		
+		local targetPos = player.TransformComponent.WorldPosition
+		self.stagePlayerAnchorX = targetPos.x
+		self.stagePlayerAnchorY = targetPos.y
+		self.hasStagePlayerAnchor = true
+
+		local startX = targetPos.x - (self.stageIntroPlayerOffsetX or 0)
+		local startY = targetPos.y
+		local stepDelay = duration / steps
+		local step = 0
+		
+		self:BeginPlayerCinematic(player)
+		self:SetEntityWorldPosition(player, startX, startY)
+		self:PlayPlayerWalkAnim(player)
+		
+		local moveStep = nil
+		moveStep = function()
+			local alivePlayer = self:ResolveStagePlayerEntity()
+			if alivePlayer == nil or alivePlayer.TransformComponent == nil then
+				return
+			end
+			
+			step += 1
+			local t = step / steps
+			if t > 1 then
+				t = 1
+			end
+			
+			local newX = startX + ((targetPos.x - startX) * t)
+			local newY = startY + ((targetPos.y - startY) * t)
+			self:SetEntityWorldPosition(alivePlayer, newX, newY)
+			
+			if step < steps then
+				_TimerService:SetTimerOnce(moveStep, stepDelay)
+			else
+				self:EndPlayerCinematic(alivePlayer)
+				self:PlayPlayerStandAnim(alivePlayer)
+			end
+		end
+		
+		_TimerService:SetTimerOnce(moveStep, stepDelay)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RestorePlayerToStageAnchor()
+		if not self:IsClient() then
+			return
+		end
+		if self.hasStagePlayerAnchor ~= true then
+			return
+		end
+		
+		local player = _UserService.LocalPlayer
+		player = self:ResolveStagePlayerEntity()
+		if player == nil then
+			return
+		end
+		
+		self:SetEntityWorldPosition(player, self.stagePlayerAnchorX, self.stagePlayerAnchorY)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayStageFadeOut()
+		local fadeEntity = self:ResolveStageFadeEntity()
+		if fadeEntity == nil then
+			return
+		end
+		
+		local maxAlpha = self.stageFadeMaxAlpha or 1
+		if maxAlpha < 0 then maxAlpha = 0 end
+		if maxAlpha > 1 then maxAlpha = 1 end
+		
+		self:SetStageFadeAlpha(0)
+		local duration = self.stageOutroFadeDuration
+		if duration == nil or duration <= 0 then
+			self:SetStageFadeAlpha(maxAlpha)
+			return
+		end
+		
+		_TweenLogic:PlayTween(0, maxAlpha, duration, EaseType.Linear, function(value)
+			self:SetStageFadeAlpha(value)
+		end)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayPlayerStageOutro()
+		if not self:IsClient() then
+			return
+		end
+		
+		local player = self:ResolveStagePlayerEntity()
+		if player == nil or player.TransformComponent == nil then
+			return
+		end
+		
+		local duration = self.stageOutroPlayerWalkDuration or 0
+		local steps = self.stageOutroPlayerWalkSteps or 1
+		if steps <= 0 then
+			steps = 1
+		end
+		if duration <= 0 then
+			return
+		end
+		
+		local startX = player.TransformComponent.WorldPosition.x
+		local startY = player.TransformComponent.WorldPosition.y
+		if self.hasStagePlayerAnchor == true then
+			startX = self.stagePlayerAnchorX
+			startY = self.stagePlayerAnchorY
+			self:SetEntityWorldPosition(player, startX, startY)
+		end
+		local targetX = startX + (self.stageOutroPlayerOffsetX or 0)
+		local targetY = startY
+		local stepDelay = duration / steps
+		local step = 0
+		
+		self:BeginPlayerCinematic(player)
+		self:PlayPlayerWalkAnim(player)
+		
+		local sprite = player.SpriteRendererComponent
+		if sprite ~= nil then
+			sprite.FlipX = false
+		end
+		
+		local moveStep = nil
+		moveStep = function()
+			local alivePlayer = self:ResolveStagePlayerEntity()
+			if alivePlayer == nil or alivePlayer.TransformComponent == nil then
+				return
+			end
+			
+			step += 1
+			local t = step / steps
+			if t > 1 then
+				t = 1
+			end
+			
+			local newX = startX + ((targetX - startX) * t)
+			local newY = startY + ((targetY - startY) * t)
+			self:SetEntityWorldPosition(alivePlayer, newX, newY)
+			
+			if step < steps then
+				_TimerService:SetTimerOnce(moveStep, stepDelay)
+			else
+				self:EndPlayerCinematic(alivePlayer)
+				self:PlayPlayerStandAnim(alivePlayer)
+			end
+		end
+		
+		_TimerService:SetTimerOnce(moveStep, stepDelay)
+	end
+
+	method void AdvanceStageAfterShopExit()
+		if self:IsClient() then
+			self:RestorePlayerToStageAnchor()
+		end
+		
+		self.currentStage += 1
+		if self.currentStage > 10 then
+			self.isStageTransitioning = false
+			self:GameClear()
+			return
+		end
+		
+		self:ProceedToStage()
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+		self.isStageTransitioning = false
+	end
+
+	method Entity ResolveStageFadeEntity()
+		if self.stageFadeEntity ~= nil then
+			return self.stageFadeEntity
+		end
+		
+		if self.stageFadePath ~= nil and self.stageFadePath ~= "" then
+			self.stageFadeEntity = _EntityService:GetEntityByPath(self.stageFadePath)
+		end
+		
+		return self.stageFadeEntity
+	end
+
+	method void SetStageFadeAlpha(number alpha)
+		local fadeEntity = self:ResolveStageFadeEntity()
+		if fadeEntity == nil then
+			return
+		end
+		
+		local clamped = alpha
+		if clamped < 0 then clamped = 0 end
+		if clamped > 1 then clamped = 1 end
+		
+		local updated = false
+		local guiRenderer = fadeEntity.SpriteGUIRendererComponent
+		if guiRenderer ~= nil then
+			guiRenderer.Color = Color(0, 0, 0, clamped)
+			updated = true
+		end
+		
+		local spriteRenderer = fadeEntity.SpriteRendererComponent
+		if spriteRenderer ~= nil then
+			spriteRenderer.Color = Color(0, 0, 0, clamped)
+			updated = true
+		end
+		
+		if updated == true then
+			if clamped > 0.001 then
+				fadeEntity:SetEnable(true)
+				fadeEntity:SetVisible(true)
+			else
+				fadeEntity:SetEnable(false)
+				fadeEntity:SetVisible(false)
+			end
+		end
+	end
+
+	method void PlayStageFadeIn()
+		local fadeEntity = self:ResolveStageFadeEntity()
+		if fadeEntity == nil then
+			return
+		end
+		
+		local maxAlpha = self.stageFadeMaxAlpha or 1
+		if maxAlpha < 0 then maxAlpha = 0 end
+		if maxAlpha > 1 then maxAlpha = 1 end
+		
+		self:SetStageFadeAlpha(maxAlpha)
+		
+		local duration = self.stageFadeDuration
+		if duration == nil or duration <= 0 then
+			self:SetStageFadeAlpha(0)
+			return
+		end
+		
+		_TweenLogic:PlayTween(maxAlpha, 0, duration, EaseType.Linear, function(value)
+			self:SetStageFadeAlpha(value)
+		end)
+		
+		_TimerService:SetTimerOnce(function()
+			self:SetStageFadeAlpha(0)
+		end, duration + 0.02)
 	end
 
 	method void UpdateBackground()
@@ -502,22 +932,34 @@ script GameManager extends Component
 	end
 
 	method void CloseShop()
+		if self.isStageTransitioning == true then
+			return
+		end
+		self.isStageTransitioning = true
+
 		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
 		if shopPanel ~= nil then
 			shopPanel:SetEnable(false)
 			shopPanel:SetVisible(false)
 		end
-		
-		self.currentStage += 1
-		if self.currentStage > 10 then
-			self:GameClear()
-			return
+
+		if self:IsClient() then
+			self:PlayStageFadeOut()
+			self:PlayPlayerStageOutro()
 		end
 		
-		self:ProceedToStage()
-		if self.uiMain ~= nil then
-			self.uiMain:UpdateUI()
+		local transitionDelay = self.stageOutroFadeDuration
+		if transitionDelay == nil or transitionDelay < 0 then
+			transitionDelay = 0
 		end
+		local walkDelay = self.stageOutroPlayerWalkDuration
+		if walkDelay ~= nil and walkDelay > transitionDelay then
+			transitionDelay = walkDelay
+		end
+
+		_TimerService:SetTimerOnce(function()
+			self:AdvanceStageAfterShopExit()
+		end, transitionDelay + 0.02)
 	end
 
 
