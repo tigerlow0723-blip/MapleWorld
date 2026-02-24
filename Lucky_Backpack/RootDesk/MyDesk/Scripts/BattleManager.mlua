@@ -166,6 +166,7 @@ script BattleManager extends Component
 			return
 		end
 		
+		self.gameManager.uiMain.targetMonsterIdx = 0
 		self.monsterManager:UpdateTargetHighlight(0)
 		if self.deferredTargetInitTimerId > 0 then
 			_TimerService:ClearTimer(self.deferredTargetInitTimerId)
@@ -738,6 +739,10 @@ script BattleManager extends Component
 		if self.deferredTargetInitTimerId > 0 then
 			_TimerService:ClearTimer(self.deferredTargetInitTimerId)
 			self.deferredTargetInitTimerId = 0
+		end
+		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil and self.monsterManager ~= nil then
+			self.gameManager.uiMain.targetMonsterIdx = 0
+			self.monsterManager:UpdateTargetHighlight(0)
 		end
 		
 		log("========================================")

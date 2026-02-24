@@ -221,7 +221,16 @@ script UIMain extends Component
 		
 		-- 타겟 강조 갱신 (몬스터가 죽거나 스테이지가 바뀌었을 때 등을 대비)
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
-			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+			local canShowTarget = false
+			if self.gameManager ~= nil and self.gameManager.gamePhase == "Battle" and self.targetMonsterIdx ~= nil and self.targetMonsterIdx > 0 then
+				canShowTarget = true
+			end
+			
+			if canShowTarget == true then
+				self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
+			else
+				self.battleManager.monsterManager:UpdateTargetHighlight(0)
+			end
 		end
 		
 		-- 1. HP 게이지 업데이트
