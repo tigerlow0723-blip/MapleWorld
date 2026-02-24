@@ -88,6 +88,7 @@ script Item extends Component
 	property string inventoryUIPath = ""
 
 	property table spawnPosition = {}
+	property boolean isDisplayAreaManuallyPositioned = false
 
 	property any dataManager = nil
 

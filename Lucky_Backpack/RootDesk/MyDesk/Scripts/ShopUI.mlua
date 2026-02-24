@@ -701,11 +701,8 @@ script ShopUI extends Component
 		            end
 		            local nextIndex = #self.itemDisplayArea.spawnedItems
 		            local spawned = self.itemDisplayArea:CreateItemEntity(purchasedItemId, nextIndex)
-		            if spawned ~= nil and spawned.UITransformComponent ~= nil then
-		                spawned.UITransformComponent.anchoredPosition = Vector2(0, 100)
-		                if spawned.Item ~= nil then
-		                    spawned.Item.spawnPosition = {x = 0, y = 100}
-		                end
+		            if spawned ~= nil and self.itemDisplayArea.ArrangeItems ~= nil then
+		                self.itemDisplayArea:ArrangeItems()
 		            end
 		        end
 		    end
