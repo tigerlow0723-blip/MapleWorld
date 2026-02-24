@@ -17,18 +17,55 @@ script MiniGameManager extends Component
 
 	property string subState = "None"
 
+	property integer lastDiceRoll = 0
+	
+	property integer lastDiceRoll2 = 0
+
+	property integer lastChoice = 0
+
+	property boolean lastRoundWin = false
+	
+	property integer pendingResultParity = 0
+	
+	property number resultDisplayDuration = 1.2
+	
+	property number rollDisplayDuration = 1
+	
+	property integer POWER_ELIXIR_ITEM_ID = 6
+
 	method void Init(any gMgr, any pMgr, any dMgr, any ui)
 		self.gameManager = gMgr
 		self.playerManager = pMgr
 		self.dataManager = dMgr
 		self.uiMain = ui
+		self:SyncDiceTimingConfig()
 	end
 
+	method void SyncDiceTimingConfig()
+		if self.dataManager == nil then
+			return
+		end
+		
+		local rollDelay = tonumber(self.dataManager.DiceRollDelay)
+		if rollDelay ~= nil and rollDelay >= 0 then
+			self.rollDisplayDuration = rollDelay
+		end
+		
+		local resultDelay = tonumber(self.dataManager.DiceResultDelay)
+		if resultDelay ~= nil and resultDelay >= 0 then
+			self.resultDisplayDuration = resultDelay
+		end
+	end
 	method void StartMiniGamePhase()
 		self.isMiniGameActive = true
 		self.subState = "Main"
-		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 진입!")
-		-- UI 업데이트 등 처리 필요
+		self.lastDiceRoll = 0
+		self.lastDiceRoll2 = 0
+		self.lastChoice = 0
+		self.lastRoundWin = false
+		self.pendingResultParity = 0
+		self:SyncDiceTimingConfig()
+		log("[MiniGameManager] Stage 5 mini-game phase started.")
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
@@ -37,7 +74,7 @@ script MiniGameManager extends Component
 	method void EndMiniGamePhase()
 		self.isMiniGameActive = false
 		self.subState = "None"
-		log("[MiniGameManager] 5스테이지 특별 상점(미니게임) 종료.")
+		log("[MiniGameManager] Stage 5 mini-game phase ended.")
 	end
 
 	@ExecSpace("ClientOnly")
@@ -57,7 +94,11 @@ script MiniGameManager extends Component
 
 	method void EnterSubPlay()
 		if not self.isMiniGameActive then return end
-		self.subState = "Play"
+		if self:GetOreCount() > 0 then
+			self.subState = "Play"
+		else
+			self.subState = "Shop"
+		end
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
@@ -83,7 +124,7 @@ script MiniGameManager extends Component
 		local count = 0
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
-			for i=1, #inv do
+			for i = 1, #inv do
 				if inv[i].id == 13 then
 					count = count + 1
 				end
@@ -96,7 +137,7 @@ script MiniGameManager extends Component
 		local count = 0
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
-			for i=1, #inv do
+			for i = 1, #inv do
 				if inv[i].id == 14 then
 					count = count + 1
 				end
@@ -106,9 +147,12 @@ script MiniGameManager extends Component
 	end
 
 	method void ConsumeItem(integer itemId, integer count)
+		if self.playerManager == nil then
+			return
+		end
 		local removed = 0
 		local inv = self.playerManager.inventory
-		for i=#inv, 1, -1 do
+		for i = #inv, 1, -1 do
 			if inv[i].id == itemId then
 				self.playerManager:RemoveItem(i)
 				removed = removed + 1
@@ -118,70 +162,151 @@ script MiniGameManager extends Component
 			end
 		end
 	end
+	
+	method integer RollWeightedDice()
+		local roll = math.random(1, 100)
+		if roll <= 5 then
+			return 1
+		end
+		if roll <= 10 then
+			return 7
+		end
+		
+		-- 2~6 are evenly distributed across the remaining 90%.
+		local index = math.floor((roll - 11) / 18)
+		return 2 + index
+	end
 
 	method void PlayOddEven(integer choice)
 		if not self.isMiniGameActive then return end
-		
-		if self:GetOreCount() <= 0 then
-			log("[MiniGameManager] 황금 원석이 부족하여 게임을 진행할 수 없습니다.")
-			return
-		end
-		
-		self:ConsumeItem(13, 1)
-		
-		local result = math.random(1, 2)
-		local resultStr = ""
-		if result == 1 then resultStr = "홀수" else resultStr = "짝수" end
-		
-		if choice == result then
-			log("[MiniGameManager] 결과: " .. resultStr .. "! 정답을 맞췄습니다! 순금괴 획득!")
-			local itemData = self.dataManager:GetItemData(14)
-			if itemData ~= nil then
-				self.playerManager:AddItem(itemData)
-			end
-		else
-			log("[MiniGameManager] 결과: " .. resultStr .. ". 아쉽게도 틀렸습니다. 황금 원석을 잃었습니다.")
-		end
-		
-		if self.uiMain ~= nil then 
-			self.uiMain:UpdateUI()
-		end
-	end
+		if choice ~= 1 and choice ~= 2 then return end
 
-	method void SellAllOre()
-		if not self.isMiniGameActive then return end
-		
-		local count = self:GetOreCount()
-		if count > 0 then
-			self:ConsumeItem(13, count)
-			local totalGold = count * self.ORE_PRICE
-			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
-			log("[MiniGameManager] 황금 원석 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
-			
-			if self.uiMain ~= nil then 
+		if self:GetOreCount() <= 0 then
+			log("[MiniGameManager] Not enough gold ore to play odd/even.")
+			self.subState = "Shop"
+			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()
 			end
-		else
-			log("[MiniGameManager] 판매할 황금 원석이 없습니다.")
+			return
 		end
+
+		self:ConsumeItem(13, 1)
+
+		local dice = self:RollWeightedDice()
+		local dice2 = self:RollWeightedDice()
+		local sumDice = dice + dice2
+		local result = 2
+		if sumDice % 2 == 1 then
+			result = 1
+		end
+
+		self.lastChoice = choice
+		self.lastDiceRoll = dice
+		self.lastDiceRoll2 = dice2
+		self.pendingResultParity = result
+		self.subState = "Roll"
+
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
+		end
+
+		local rollDelay = self.rollDisplayDuration or 1
+		if rollDelay < 0 then
+			rollDelay = 0
+		end
+		
+		local resultDelay = self.resultDisplayDuration or 1.2
+		if resultDelay < 0 then
+			resultDelay = 0
+		end
+
+		_TimerService:SetTimerOnce(function()
+			if self.isMiniGameActive ~= true or self.subState ~= "Roll" then
+				return
+			end
+			
+			self.lastRoundWin = (self.lastChoice == self.pendingResultParity)
+			self.subState = "Result"
+			
+			local isDoubleOne = (self.lastDiceRoll == 1 and self.lastDiceRoll2 == 1)
+			local isDoubleSeven = (self.lastDiceRoll == 7 and self.lastDiceRoll2 == 7)
+			if isDoubleOne or isDoubleSeven then
+				self.lastRoundWin = false
+			end
+
+			if isDoubleOne then
+				if self.playerManager ~= nil then
+					local curHP = tonumber(self.playerManager.currentHP) or 0
+					local reducedHP = math.ceil(curHP * 0.5)
+					if reducedHP < 1 then
+						reducedHP = 1
+					end
+					self.playerManager.currentHP = reducedHP
+					if self.playerManager.EmitPlayerStatChangedEvent ~= nil then
+						self.playerManager:EmitPlayerStatChangedEvent()
+					end
+				end
+				log("[MiniGameManager] Special result: double 1. Player HP reduced by half.")
+			elseif isDoubleSeven then
+				local powerElixir = nil
+				if self.dataManager ~= nil then
+					powerElixir = self.dataManager:GetItemData(self.POWER_ELIXIR_ITEM_ID)
+				end
+				if powerElixir ~= nil and self.playerManager ~= nil then
+					self.playerManager:AddItem(powerElixir)
+					log("[MiniGameManager] Special result: double 7. Power Elixir granted.")
+				else
+					log("[MiniGameManager] Special result: double 7 but Power Elixir item is missing.")
+				end
+			elseif self.lastRoundWin == true then
+				log("[MiniGameManager] Odd/even result: WIN. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2))
+				local itemData = self.dataManager:GetItemData(14)
+				if itemData ~= nil then
+					self.playerManager:AddItem(itemData)
+				end
+			else
+				log("[MiniGameManager] Odd/even result: LOSE. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2))
+			end
+
+			if self.uiMain ~= nil then
+				self.uiMain:UpdateUI()
+			end
+			
+			_TimerService:SetTimerOnce(function()
+				if self.isMiniGameActive ~= true then
+					return
+				end
+
+				if self:GetOreCount() > 0 then
+					self.subState = "Play"
+				else
+					self.subState = "Shop"
+				end
+
+				if self.uiMain ~= nil then
+					self.uiMain:UpdateUI()
+				end
+			end, resultDelay)
+		end, rollDelay)
 	end
 
 	method void SellAllGoldBar()
 		if not self.isMiniGameActive then return end
-		
+
 		local count = self:GetGoldBarCount()
 		if count > 0 then
 			self:ConsumeItem(14, count)
 			local totalGold = count * self.GOLD_BAR_PRICE
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
-			log("[MiniGameManager] 순금괴 " .. tostring(count) .. "개 판매! (+ " .. tostring(totalGold) .. "G)")
-			
-			if self.uiMain ~= nil then 
+			log("[MiniGameManager] Gold bars sold. count=" .. tostring(count) .. " gain=" .. tostring(totalGold))
+
+			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()
 			end
 		else
-			log("[MiniGameManager] 판매할 순금괴가 없습니다.")
+			log("[MiniGameManager] No gold bars to sell.")
 		end
 	end
 
 end
+
