@@ -25,6 +25,8 @@ script DataManager extends Component
 
 	property table SpecialEventTable = {}
 
+	property table TutorialImageTable = {}
+
 	method void OnInitialize()
 		log("[DataManager] (OnInitialize)  (  : Server/Client)")
 	end
@@ -46,6 +48,7 @@ script DataManager extends Component
 		self:LoadMapTable()
 		self:LoadStageWeightTable()
 		self:LoadSpecialEventTable()
+		self:LoadTutorialImageTable()
 		
 		log("[DataManager]      .")
 	end
@@ -445,6 +448,10 @@ script DataManager extends Component
 					data.modelPhase1 = dsBasic:GetCell(i, "model_phase1") or ""
 					data.modelPhase2 = dsBasic:GetCell(i, "model_phase2") or ""
 					data.modelPhase3 = dsBasic:GetCell(i, "model_phase3") or ""
+					
+					data.deathDelayPhase1 = tonumber(dsBasic:GetCell(i, "deathDelayPhase1")) or 1.5
+					data.deathDelayPhase2 = tonumber(dsBasic:GetCell(i, "deathDelayPhase2")) or 1.5
+					data.deathDelayPhase3 = tonumber(dsBasic:GetCell(i, "deathDelayPhase3")) or 1.5
 					
 					self.BossBasicTable[bossId] = data
 				end
@@ -916,6 +923,25 @@ script DataManager extends Component
 			end
 		end
 		return self.SpecialEventTable[1]
+	end
+
+	method void LoadTutorialImageTable()
+		local ds = self:GetDataSet("Data_Table - 설명이미지")
+		if ds == nil then
+			log("[DataManager] Tutorial image table not found")
+			return
+		end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local page = tonumber(ds:GetCell(i, "page")) or i
+			local ruid = ds:GetCell(i, "imageRUID") or ""
+			if ruid ~= "" then
+				self.TutorialImageTable[page] = ruid
+			end
+		end
+		local count = 0
+		for _ in pairs(self.TutorialImageTable) do count = count + 1 end
+		log("[DataManager] Tutorial images loaded: " .. tostring(count))
 	end
 
 end

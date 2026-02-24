@@ -9856,7 +9856,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 16,
@@ -9958,20 +9958,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 1670.625,
-                "y": 1294.46631
+                "x": 1813.59558,
+                "y": 1377.6626
               },
               "OffsetMin": {
-                "x": 1324.04932,
-                "y": 996.155762
+                "x": 1338.25427,
+                "y": 968.5188
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 346.5757,
-                "y": 298.3105
+                "x": 475.341248,
+                "y": 409.143738
               },
               "UIMode": 1,
               "UIScale": {
@@ -9981,8 +9981,8 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 1497.33716,
-                "y": 1145.311
+                "x": 1575.92493,
+                "y": 1173.0907
               },
               "Rotation": {
                 "x": 0.0,
@@ -9990,8 +9990,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 1497.33716,
-                "y": 1145.311,
+                "x": 1575.92493,
+                "y": 1173.0907,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10164,31 +10164,26 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 1876.42126,
-                "y": 1335.067
+                "x": 1992.42114,
+                "y": 1438.75525
               },
               "OffsetMin": {
-                "x": 1292.11462,
-                "y": 896.3829
+                "x": 1270.00684,
+                "y": 896.382935
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 584.3067,
-                "y": 438.684174
+                "x": 722.4144,
+                "y": 542.3723
               },
               "UIMode": 1,
-              "UIScale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-              },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 1584.268,
-                "y": 1115.725
+                "x": 1631.214,
+                "y": 1167.56909
               },
               "Rotation": {
                 "x": 0.0,
@@ -10196,8 +10191,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 1584.268,
-                "y": 1115.725,
+                "x": 1631.214,
+                "y": 1167.56909,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10205,11 +10200,6 @@
                 "y": 0.0,
                 "z": 0.0,
                 "w": -1.0
-              },
-              "Scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
               },
               "ZRotation": 0.0,
               "Enable": true
@@ -10264,20 +10254,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 1710.3938,
-                "y": 1328.32593
+                "x": 1825.3938,
+                "y": 1430.34985
               },
               "OffsetMin": {
-                "x": 1291.114,
-                "y": 920.5589
+                "x": 1302.23779,
+                "y": 921.5588
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 419.279663,
-                "y": 407.766968
+                "x": 523.156067,
+                "y": 508.7911
               },
               "UIMode": 1,
               "UIScale": {
@@ -10287,8 +10277,8 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 1500.75391,
-                "y": 1124.44238
+                "x": 1563.8158,
+                "y": 1175.95435
               },
               "Rotation": {
                 "x": 0.0,
@@ -10296,8 +10286,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 1500.75391,
-                "y": 1124.44238,
+                "x": 1563.8158,
+                "y": 1175.95435,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10369,26 +10359,26 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 1876.42126,
-                "y": 1335.067
+                "x": 1992.42114,
+                "y": 1438.75525
               },
               "OffsetMin": {
-                "x": 1292.11462,
-                "y": 896.3829
+                "x": 1270.00684,
+                "y": 896.382935
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 584.3067,
-                "y": 438.684174
+                "x": 722.4144,
+                "y": 542.3723
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 1584.268,
-                "y": 1115.725
+                "x": 1631.214,
+                "y": 1167.56909
               },
               "Rotation": {
                 "x": 0.0,
@@ -10396,8 +10386,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 1584.268,
-                "y": 1115.725,
+                "x": 1631.214,
+                "y": 1167.56909,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -14131,7 +14121,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "보스턴",
+              "Text": "몬스터 턴",
               "Enable": true
             }
           ],
@@ -14230,7 +14220,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "보스턴",
+              "Text": "플레이어 턴",
               "Enable": true
             }
           ],
@@ -14345,8 +14335,8 @@
           "name": "stageFade",
           "path": "/ui/UIGroup/stageFade",
           "nameEditable": true,
-          "enable": false,
-          "visible": true,
+          "enable": true,
+          "visible": false,
           "localize": true,
           "displayOrder": 25,
           "pathConstraints": "///",

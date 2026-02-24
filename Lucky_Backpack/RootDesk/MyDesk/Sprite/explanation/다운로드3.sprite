@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://5c78114aec224ef7bbfb533c9443dd24",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/5c78114aec224ef7bbfb533c9443dd24/639075223869371548",
+      "upload_hash": "5FE1C46AD62A25C1ADD1C583778AF25DF6B626AE86DE520E5ED3965CD1A0CFEF",
+      "name": "다운로드3",
+      "resource_guid": "5c78114aec224ef7bbfb533c9443dd24",
+      "resource_version": "699d7052662b69f3b7788736"
+    }
+  }
+}
