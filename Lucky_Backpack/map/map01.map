@@ -825,6 +825,12 @@
                 "IsRelative": false,
                 "EntityId": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
                 "Version2": false
+              },
+              "stageFadeEntity": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "e9256f75-25da-447c-ba97-4300b4e0fe00",
+                "Version2": false
               }
             },
             {
