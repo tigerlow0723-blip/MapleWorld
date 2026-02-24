@@ -39,6 +39,10 @@ script UIMain extends Component
 
 	property Entity txtStage = nil
 
+	property Entity txtPlayerCoin = nil
+	property Entity uiPlayerCoinPanel = nil
+	property string playerCoinTextPath = "/ui/UIGroup/PlayerCoin/TxtPlayerCoin"
+	property string playerCoinPanelPath = "/ui/UIGroup/PlayerCoin"
 	property Entity uiStage5_1 = nil
 	property Entity uiStage5_2 = nil
 	property Entity uiStage5_3 = nil
@@ -214,6 +218,20 @@ script UIMain extends Component
 		end
 		if self.stage5DiceRollPath2 ~= nil and self.stage5DiceRollPath2 ~= "" then
 			self.stage5DiceRollEntity2 = _EntityService:GetEntityByPath(self.stage5DiceRollPath2)
+		end
+
+		self:ResolvePlayerCoinUI()
+	end
+
+	method void ResolvePlayerCoinUI()
+		if self.uiPlayerCoinPanel == nil then
+			self.uiPlayerCoinPanel = _EntityService:GetEntityByPath(self.playerCoinPanelPath)
+		end
+		if self.txtPlayerCoin == nil then
+			self.txtPlayerCoin = _EntityService:GetEntityByPath(self.playerCoinTextPath)
+			if self.txtPlayerCoin == nil and self.uiPlayerCoinPanel ~= nil then
+				self.txtPlayerCoin = self.uiPlayerCoinPanel:GetChildByName("TxtPlayerCoin", true)
+			end
 		end
 	end
 
@@ -516,7 +534,18 @@ script UIMain extends Component
 				txt.Text = math.ceil(self.playerManager.currentCost) .. "/" .. math.ceil(self.playerManager.maxCost)
 			end
 		end
-		
+
+		self:ResolvePlayerCoinUI()
+		if self.uiPlayerCoinPanel ~= nil then
+			self.uiPlayerCoinPanel:SetEnable(true)
+			self.uiPlayerCoinPanel:SetVisible(true)
+		end
+		if self.txtPlayerCoin ~= nil then
+			local coinText = self.txtPlayerCoin.TextComponent
+			if coinText ~= nil then
+				coinText.Text = tostring(self.playerManager.gold or 0)
+			end
+		end
 		-- 3. ??†Ï????†Ïèô?? ??†Ïéå??(TextComponentÂ™õ¬Ä ??†Ïéà????†Ï????†Ïéà?™Âç†?Â™õ¬Ä??
 		if self.txtStage ~= nil and self.battleManager ~= nil then
 			local txt = self.txtStage.TextComponent
@@ -1121,22 +1150,3 @@ script UIMain extends Component
 	end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
