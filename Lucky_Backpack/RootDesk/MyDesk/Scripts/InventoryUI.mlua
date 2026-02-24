@@ -969,8 +969,16 @@ script InventoryUI extends Component
 		            end
 		
 		            if itemComp.itemType == "weapon" then
-		                battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
-		                self:EmitInventoryChangedEvent()
+		                local usedWeapon = false
+		                if battleManager.OnPlayerUseWeaponByComponent ~= nil then
+		                    usedWeapon = battleManager:OnPlayerUseWeaponByComponent(itemComp, targetMonsterIdx)
+		                else
+		                    battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
+		                    usedWeapon = true
+		                end
+		                if usedWeapon then
+		                    self:EmitInventoryChangedEvent()
+		                end
 		                return
 		            elseif itemComp.itemType == "armor" then
 		                local usedArmor = battleManager:OnPlayerUseArmorByComponent(itemComp)

@@ -17,6 +17,10 @@ script ItemTooltipUI extends Component
 
 	property string statsTextPath = "/ui/UIGroup/TooltipPanel/StatsText"
 
+	property string countValuePath = "/ui/UIGroup/TooltipPanel/count"
+
+	property string costValuePath = "/ui/UIGroup/TooltipPanel/cost"
+
 	property string txtAtkCountPath = "/ui/UIGroup/TooltipPanel/TxtAtkCount"
 
 	property string txtSynergyPath = "/ui/UIGroup/TooltipPanel/TxtSynergy"
@@ -50,6 +54,10 @@ script ItemTooltipUI extends Component
 	property any divider = nil
 
 	property any statsText = nil
+
+	property any countValueText = nil
+
+	property any costValueText = nil
 
 	property any txtAtkCount = nil
 
@@ -143,6 +151,18 @@ script ItemTooltipUI extends Component
 		if self.statsText == nil then
 			self.statsText = _EntityService:GetEntityByPath(self.statsTextPath)
 		end
+		if self.countValueText == nil then
+			self.countValueText = _EntityService:GetEntityByPath(self.countValuePath)
+			if self.countValueText == nil then
+				self.countValueText = _EntityService:GetEntityByPath(self.txtAtkCountPath)
+			end
+		end
+		if self.costValueText == nil then
+			self.costValueText = _EntityService:GetEntityByPath(self.costValuePath)
+			if self.costValueText == nil then
+				self.costValueText = _EntityService:GetEntityByPath("/ui/UIGroup/TooltipPanel/CostText")
+			end
+		end
 		if self.txtAtkCount == nil then
 			self.txtAtkCount = _EntityService:GetEntityByPath(self.txtAtkCountPath)
 		end
@@ -219,7 +239,8 @@ script ItemTooltipUI extends Component
 		self:SetGradeText(itemData)
 		self:SetStatsText(itemId, itemData, screenPos)
 		self:SetWeaponSynergyText(itemId, itemData, screenPos)
-		self:SetAtkCountText(itemId, itemData, screenPos)
+		self:SetCountValueText(itemId, itemData, screenPos)
+		self:SetCostValueText(itemId, itemData, screenPos)
 		self:ApplySynergyTooltipText(itemId, screenPos)
 		self:RedrawShapeGrid(itemData)
 		self:AdjustTooltipPanelToContent()
@@ -474,9 +495,18 @@ script ItemTooltipUI extends Component
 				lineList[#lineList + 1] = text
 			end
 		end
+		local function appendSectionBreak()
+			if #lineList > 0 and lineList[#lineList] ~= "" then
+				lineList[#lineList + 1] = ""
+			end
+		end
 		
 		local itemType = string.lower(tostring(itemData.type or ""))
 		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
+		local descriptionText = tostring(itemData.text or "")
+		if descriptionText == "" then
+			descriptionText = tostring(itemData.desc or "")
+		end
 		
 		if itemType == "potion" then
 			local hp = tonumber(itemData.hp) or 0
@@ -487,6 +517,11 @@ script ItemTooltipUI extends Component
 			if hpPercent > 0 then
 				appendLine("Used to restore " .. tostring(hpPercent) .. "% Max HP")
 			end
+			if descriptionText ~= "" then
+				appendSectionBreak()
+				appendLine("Description: " .. descriptionText)
+			end
+			return table.concat(lineList, "\n")
 		end
 		
 		if itemType == "armor" then
@@ -495,18 +530,9 @@ script ItemTooltipUI extends Component
 				appendLine("Max HP: " .. self:FormatSignedNumber(hp))
 			end
 			
-			local cost = tonumber(itemData.cost) or 0
-			appendLine("MP Cost on Activation: " .. tostring(cost))
-			
-			local count = math.max(0, tonumber(itemData.count) or 0)
-			appendLine("Usable " .. tostring(count) .. " time(s) per turn")
-			
-			local optionText = tostring(itemData.text or "")
-			if optionText == "" then
-				optionText = tostring(itemData.desc or "")
-			end
-			if optionText ~= "" then
-				appendLine("Option: " .. optionText)
+			if descriptionText ~= "" then
+				appendSectionBreak()
+				appendLine("Option: " .. descriptionText)
 			end
 			
 			if itemComp ~= nil and itemComp.armorRollInitialized == true then
@@ -514,17 +540,34 @@ script ItemTooltipUI extends Component
 				local rolledCritDmg = tonumber(itemComp.armorCritDmg) or 0
 				local rolledWeaponCost = tonumber(itemComp.armorWeaponCost) or 0
 				local rolledHpRecovery = tonumber(itemComp.armorHpRecoveryPercent) or 0
+				local hasRolledLine = false
 				
 				if rolledCritRate ~= 0 then
+					if hasRolledLine == false then
+						appendSectionBreak()
+						hasRolledLine = true
+					end
 					appendLine("<color=#FFD54F>Rolled: Crit Rate " .. self:FormatSignedPercent(rolledCritRate) .. "</color>")
 				end
 				if rolledCritDmg ~= 0 then
+					if hasRolledLine == false then
+						appendSectionBreak()
+						hasRolledLine = true
+					end
 					appendLine("<color=#FFD54F>Rolled: Crit DMG " .. self:FormatSignedPercent(rolledCritDmg) .. "</color>")
 				end
 				if rolledWeaponCost ~= 0 then
+					if hasRolledLine == false then
+						appendSectionBreak()
+						hasRolledLine = true
+					end
 					appendLine("<color=#FFD54F>Rolled: Weapon MP Cost " .. self:FormatSignedNumber(rolledWeaponCost) .. "</color>")
 				end
 				if rolledHpRecovery ~= 0 then
+					if hasRolledLine == false then
+						appendSectionBreak()
+						hasRolledLine = true
+					end
 					appendLine("<color=#FFD54F>Rolled: Potion HP Recovery " .. self:FormatSignedPercent(rolledHpRecovery) .. "</color>")
 				end
 			end
@@ -548,30 +591,39 @@ script ItemTooltipUI extends Component
 		end
 		
 		if itemType == "weapon" and itemComp ~= nil then
+			local synergyLineList = {}
+			local weaponSynergyBonus = self:GetWeaponAdjacencySynergyBonus(itemId, screenPos)
+			synergyLineList[#synergyLineList + 1] = "<color=#FFD54F>Added ATK: +" .. tostring(weaponSynergyBonus) .. "</color>"
+			
 			local armorAtkPercent = tonumber(itemComp.tempArmorAtkPercent) or 0
 			local armorCritRate = tonumber(itemComp.tempArmorCritRate) or 0
 			local armorCritDmg = tonumber(itemComp.tempArmorCritDmg) or 0
 			local armorWeaponCost = tonumber(itemComp.tempArmorWeaponCost) or 0
 			
 			if armorAtkPercent ~= 0 then
-				appendLine("<color=#FFD54F>Armor Synergy: ATK " .. self:FormatSignedPercent(armorAtkPercent) .. "</color>")
+				synergyLineList[#synergyLineList + 1] = "<color=#FFD54F>Armor Synergy: ATK " .. self:FormatSignedPercent(armorAtkPercent) .. "</color>"
 			end
 			if armorCritRate ~= 0 then
-				appendLine("<color=#FFD54F>Armor Synergy: Crit Rate " .. self:FormatSignedPercent(armorCritRate) .. "</color>")
+				synergyLineList[#synergyLineList + 1] = "<color=#FFD54F>Armor Synergy: Crit Rate " .. self:FormatSignedPercent(armorCritRate) .. "</color>"
 			end
 			if armorCritDmg ~= 0 then
-				appendLine("<color=#FFD54F>Armor Synergy: Crit DMG " .. self:FormatSignedPercent(armorCritDmg) .. "</color>")
+				synergyLineList[#synergyLineList + 1] = "<color=#FFD54F>Armor Synergy: Crit DMG " .. self:FormatSignedPercent(armorCritDmg) .. "</color>"
 			end
 			if armorWeaponCost ~= 0 then
-				appendLine("<color=#FFD54F>Armor Synergy: MP Cost " .. self:FormatSignedNumber(armorWeaponCost) .. "</color>")
+				synergyLineList[#synergyLineList + 1] = "<color=#FFD54F>Armor Synergy: MP Cost " .. self:FormatSignedNumber(armorWeaponCost) .. "</color>"
+			end
+			
+			if #synergyLineList > 0 then
+				appendSectionBreak()
+				for i = 1, #synergyLineList do
+					appendLine(synergyLineList[i])
+				end
 			end
 		end
 		
-		local cost = tonumber(itemData.cost) or 0
-		if itemType == "weapon" then
-			appendLine("<color=#87CEEB>MP Cost on Attack: " .. tostring(cost) .. "</color>")
-		else
-			appendLine("<color=#87CEEB>MP Cost: " .. tostring(cost) .. "</color>")
+		if descriptionText ~= "" then
+			appendSectionBreak()
+			appendLine("Description: " .. descriptionText)
 		end
 		
 		return table.concat(lineList, "\n")
@@ -710,19 +762,9 @@ script ItemTooltipUI extends Component
 		if self.txtSynergy == nil or self.txtSynergy.TextComponent == nil then
 			return
 		end
-		
-		local itemType = string.lower(tostring(itemData.type or ""))
-		if itemType ~= "weapon" then
-			self.txtSynergy.TextComponent.Text = ""
-			self.txtSynergy:SetEnable(false)
-			self.txtSynergy:SetVisible(false)
-			return
-		end
-		
-		local bonusValue = self:GetWeaponAdjacencySynergyBonus(itemId, screenPos)
-		self.txtSynergy.TextComponent.Text = "Added ATK: +" .. tostring(bonusValue)
-		self.txtSynergy:SetEnable(true)
-		self.txtSynergy:SetVisible(true)
+		self.txtSynergy.TextComponent.Text = ""
+		self.txtSynergy:SetEnable(false)
+		self.txtSynergy:SetVisible(false)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -742,7 +784,7 @@ script ItemTooltipUI extends Component
 		
 		local currentText = tostring(self.statsText.TextComponent.Text or "")
 		if currentText ~= "" then
-			currentText = currentText .. "\n"
+			currentText = currentText .. "\n\n"
 		end
 		currentText = currentText .. "<color=#FFD54F>Weapon Synergy: +" .. tostring(bonusValue) .. " (Up/Down/Left/Right)</color>"
 		self.statsText.TextComponent.IsRichText = true
@@ -750,34 +792,65 @@ script ItemTooltipUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void SetAtkCountText(integer itemId, table itemData, Vector2 screenPos)
-		if self.txtAtkCount == nil or self.txtAtkCount.TextComponent == nil then
+	method void SetCountValueText(integer itemId, table itemData, Vector2 screenPos)
+		if self.countValueText == nil or self.countValueText.TextComponent == nil then
 			return
 		end
 		
 		local itemType = string.lower(tostring(itemData.type or ""))
-		if itemType ~= "weapon" then
-			self.txtAtkCount.TextComponent.Text = ""
+		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
+		local remainingCount = 0
+		
+		if itemType == "weapon" then
+			local maxAtkCount = math.max(0, tonumber(itemData.atkCount) or 0)
+			remainingCount = maxAtkCount
+			if itemComp ~= nil then
+				maxAtkCount = math.max(0, tonumber(itemComp.atkCount) or maxAtkCount)
+				remainingCount = math.max(0, tonumber(itemComp.currentAtkCount) or maxAtkCount)
+			end
+		elseif itemType == "armor" then
+			remainingCount = math.max(0, tonumber(itemData.count) or 0)
+			if itemComp ~= nil then
+				remainingCount = math.max(0, tonumber(itemComp.armorRemainingCount) or remainingCount)
+			end
+		else
+			remainingCount = math.max(0, tonumber(itemData.count) or 0)
+		end
+		
+		self.countValueText.TextComponent.Text = tostring(remainingCount)
+		self.countValueText:SetEnable(true)
+		self.countValueText:SetVisible(true)
+		
+		if self.txtAtkCount ~= nil and self.txtAtkCount ~= self.countValueText then
+			if self.txtAtkCount.TextComponent ~= nil then
+				self.txtAtkCount.TextComponent.Text = ""
+			end
 			self.txtAtkCount:SetEnable(false)
 			self.txtAtkCount:SetVisible(false)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetCostValueText(integer itemId, table itemData, Vector2 screenPos)
+		if self.costValueText == nil or self.costValueText.TextComponent == nil then
 			return
 		end
 		
-		local maxAtkCount = math.max(0, tonumber(itemData.atkCount) or 0)
-		local currentAtkCount = maxAtkCount
+		local itemType = string.lower(tostring(itemData.type or ""))
 		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
-		if itemComp ~= nil then
-			maxAtkCount = math.max(0, tonumber(itemComp.atkCount) or maxAtkCount)
-			currentAtkCount = math.max(0, tonumber(itemComp.currentAtkCount) or maxAtkCount)
+		local costValue = math.max(0, tonumber(itemData.cost) or 0)
+		
+		if itemType == "weapon" and itemComp ~= nil then
+			local armorCostDelta = tonumber(itemComp.tempArmorWeaponCost) or 0
+			costValue = costValue + armorCostDelta
+			if costValue < 0 then
+				costValue = 0
+			end
 		end
 		
-		if maxAtkCount >= 1 then
-			self.txtAtkCount.TextComponent.Text = "Attack Count: " .. tostring(currentAtkCount) .. " / " .. tostring(maxAtkCount)
-		else
-			self.txtAtkCount.TextComponent.Text = "Attack Count: 0"
-		end
-		self.txtAtkCount:SetEnable(true)
-		self.txtAtkCount:SetVisible(true)
+		self.costValueText.TextComponent.Text = tostring(costValue)
+		self.costValueText:SetEnable(true)
+		self.costValueText:SetVisible(true)
 	end
 
 	@ExecSpace("ClientOnly")

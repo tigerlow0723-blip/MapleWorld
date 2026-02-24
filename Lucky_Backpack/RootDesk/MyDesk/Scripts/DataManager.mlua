@@ -208,6 +208,7 @@ script DataManager extends Component
 			headers["max_weaponCost"] = true
 			headers["min_hpRecovery"] = true
 			headers["max_hpRecovery"] = true
+			headers["synergyTarget"] = true
 			return headers
 		end
 		
@@ -616,6 +617,18 @@ script DataManager extends Component
 						data.armorAtkPercent = getNumber("atkPercent", "atk (%)", 0)
 						data.armorCritRate = getNumber("critRate", "critRate (%)", 0)
 						data.armorCritDmg = getNumber("critDmg", "critDmg (%)", 0)
+						data.armorSynergyTarget = string.lower(getString("synergyTarget", "synergy_target"))
+						if data.armorSynergyTarget == "" then
+							local hasPotionBuff = (data.minHpRecovery ~= 0 or data.maxHpRecovery ~= 0)
+							local hasWeaponBuff = (data.armorAtkPercent ~= 0 or data.armorCritRate ~= 0 or data.armorCritDmg ~= 0 or data.weaponCost ~= 0 or data.minWeaponCost ~= 0 or data.maxWeaponCost ~= 0)
+							if hasPotionBuff and hasWeaponBuff == false then
+								data.armorSynergyTarget = "potion"
+							elseif hasWeaponBuff then
+								data.armorSynergyTarget = "weapon"
+							else
+								data.armorSynergyTarget = "none"
+							end
+						end
 						data.isRewardDrop = getNumber("isRewardDrop", "rewardDrop", 1)
 						data.imageRUID = getString("imageRUID", "")
 						data.grade = getString("grade", "")

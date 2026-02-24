@@ -55,6 +55,8 @@ script Item extends Component
 
 	property boolean armorRollInitialized = false
 
+	property string armorSynergyTarget = "none"
+
 	property integer tempArmorAtkPercent = 0
 
 	property integer tempArmorCritRate = 0
@@ -225,6 +227,10 @@ script Item extends Component
 		    self.armorCritDmg = tonumber(itemData.armorCritDmg) or 0
 		    self.armorWeaponCost = tonumber(itemData.weaponCost) or 0
 		    self.armorHpRecoveryPercent = 0
+		    self.armorSynergyTarget = string.lower(tostring(itemData.armorSynergyTarget or "none"))
+		    if self.armorSynergyTarget == "" then
+		        self.armorSynergyTarget = "none"
+		    end
 		    self.spawnGroup = tonumber(itemData.spawnGroup) or 0
 		    self.desc = itemData.desc or ""
 		    self.spriteRUID = itemData.imageRUID or ""
@@ -451,6 +457,16 @@ script Item extends Component
 		    self.armorWeaponCost = self:RollRangeInteger(minWeaponCost, maxWeaponCost, self.armorWeaponCost)
 		    self.armorHpRecoveryPercent = self:RollRangeInteger(minHpRecovery, maxHpRecovery, self.armorHpRecoveryPercent)
 		    self.armorRollInitialized = true
+		    local entityIdText = "unknown"
+		    if self.Entity ~= nil and self.Entity.Id ~= nil then
+		        entityIdText = tostring(self.Entity.Id)
+		    end
+		    log("[ArmorRoll] initialized itemId=" .. tostring(self.itemId)
+		        .. " entityId=" .. entityIdText
+		        .. " critRate=" .. tostring(self.armorCritRate)
+		        .. " critDmg=" .. tostring(self.armorCritDmg)
+		        .. " weaponCost=" .. tostring(self.armorWeaponCost)
+		        .. " potionHpRecovery%=" .. tostring(self.armorHpRecoveryPercent))
 	end
 
 	@ExecSpace("ClientOnly")
