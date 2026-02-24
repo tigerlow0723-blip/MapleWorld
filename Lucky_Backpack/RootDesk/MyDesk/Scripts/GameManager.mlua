@@ -76,6 +76,8 @@ script GameManager extends Component
 	property boolean stageCinematicMoveWasEnabled = false
 
 	property boolean stageCinematicRigidWasEnabled = false
+	
+	property boolean pendingStageAdvance = false
 
 	method void OnInitialize()
 		log("[GameManager] OnInitialize executed (Console check: Server/Client)")
@@ -712,11 +714,25 @@ script GameManager extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void PlayPlayerStageOutro()
+	method void PlayPlayerStageOutro(any onComplete)
 		log("[GameManager] PlayPlayerStageOutro started")
+		
+		local completed = false
+		local done = function()
+			if completed == true then
+				return
+			end
+			completed = true
+			if onComplete ~= nil then
+				pcall(function()
+					onComplete()
+				end)
+			end
+		end
 		
 		local player = self:ResolveStagePlayerEntity()
 		if player == nil or player.TransformComponent == nil then
+			done()
 			return
 		end
 		
@@ -726,6 +742,7 @@ script GameManager extends Component
 			steps = 1
 		end
 		if duration <= 0 then
+			done()
 			return
 		end
 		
@@ -753,6 +770,7 @@ script GameManager extends Component
 		moveStep = function()
 			local alivePlayer = self:ResolveStagePlayerEntity()
 			if alivePlayer == nil or alivePlayer.TransformComponent == nil then
+				done()
 				return
 			end
 			
@@ -771,10 +789,24 @@ script GameManager extends Component
 			else
 				self:EndPlayerCinematic(alivePlayer)
 				self:PlayPlayerStandAnim(alivePlayer)
+				done()
 			end
 		end
 		
 		_TimerService:SetTimerOnce(moveStep, stepDelay)
+	end
+
+	method void TryAdvanceStageAfterShopExit(string source)
+		if self.pendingStageAdvance ~= true then
+			return
+		end
+		if self.isStageTransitioning ~= true then
+			return
+		end
+		
+		self.pendingStageAdvance = false
+		log("[GameManager] Advancing stage after shop outro (" .. tostring(source) .. ")")
+		self:AdvanceStageAfterShopExit()
 	end
 
 	method void AdvanceStageAfterShopExit()
@@ -1057,6 +1089,7 @@ script GameManager extends Component
 			return
 		end
 		self.isStageTransitioning = true
+		self.pendingStageAdvance = true
 
 		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
 		if shopPanel ~= nil then
@@ -1074,10 +1107,10 @@ script GameManager extends Component
 		if walkDelay ~= nil and walkDelay > transitionDelay then
 			transitionDelay = walkDelay
 		end
-
+		
 		_TimerService:SetTimerOnce(function()
-			self:AdvanceStageAfterShopExit()
-		end, transitionDelay + 0.02)
+			self:TryAdvanceStageAfterShopExit("fallback_timer")
+		end, transitionDelay + 0.35)
 	end
 
 
@@ -1086,7 +1119,9 @@ script GameManager extends Component
 	method void ClientPlayShopOutro()
 		log("[GameManager] ClientPlayShopOutro called")
 		self:PlayStageFadeOut()
-		self:PlayPlayerStageOutro()
+		self:PlayPlayerStageOutro(function()
+			self:TryAdvanceStageAfterShopExit("outro_complete")
+		end)
 	end
 
 	method void OnStageComplete()
