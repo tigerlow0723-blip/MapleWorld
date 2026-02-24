@@ -445,7 +445,7 @@ script Item extends Component
 		        return result
 		    end
 		    local itemType = string.lower(tostring(itemData.type or ""))
-		    if itemType ~= "scroll" then
+		    if itemType ~= "atk_scroll" then
 		        return result
 		    end
 		    local minAtk = tonumber(itemData.minAtk) or 0

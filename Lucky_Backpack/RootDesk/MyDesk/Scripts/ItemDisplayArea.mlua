@@ -965,7 +965,12 @@ script ItemDisplayArea extends Component
 				end
 		
 				if shouldSell then
-					if playerManager ~= nil and (soldItemId == 9 or soldItemId == 10) then
+					local soldItemType = ""
+					if itemEntity.Item ~= nil then
+						soldItemType = string.lower(tostring(itemEntity.Item.itemType or ""))
+					end
+					local moveToScrollInventory = (soldItemType == "grade_scroll")
+					if playerManager ~= nil and moveToScrollInventory then
 						playerManager:AddScroll(soldItemId, 1)
 						movedScrollCount += 1
 					else

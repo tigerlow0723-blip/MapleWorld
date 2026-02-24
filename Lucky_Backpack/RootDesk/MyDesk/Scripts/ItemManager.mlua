@@ -27,14 +27,17 @@ script ItemManager extends Component
 		for i = 1, #inventory do
 			local item = inventory[i]
 			if item ~= nil then
-				total.atk += item.atk or 0
-				total.atkPercent += item.atkPercent or 0
-				total.accPercent += item.accPercent or 0
-				total.critRate += item.critRate or 0
-				total.critDmg += item.critDmg or 0
-				total.hp += item.hp or 0
-				total.hpPercent += item.hpPercent or 0
-				total.def += item.def or 0
+				local itemType = string.lower(tostring(item.type or ""))
+				if itemType == "armor" then
+					total.atk += item.atk or 0
+					total.atkPercent += item.atkPercent or 0
+					total.accPercent += item.accPercent or 0
+					total.critRate += item.critRate or 0
+					total.critDmg += item.critDmg or 0
+					total.hp += item.hp or 0
+					total.hpPercent += item.hpPercent or 0
+					total.def += item.def or 0
+				end
 				total.cost += item.cost or 0
 			end
 		end
@@ -62,6 +65,7 @@ script ItemManager extends Component
 		end
 		
 		local targetSpawnGroup = 1
+		local expandSpawnGroup = 2
 		local normalPickCount = 3
 		
 		local expandPool = {}
@@ -84,9 +88,8 @@ script ItemManager extends Component
 			
 			local itemSpawnGroup = tonumber(item.spawnGroup) or 0
 			local itemType = string.lower(tostring(item.type or ""))
-			local rewardDropFlag = tonumber(item.isRewardDrop) or 1
 			if itemType == "expand" then
-				if rewardDropFlag == 1 then
+				if itemSpawnGroup == expandSpawnGroup then
 					expandPool[#expandPool + 1] = item
 				end
 				continue

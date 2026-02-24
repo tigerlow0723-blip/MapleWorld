@@ -9668,12 +9668,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -328.5293,
-                "y": 413.075
+                "x": 689.4099,
+                "y": 438.6772
               },
               "OffsetMin": {
-                "x": -612.0083,
-                "y": 313.075
+                "x": 405.9309,
+                "y": 338.6772
               },
               "Pivot": {
                 "x": 0.5,
@@ -9686,12 +9686,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -470.2688,
-                "y": 363.075
+                "x": 547.6704,
+                "y": 388.6772
               },
               "Position": {
-                "x": -470.2688,
-                "y": 363.075,
+                "x": 547.6704,
+                "y": 388.6772,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10178,7 +10178,7 @@
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
           "enable": true,
-          "visible": true,
+          "visible": false,
           "localize": true,
           "displayOrder": 17,
           "pathConstraints": "///",
