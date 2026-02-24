@@ -65,6 +65,7 @@ script ItemManager extends Component
 		end
 		
 		local targetSpawnGroup = 1
+		local expandSpawnGroup = 2
 		local normalPickCount = 3
 		
 		local expandPool = {}
@@ -88,7 +89,7 @@ script ItemManager extends Component
 			local itemSpawnGroup = tonumber(item.spawnGroup) or 0
 			local itemType = string.lower(tostring(item.type or ""))
 			if itemType == "expand" then
-				if itemSpawnGroup == targetSpawnGroup then
+				if itemSpawnGroup == expandSpawnGroup then
 					expandPool[#expandPool + 1] = item
 				end
 				continue
