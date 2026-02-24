@@ -73,7 +73,11 @@ script UIMain extends Component
 	property Entity uiFail = nil
 	property Entity btnRetry = nil
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
+	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
 	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
+	property Entity scrollPanelEntity = nil
+	property Entity itemDisplayAreaEntity = nil
+	property Entity rewardPanelEntity = nil
 	property any gameManager = nil
 	property any battleManager = nil
 	property any playerManager = nil
@@ -431,6 +435,76 @@ script UIMain extends Component
 		end
 	end
 
+	method void ResolvePhasePanelEntities()
+		if self.scrollPanelEntity == nil then
+			self.scrollPanelEntity = _EntityService:GetEntityByPath(self.scrollPanelPath)
+		end
+		if self.itemDisplayAreaEntity == nil then
+			self.itemDisplayAreaEntity = _EntityService:GetEntityByPath(self.itemDisplayAreaPath)
+		end
+		if self.rewardPanelEntity == nil then
+			self.rewardPanelEntity = _EntityService:GetEntityByPath(self.rewardPanelPath)
+			if self.rewardPanelEntity == nil and self.rewardUI ~= nil then
+				if self.rewardUI.rewardPanelEntity ~= nil then
+					self.rewardPanelEntity = self.rewardUI.rewardPanelEntity
+				elseif self.rewardUI.Entity ~= nil then
+					self.rewardPanelEntity = self.rewardUI.Entity
+				end
+			end
+		end
+	end
+
+	method boolean IsRewardChestPhase(string phase)
+		if phase ~= "Preparation" then
+			return false
+		end
+
+		local rewardPanelOpen = false
+		local rewardPanel = self.rewardPanelEntity
+		if rewardPanel == nil and self.rewardUI ~= nil then
+			if self.rewardUI.rewardPanelEntity ~= nil then
+				rewardPanel = self.rewardUI.rewardPanelEntity
+			elseif self.rewardUI.Entity ~= nil then
+				rewardPanel = self.rewardUI.Entity
+			end
+			self.rewardPanelEntity = rewardPanel
+		end
+		if rewardPanel ~= nil and rewardPanel.Enable == true then
+			rewardPanelOpen = true
+		end
+
+		local rewardChestActive = false
+		if self.gameManager ~= nil and self.gameManager.rewardChestEntity ~= nil and self.gameManager.rewardChestEntity.Enable == true then
+			rewardChestActive = true
+		end
+
+		return rewardPanelOpen or rewardChestActive
+	end
+
+	method void UpdatePhasePanelVisibility(string phase)
+		self:ResolvePhasePanelEntities()
+		local isRewardChestPhase = self:IsRewardChestPhase(phase)
+
+		if self.itemDisplayAreaEntity ~= nil then
+			if phase == "Battle" or isRewardChestPhase then
+				self.itemDisplayAreaEntity:SetEnable(false)
+				self.itemDisplayAreaEntity:SetVisible(false)
+			elseif phase == "Preparation" or phase == "Shop" then
+				self.itemDisplayAreaEntity:SetEnable(true)
+				self.itemDisplayAreaEntity:SetVisible(true)
+			end
+		end
+
+		if self.scrollPanelEntity ~= nil then
+			if phase == "Battle" then
+				self.scrollPanelEntity:SetEnable(false)
+				self.scrollPanelEntity:SetVisible(false)
+			elseif phase == "Preparation" or phase == "Shop" then
+				self.scrollPanelEntity:SetEnable(true)
+				self.scrollPanelEntity:SetVisible(true)
+			end
+		end
+	end
 	method void ShowMainMenu()
 		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
 		if mainGroup ~= nil then
@@ -663,6 +737,7 @@ script UIMain extends Component
 		if self.gameManager ~= nil then
 			phase = self.gameManager.gamePhase
 		end
+		self:UpdatePhasePanelVisibility(phase)
 		
 		if self.btnBattleStart ~= nil then
 			self.btnBattleStart.Enable = (phase == "Preparation")

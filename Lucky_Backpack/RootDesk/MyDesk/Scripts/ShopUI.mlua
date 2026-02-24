@@ -51,6 +51,12 @@ script ShopUI extends Component
 
 	property any itemCardTemplateEntity = nil
 
+	property integer goldOrePurchaseCount = 0
+
+	property integer porkPurchaseCount = 0
+
+	property integer porkItemId = 12
+
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		    self.Entity:SetEnable(false)
@@ -125,6 +131,8 @@ script ShopUI extends Component
 		    self:RollShopTier()
 		
 		    self.shopItems = {}
+		    self.goldOrePurchaseCount = 0
+		    self.porkPurchaseCount = 0
 		
 		    if self.dataManager == nil then
 		        self:RenderShopItems()
@@ -515,6 +523,16 @@ script ShopUI extends Component
 	    if txtNameEntity ~= nil and txtNameEntity.TextComponent ~= nil then
 	        local displayName = itemData.name or ""
 	        if displayName == "" then displayName = "Unknown" end
+	        if self:IsLimitedGoldOreItem(itemData) == true then
+	            local limit = self:GetGoldOrePurchaseLimitByTier()
+	            if limit > 0 then
+	                local remaining = limit - self.goldOrePurchaseCount
+	                if remaining < 0 then
+	                    remaining = 0
+	                end
+	                displayName = displayName .. "\n(남은 개수 " .. tostring(remaining) .. "/" .. tostring(limit) .. ")"
+	            end
+	        end
 	        txtNameEntity.TextComponent.Text = displayName
 		        txtNameEntity.TextComponent.FontColor = Color(0, 0, 0, 1)
 		    end
@@ -538,6 +556,19 @@ script ShopUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method integer GetItemPrice(table itemData)
+		    local basePrice = self:GetBaseItemPrice(itemData)
+		    if self:IsPorkPriceScalingItem(itemData) == true then
+		        local multiplier = self.porkPurchaseCount + 1
+		        if multiplier < 1 then
+		            multiplier = 1
+		        end
+		        return basePrice * multiplier
+		    end
+		    return basePrice
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetBaseItemPrice(table itemData)
 		    if itemData == nil then
 		        return 1
 		    end
@@ -552,6 +583,15 @@ script ShopUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method boolean IsPorkPriceScalingItem(table itemData)
+		    if itemData == nil then
+		        return false
+		    end
+		    local itemId = tonumber(itemData.id) or 0
+		    return itemId == self.porkItemId
+	end
+
+	@ExecSpace("ClientOnly")
 	method integer GetSellPrice(integer itemId)
 		    if self.dataManager == nil then
 		        return 1
@@ -562,7 +602,7 @@ script ShopUI extends Component
 		        return 1
 		    end
 		
-		    local price = self:GetItemPrice(itemData)
+		    local price = self:GetBaseItemPrice(itemData)
 		    local sellPrice = math.floor(price * 0.5)
 		    if sellPrice <= 0 then
 		        sellPrice = 1
@@ -631,6 +671,17 @@ script ShopUI extends Component
 		        return
 		    end
 		
+		    local goldOreLimit = self:GetGoldOrePurchaseLimitByTier()
+		    local isGoldOreItem = self:IsLimitedGoldOreItem(itemData)
+		    if isGoldOreItem == true and goldOreLimit > 0 and self.goldOrePurchaseCount >= goldOreLimit then
+		        self.shopItems[index] = nil
+		        local soldCard = self.cardEntities[index]
+		        if soldCard ~= nil and isvalid(soldCard) then
+		            self:RenderCard(soldCard, nil)
+		        end
+		        return
+		    end
+		
 		    local price = self:GetItemPrice(itemData)
 		    if self.playerManager:SpendGold(price) == false then
 		        return
@@ -642,7 +693,7 @@ script ShopUI extends Component
 	    elseif string.lower(tostring(itemData.type or "")) == "grade_scroll" then
 	        self.playerManager:AddScroll(purchasedItemId, 1)
 	        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))
-	    else
+		    else
 		        if self.itemDisplayArea ~= nil then
 		            if self.itemDisplayArea.Entity ~= nil then
 		                self.itemDisplayArea.Entity:SetEnable(true)
@@ -650,24 +701,62 @@ script ShopUI extends Component
 		            end
 		            local nextIndex = #self.itemDisplayArea.spawnedItems
 		            local spawned = self.itemDisplayArea:CreateItemEntity(purchasedItemId, nextIndex)
-		            if spawned ~= nil and spawned.UITransformComponent ~= nil then
-		                spawned.UITransformComponent.anchoredPosition = Vector2(0, 100)
-		                if spawned.Item ~= nil then
-		                    spawned.Item.spawnPosition = {x = 0, y = 100}
-		                end
+		            if spawned ~= nil and self.itemDisplayArea.ArrangeItems ~= nil then
+		                self.itemDisplayArea:ArrangeItems()
+		            end
+		        end
+		    end
+
+		    if isGoldOreItem == true and goldOreLimit > 0 then
+		        self.goldOrePurchaseCount += 1
+		        if self.goldOrePurchaseCount >= goldOreLimit then
+		            self.shopItems[index] = nil
+		            local soldCard = self.cardEntities[index]
+		            if soldCard ~= nil and isvalid(soldCard) then
+		                self:RenderCard(soldCard, nil)
+		            end
+		        else
+		            local activeCard = self.cardEntities[index]
+		            if activeCard ~= nil and isvalid(activeCard) then
+		                self:RenderCard(activeCard, itemData)
 		            end
 		        end
 		    end
 		
-		    self.shopItems[index] = nil
-		    local soldCard = self.cardEntities[index]
-		    if soldCard ~= nil and isvalid(soldCard) then
-		        soldCard:Destroy()
+		    if self:IsPorkPriceScalingItem(itemData) == true then
+		        self.porkPurchaseCount += 1
+		        local activeCard = self.cardEntities[index]
+		        if activeCard ~= nil and isvalid(activeCard) then
+		            self:RenderCard(activeCard, itemData)
+		        end
 		    end
-		    self.cardEntities[index] = nil
 		
 		    self:UpdateGoldText()
 		    self:NotifyMainUI()
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer GetGoldOrePurchaseLimitByTier()
+		    if self.currentShopTier == "Epic" then
+		        return 1
+		    end
+		    if self.currentShopTier == "Unique" then
+		        return 2
+		    end
+		    if self.currentShopTier == "Legendary" then
+		        return 3
+		    end
+		    return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsLimitedGoldOreItem(table itemData)
+		    if itemData == nil then
+		        return false
+		    end
+		
+		    local itemType = string.lower(tostring(itemData.type or ""))
+		    return itemType == "goods"
 	end
 
 	@ExecSpace("ClientOnly")
