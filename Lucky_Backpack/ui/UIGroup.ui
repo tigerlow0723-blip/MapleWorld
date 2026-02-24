@@ -6959,12 +6959,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 830.0002,
-                "y": -66.1599
+                "x": 304.726959,
+                "y": -144.9999
               },
               "OffsetMin": {
-                "x": 634.128235,
-                "y": -166.1599
+                "x": 108.855049,
+                "y": -244.9999
               },
               "Pivot": {
                 "x": 0.5,
@@ -6977,12 +6977,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 732.0642,
-                "y": -116.1599
+                "x": 206.791,
+                "y": -194.9999
               },
               "Position": {
-                "x": 732.0642,
-                "y": -116.1599,
+                "x": 206.791,
+                "y": -194.9999,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6996,7 +6996,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "2860136c06ab075439721c027de365af"
+                "DataId": "134bcf5879df48fa8f6fc3a7cbc3c1eb"
               },
               "OverrideSorting": false,
               "Enable": true

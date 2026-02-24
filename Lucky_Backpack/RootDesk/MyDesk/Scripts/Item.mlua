@@ -37,6 +37,34 @@ script Item extends Component
 
 	property integer hpPercent = 0
 
+	property integer heldStages = 0
+
+	property integer armorUseCount = 0
+
+	property integer armorRemainingCount = 0
+
+	property integer armorAtkPercent = 0
+
+	property integer armorCritRate = 0
+
+	property integer armorCritDmg = 0
+
+	property integer armorWeaponCost = 0
+
+	property integer armorHpRecoveryPercent = 0
+
+	property boolean armorRollInitialized = false
+
+	property integer tempArmorAtkPercent = 0
+
+	property integer tempArmorCritRate = 0
+
+	property integer tempArmorCritDmg = 0
+
+	property integer tempArmorWeaponCost = 0
+
+	property integer tempArmorPotionHpPercent = 0
+
 	property integer spawnGroup = 0
 
 	property string desc = ""
@@ -164,6 +192,7 @@ script Item extends Component
 
 	@ExecSpace("ClientOnly")
 	method void InitFromTable(integer id)
+		    local previousItemId = self.itemId
 		    local itemData = nil
 		    self:ResolveDataManager()
 		    if self.dataManager ~= nil then
@@ -190,11 +219,29 @@ script Item extends Component
 		    self.critRate = tonumber(itemData.critRate) or 0
 		    self.critDmg = tonumber(itemData.critDmg) or 0
 		    self.hpPercent = tonumber(itemData.hpPercent) or 0
+		    self.armorUseCount = math.max(0, tonumber(itemData.count) or 0)
+		    self.armorAtkPercent = tonumber(itemData.armorAtkPercent) or 0
+		    self.armorCritRate = tonumber(itemData.armorCritRate) or 0
+		    self.armorCritDmg = tonumber(itemData.armorCritDmg) or 0
+		    self.armorWeaponCost = tonumber(itemData.weaponCost) or 0
+		    self.armorHpRecoveryPercent = 0
 		    self.spawnGroup = tonumber(itemData.spawnGroup) or 0
 		    self.desc = itemData.desc or ""
 		    self.spriteRUID = itemData.imageRUID or ""
 		    self.grade = itemData.grade or ""
 		    self.next_upgrade_id = tonumber(itemData.next_upgrade_id) or 0
+		    if previousItemId ~= self.itemId then
+		        self.armorRollInitialized = false
+		        self.heldStages = 0
+		    end
+		    if self.itemType == "armor" then
+		        self:EnsureArmorRolls(itemData)
+		        self:ResetArmorActivationCount()
+		    else
+		        self.armorRemainingCount = 0
+		        self.armorRollInitialized = false
+		    end
+		    self:ResetTemporaryArmorBuffs()
 
 		    local weaponDataSetName = "Data_Table - 아이템 - 장비"
 		    local weaponDataSet = _DataService:GetTable(weaponDataSetName)
@@ -346,6 +393,64 @@ script Item extends Component
 		        return math.random(1, 100)
 		    end
 		    return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer RollRangeInteger(integer minValue, integer maxValue, integer fallbackValue)
+		    local minVal = tonumber(minValue) or 0
+		    local maxVal = tonumber(maxValue) or 0
+		    local fallback = tonumber(fallbackValue) or 0
+		    if minVal == 0 and maxVal == 0 then
+		        return fallback
+		    end
+		    if minVal > maxVal then
+		        local tmp = minVal
+		        minVal = maxVal
+		        maxVal = tmp
+		    end
+		    if minVal == maxVal then
+		        return minVal
+		    end
+		    return math.random(minVal, maxVal)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EnsureArmorRolls(table itemData)
+		    if self.itemType ~= "armor" then
+		        return
+		    end
+		    if self.armorRollInitialized == true then
+		        return
+		    end
+		
+		    local minCritRate = tonumber(itemData.minCritRate) or 0
+		    local maxCritRate = tonumber(itemData.maxCritRate) or 0
+		    local minCritDmg = tonumber(itemData.minCritDmg) or 0
+		    local maxCritDmg = tonumber(itemData.maxCritDmg) or 0
+		    local minWeaponCost = tonumber(itemData.minWeaponCost) or 0
+		    local maxWeaponCost = tonumber(itemData.maxWeaponCost) or 0
+		    local minHpRecovery = tonumber(itemData.minHpRecovery) or 0
+		    local maxHpRecovery = tonumber(itemData.maxHpRecovery) or 0
+		
+		    self.armorCritRate = self:RollRangeInteger(minCritRate, maxCritRate, self.armorCritRate)
+		    self.armorCritDmg = self:RollRangeInteger(minCritDmg, maxCritDmg, self.armorCritDmg)
+		    self.armorWeaponCost = self:RollRangeInteger(minWeaponCost, maxWeaponCost, self.armorWeaponCost)
+		    self.armorHpRecoveryPercent = self:RollRangeInteger(minHpRecovery, maxHpRecovery, self.armorHpRecoveryPercent)
+		    self.armorRollInitialized = true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResetArmorActivationCount()
+		    self.armorRemainingCount = math.max(0, tonumber(self.armorUseCount) or 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResetTemporaryArmorBuffs()
+		    self.tempArmorAtkPercent = 0
+		    self.tempArmorCritRate = 0
+		    self.tempArmorCritDmg = 0
+		    self.tempArmorWeaponCost = 0
+		    self.tempArmorPotionHpPercent = 0
 	end
 
 	@ExecSpace("ClientOnly")

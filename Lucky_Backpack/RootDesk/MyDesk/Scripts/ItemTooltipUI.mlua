@@ -61,6 +61,8 @@ script ItemTooltipUI extends Component
 
 	property number basePanelHeight = 0
 
+	property number basePanelWidth = 0
+
 	property number basePanelTop = 0
 
 	property number baseStatsHeight = 0
@@ -89,11 +91,17 @@ script ItemTooltipUI extends Component
 
 	property number panelBottomPadding = 24
 
+	property number panelBottomExtraPadding = 20
+
+	property number panelRightExtraPadding = 20
+
 	property number minPanelHeight = 260
 
 	property boolean isTooltipHovered = false
 
 	property boolean tooltipPanelEventsBound = false
+
+	property integer nameTextFontSize = 30
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -209,7 +217,7 @@ script ItemTooltipUI extends Component
 		self:SetItemImage(itemData)
 		self:SetTypeText(itemData)
 		self:SetGradeText(itemData)
-		self:SetStatsText(itemData)
+		self:SetStatsText(itemId, itemData, screenPos)
 		self:SetWeaponSynergyText(itemId, itemData, screenPos)
 		self:SetAtkCountText(itemId, itemData, screenPos)
 		self:ApplySynergyTooltipText(itemId, screenPos)
@@ -328,6 +336,9 @@ script ItemTooltipUI extends Component
 	method void SetNameText(table itemData)
 		if self.nameText ~= nil and self.nameText.TextComponent ~= nil then
 			self.nameText.TextComponent.Text = tostring(itemData.name or "")
+			pcall(function()
+				self.nameText.TextComponent.FontSize = self.nameTextFontSize
+			end)
 		end
 	end
 
@@ -360,10 +371,16 @@ script ItemTooltipUI extends Component
 			return "Weapon"
 		elseif lower == "armor" then
 			return "Armor"
+		elseif lower == "potion" then
+			return "Potion"
 		elseif lower == "consumable" then
 			return "Consumable"
 		elseif lower == "expand" then
-			return "Expand"
+			return "Inventory Expansion"
+		elseif lower == "scroll" then
+			return "Scroll"
+		elseif lower == "goods" then
+			return "Goods/Material"
 		end
 		return itemType
 	end
@@ -371,11 +388,6 @@ script ItemTooltipUI extends Component
 	@ExecSpace("ClientOnly")
 	method boolean ShouldSuppressTooltip(table itemData)
 		if itemData == nil then
-			return true
-		end
-		
-		local itemType = tostring(itemData.type or "")
-		if string.lower(itemType) == "expand" then
 			return true
 		end
 		return false
@@ -415,13 +427,13 @@ script ItemTooltipUI extends Component
 		end
 		
 		if gradeLower == "rare" then
-			return Color(0.2, 0.8, 1.0, 1)
+			return Color(0.12, 0.52, 1.0, 1)
 		elseif gradeLower == "epic" then
-			return Color(0.7, 0.4, 1.0, 1)
+			return Color(0.70, 0.34, 1.0, 1)
 		elseif gradeLower == "unique" then
-			return Color(1.0, 0.9, 0.2, 1)
+			return Color(1.0, 0.78, 0.12, 1)
 		elseif gradeLower == "legendary" then
-			return Color(0.3, 1.0, 0.3, 1)
+			return Color(0.08, 0.92, 0.38, 1)
 		end
 		return Color(1, 1, 1, 1)
 	end
@@ -441,38 +453,115 @@ script ItemTooltipUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method string BuildStatsText(table itemData)
-		local lines = ""
+	method string FormatSignedNumber(number value)
+		local numeric = tonumber(value) or 0
+		if numeric > 0 then
+			return "+" .. tostring(numeric)
+		end
+		return tostring(numeric)
+	end
+
+	@ExecSpace("ClientOnly")
+	method string FormatSignedPercent(number value)
+		return self:FormatSignedNumber(value) .. "%"
+	end
+
+	@ExecSpace("ClientOnly")
+	method string BuildStatsText(integer itemId, table itemData, Vector2 screenPos)
+		local lineList = {}
+		local function appendLine(text)
+			if text ~= nil and text ~= "" then
+				lineList[#lineList + 1] = text
+			end
+		end
+		
+		local itemType = string.lower(tostring(itemData.type or ""))
+		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
+		
+		if itemType == "potion" then
+			local hp = tonumber(itemData.hp) or 0
+			local hpPercent = tonumber(itemData.hpPercent) or 0
+			if hp > 0 then
+				appendLine("Used to restore " .. tostring(hp) .. " HP")
+			end
+			if hpPercent > 0 then
+				appendLine("Used to restore " .. tostring(hpPercent) .. "% Max HP")
+			end
+		end
+		
+		if itemType == "armor" then
+			local hp = tonumber(itemData.hp) or 0
+			if hp ~= 0 then
+				appendLine("Max HP: " .. self:FormatSignedNumber(hp))
+			end
+			
+			local cost = tonumber(itemData.cost) or 0
+			appendLine("MP Cost on Activation: " .. tostring(cost))
+			
+			local count = math.max(0, tonumber(itemData.count) or 0)
+			appendLine("Usable " .. tostring(count) .. " time(s) per turn")
+			
+			local optionText = tostring(itemData.text or "")
+			if optionText == "" then
+				optionText = tostring(itemData.desc or "")
+			end
+			if optionText ~= "" then
+				appendLine("Option: " .. optionText)
+			end
+			
+			if itemComp ~= nil and itemComp.armorRollInitialized == true then
+				local rolledCritRate = tonumber(itemComp.armorCritRate) or 0
+				local rolledCritDmg = tonumber(itemComp.armorCritDmg) or 0
+				local rolledWeaponCost = tonumber(itemComp.armorWeaponCost) or 0
+				local rolledHpRecovery = tonumber(itemComp.armorHpRecoveryPercent) or 0
+				
+				if rolledCritRate ~= 0 then
+					appendLine("<color=#FFD54F>Rolled: Crit Rate " .. self:FormatSignedPercent(rolledCritRate) .. "</color>")
+				end
+				if rolledCritDmg ~= 0 then
+					appendLine("<color=#FFD54F>Rolled: Crit DMG " .. self:FormatSignedPercent(rolledCritDmg) .. "</color>")
+				end
+				if rolledWeaponCost ~= 0 then
+					appendLine("<color=#FFD54F>Rolled: Weapon MP Cost " .. self:FormatSignedNumber(rolledWeaponCost) .. "</color>")
+				end
+				if rolledHpRecovery ~= 0 then
+					appendLine("<color=#FFD54F>Rolled: Potion HP Recovery " .. self:FormatSignedPercent(rolledHpRecovery) .. "</color>")
+				end
+			end
+			
+			return table.concat(lineList, "\n")
+		end
 		
 		local atk = tonumber(itemData.atk) or 0
 		if atk ~= 0 then
-			lines = lines .. "Attack: " .. tostring(atk) .. "~" .. tostring(atk)
+			appendLine("Attack: " .. tostring(atk) .. "~" .. tostring(atk))
 		end
 		
 		local critRate = tonumber(itemData.critRate) or 0
 		if critRate ~= 0 then
-			if lines ~= "" then lines = lines .. "\n" end
-			lines = lines .. "Crit Rate: " .. tostring(critRate) .. "%"
+			appendLine("Crit Rate: " .. tostring(critRate) .. "%")
 		end
 		
 		local critDmg = tonumber(itemData.critDmg) or 0
 		if critDmg ~= 0 then
-			if lines ~= "" then lines = lines .. "\n" end
-			lines = lines .. "Crit Damage: " .. tostring(critDmg) .. "%"
+			appendLine("Crit Damage: " .. tostring(critDmg) .. "%")
 		end
 		
 		local cost = tonumber(itemData.cost) or 0
-		if lines ~= "" then lines = lines .. "\n" end
-		lines = lines .. "<color=#87CEEB>MP Cost on Attack: " .. tostring(cost) .. "</color>"
+		if itemType == "weapon" then
+			appendLine("<color=#87CEEB>MP Cost on Attack: " .. tostring(cost) .. "</color>")
+		else
+			appendLine("<color=#87CEEB>MP Cost: " .. tostring(cost) .. "</color>")
+		end
 		
-		return lines
+		return table.concat(lineList, "\n")
 	end
 
 	@ExecSpace("ClientOnly")
-	method void SetStatsText(table itemData)
+	method void SetStatsText(integer itemId, table itemData, Vector2 screenPos)
 		if self.statsText ~= nil and self.statsText.TextComponent ~= nil then
 			self.statsText.TextComponent.IsRichText = true
-			self.statsText.TextComponent.Text = self:BuildStatsText(itemData)
+			self.statsText.TextComponent.Text = self:BuildStatsText(itemId, itemData, screenPos)
 		end
 	end
 
@@ -688,6 +777,7 @@ script ItemTooltipUI extends Component
 		end
 		
 		self.basePanelHeight = panelUI.RectSize.y
+		self.basePanelWidth = panelUI.RectSize.x
 		self.basePanelTop = panelUI.RectSize.y * 0.5
 		self.baseStatsHeight = statsUI.RectSize.y
 		self.baseStatsTop = statsUI.anchoredPosition.y + (statsUI.RectSize.y * 0.5)
@@ -780,12 +870,16 @@ script ItemTooltipUI extends Component
 		end
 		
 		local targetStatsHeight = self:GetPreferredStatsHeight()
-		local targetPanelHeight = (self.basePanelTop - self.baseStatsTop) + targetStatsHeight + self.panelBottomPadding
+		local targetPanelHeight = (self.basePanelTop - self.baseStatsTop) + targetStatsHeight + self.panelBottomPadding + self.panelBottomExtraPadding
 		if targetPanelHeight < self.minPanelHeight then
 			targetPanelHeight = self.minPanelHeight
 		end
+		local targetPanelWidth = self.basePanelWidth + self.panelRightExtraPadding
+		if targetPanelWidth < self.basePanelWidth then
+			targetPanelWidth = self.basePanelWidth
+		end
 		
-		panelUI.RectSize = Vector2(panelUI.RectSize.x, targetPanelHeight)
+		panelUI.RectSize = Vector2(targetPanelWidth, targetPanelHeight)
 		local deltaHalf = (self.basePanelHeight - targetPanelHeight) * 0.5
 		self.tooltipDynamicYOffset = deltaHalf
 		self:AdjustTopSectionAnchors(deltaHalf)

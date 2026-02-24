@@ -972,10 +972,30 @@ script InventoryUI extends Component
 		                battleManager:OnPlayerUseItemById(itemComp.itemId, targetMonsterIdx)
 		                self:EmitInventoryChangedEvent()
 		                return
-		            elseif itemComp.itemType == "consumable" then
-		                if self:IsInventoryUsableConsumable(itemComp.itemId) == false then
-		                    return
+		            elseif itemComp.itemType == "armor" then
+		                local usedArmor = battleManager:OnPlayerUseArmorByComponent(itemComp)
+		                if usedArmor then
+		                    self:EmitInventoryChangedEvent()
 		                end
+		                return
+		            elseif itemComp.itemType == "potion" then
+		                local usedPotion = battleManager:OnPlayerUsePotionByComponent(itemComp)
+		                if usedPotion then
+		                    local inventory = self.Entity.Inventory
+		                    if inventory ~= nil and itemComp:IsPlaced() then
+		                        inventory:RemoveItemAt(itemComp.itemId, itemComp.gridRow, itemComp.gridCol, itemComp.width, itemComp.height)
+		                    end
+		                    if gameSystem.PlayerManager ~= nil then
+		                        gameSystem.PlayerManager:SyncInventoryFromGrid()
+		                    end
+		                    if isvalid(itemEntity) then
+		                        itemEntity:Destroy()
+		                    end
+		                    self:RenderGrid()
+		                    self:EmitInventoryChangedEvent()
+		                end
+		                return
+		            elseif itemComp.itemType == "consumable" then
 		                local used = battleManager:OnPlayerUseConsumableById(itemComp.itemId)
 		                if used then
 		                    local inventory = self.Entity.Inventory

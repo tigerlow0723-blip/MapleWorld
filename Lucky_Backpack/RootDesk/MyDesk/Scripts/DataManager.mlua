@@ -548,7 +548,8 @@ script DataManager extends Component
 					end
 		
 					local id = getNumber("id", "ID", 0)
-					if id > 0 and self.ItemTable[id] == nil then
+					if id > 0 then
+						local isNewEntry = (self.ItemTable[id] == nil)
 						local data = {}
 						data.id = id
 						data.type = getString("type", "")
@@ -632,7 +633,9 @@ script DataManager extends Component
 						end
 		
 						self.ItemTable[id] = data
-						loadedCount += 1
+						if isNewEntry == true then
+							loadedCount += 1
+						end
 					end
 				end
 			end
