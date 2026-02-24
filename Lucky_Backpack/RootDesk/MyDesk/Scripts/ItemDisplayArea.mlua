@@ -394,9 +394,17 @@ script ItemDisplayArea extends Component
 		if itemUI ~= nil then
 			itemUI.RectSize = Vector2(math.max(2, displayBoundsW), math.max(2, displayBoundsH))
 		end
+		local itemRotation = 0
+		if itemUI ~= nil and itemUI.ZRotation ~= nil then
+			itemRotation = tonumber(itemUI.ZRotation) or 0
+		end
+		local compensationRad = (-itemRotation) * (math.pi / 180.0)
+		local compensationCos = math.cos(compensationRad)
+		local compensationSin = math.sin(compensationRad)
 		
 		local createdCount = 0
 		local cellAlpha = 0.02
+		local cellColor = Color(1, 1, 1, cellAlpha)
 		for i = 1, #shapeCells do
 			local cell = shapeCells[i]
 			if cell ~= nil then
@@ -420,15 +428,18 @@ script ItemDisplayArea extends Component
 						hitUI.AnchorsMin = Vector2(0.5, 0.5)
 						hitUI.AnchorsMax = Vector2(0.5, 0.5)
 						hitUI.Pivot = Vector2(0.5, 0.5)
-						local x = (-shapeBoundsW * 0.5) + (((col - minCol) + 0.5) * cellSizeX)
-						local y = (shapeBoundsH * 0.5) - (((row - minRow) + 0.5) * cellSizeY)
-						hitUI.anchoredPosition = Vector2(x, y)
+						local targetX = (-shapeBoundsW * 0.5) + (((col - minCol) + 0.5) * cellSizeX)
+						local targetY = (shapeBoundsH * 0.5) - (((row - minRow) + 0.5) * cellSizeY)
+						-- Keep hit-cell world centers aligned with rotated shape logic.
+						local localX = targetX * compensationCos - targetY * compensationSin
+						local localY = targetX * compensationSin + targetY * compensationCos
+						hitUI.anchoredPosition = Vector2(localX, localY)
 						hitUI.RectSize = Vector2(math.max(2, cellSizeX - pad), math.max(2, cellSizeY - pad))
 					end
 					
 					local hitRenderer = hitCell.SpriteGUIRendererComponent
 					if hitRenderer ~= nil then
-						hitRenderer.Color = Color(1, 1, 1, cellAlpha)
+						hitRenderer.Color = cellColor
 						hitRenderer.RaycastTarget = true
 					end
 					
@@ -476,6 +487,7 @@ script ItemDisplayArea extends Component
 		
 		local shapeCellFound = false
 		local cellAlpha = 0.02
+		local visibleColor = Color(1, 1, 1, cellAlpha)
 		local children = itemEntity.Children
 		if children ~= nil then
 			for i = 1, #children do
@@ -492,11 +504,11 @@ script ItemDisplayArea extends Component
 						end
 						local hitRenderer = child.SpriteGUIRendererComponent
 						if hitRenderer ~= nil then
-							local alpha = 0
 							if useShapeHitCell == true then
-								alpha = cellAlpha
+								hitRenderer.Color = visibleColor
+							else
+								hitRenderer.Color = Color(1, 1, 1, 0)
 							end
-							hitRenderer.Color = Color(1, 1, 1, alpha)
 							hitRenderer.RaycastTarget = useShapeHitCell
 						end
 					end
