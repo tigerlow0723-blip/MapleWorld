@@ -93,7 +93,7 @@ script PlayerManager extends Component
 			return result
 		end
 		local itemType = string.lower(tostring(itemData.type or ""))
-		if itemType ~= "scroll" then
+		if itemType ~= "atk_scroll" then
 			return result
 		end
 		local minAtk = tonumber(itemData.minAtk) or 0
@@ -833,9 +833,9 @@ script PlayerManager extends Component
 			return
 		end
 		
-		if typeId == 9 then
+		if typeId == 10 then
 			self.scrollNormal = (self.scrollNormal or 0) + amount
-		elseif typeId == 10 then
+		elseif typeId == 11 then
 			self.scrollGuaranteed = (self.scrollGuaranteed or 0) + amount
 		else
 			return
@@ -851,9 +851,9 @@ script PlayerManager extends Component
 		end
 		
 		local current = 0
-		if typeId == 9 then
+		if typeId == 10 then
 			current = self.scrollNormal or 0
-		elseif typeId == 10 then
+		elseif typeId == 11 then
 			current = self.scrollGuaranteed or 0
 		else
 			return false
@@ -864,7 +864,7 @@ script PlayerManager extends Component
 			return false
 		end
 		
-		if typeId == 9 then
+		if typeId == 10 then
 			self.scrollNormal = current - amount
 		else
 			self.scrollGuaranteed = current - amount

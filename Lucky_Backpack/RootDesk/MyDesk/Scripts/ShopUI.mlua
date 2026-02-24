@@ -213,7 +213,7 @@ script ShopUI extends Component
 		        local maxAtk = tonumber(itemData.maxAtk) or tonumber(itemData.max_atk) or 0
 		        local itemSpawnGroup = tonumber(itemData.spawnGroup) or 1
 		
-		        if itemType == "scroll" then
+		        if itemType == "atk_scroll" then
 		            local hasAtkRange = (minAtk > 0 or maxAtk > 0)
 		            if hasAtkRange == true then
 		                local peakAtk = math.max(minAtk, maxAtk)
@@ -230,33 +230,33 @@ script ShopUI extends Component
 		                        slots.highAtkScroll = itemData
 		                    end
 		                end
+		            end
+		        elseif itemType == "grade_scroll" then
+		            if slots.gradeScroll == nil then
+		                slots.gradeScroll = itemData
 		            else
-		                if slots.gradeScroll == nil then
+		                local gradePrice = tonumber(slots.gradeScroll.price) or tonumber(slots.gradeScroll.cost) or 0
+		                if price < gradePrice then
+		                    local previousGrade = slots.gradeScroll
 		                    slots.gradeScroll = itemData
-		                else
-		                    local gradePrice = tonumber(slots.gradeScroll.price) or tonumber(slots.gradeScroll.cost) or 0
-		                    if price < gradePrice then
-		                        local previousGrade = slots.gradeScroll
-		                        slots.gradeScroll = itemData
-		                        if previousGrade ~= nil then
-		                            if slots.fixedGradeScroll == nil then
-		                                slots.fixedGradeScroll = previousGrade
-		                            else
-		                                local fixedPrice = tonumber(slots.fixedGradeScroll.price) or tonumber(slots.fixedGradeScroll.cost) or 0
-		                                local prevPrice = tonumber(previousGrade.price) or tonumber(previousGrade.cost) or 0
-		                                if prevPrice > fixedPrice then
-		                                    slots.fixedGradeScroll = previousGrade
-		                                end
-		                            end
-		                        end
-		                    else
+		                    if previousGrade ~= nil then
 		                        if slots.fixedGradeScroll == nil then
-		                            slots.fixedGradeScroll = itemData
+		                            slots.fixedGradeScroll = previousGrade
 		                        else
 		                            local fixedPrice = tonumber(slots.fixedGradeScroll.price) or tonumber(slots.fixedGradeScroll.cost) or 0
-		                            if price > fixedPrice then
-		                                slots.fixedGradeScroll = itemData
+		                            local prevPrice = tonumber(previousGrade.price) or tonumber(previousGrade.cost) or 0
+		                            if prevPrice > fixedPrice then
+		                                slots.fixedGradeScroll = previousGrade
 		                            end
+		                        end
+		                    end
+		                else
+		                    if slots.fixedGradeScroll == nil then
+		                        slots.fixedGradeScroll = itemData
+		                    else
+		                        local fixedPrice = tonumber(slots.fixedGradeScroll.price) or tonumber(slots.fixedGradeScroll.cost) or 0
+		                        if price > fixedPrice then
+		                            slots.fixedGradeScroll = itemData
 		                        end
 		                    end
 		                end
@@ -639,7 +639,7 @@ script ShopUI extends Component
 	    local purchasedItemId = tonumber(itemData.id) or 0
 	    if self:IsImmediateShopConsumable(itemData) then
 	        self:ApplyImmediateConsumableEffect(itemData)
-	    elseif purchasedItemId == 9 or purchasedItemId == 10 then
+	    elseif string.lower(tostring(itemData.type or "")) == "grade_scroll" then
 	        self.playerManager:AddScroll(purchasedItemId, 1)
 	        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))
 	    else

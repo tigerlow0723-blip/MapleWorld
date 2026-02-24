@@ -355,8 +355,8 @@ script RewardUI extends Component
 			end
 			
 			local itemId = tonumber(rewardInfo.id) or 0
-			local itemType = tostring(rewardInfo.type or "")
-			if itemType == "scroll" or itemId == 9 or itemId == 10 then
+			local itemType = string.lower(tostring(rewardInfo.type or ""))
+			if itemType == "grade_scroll" then
 				if playerManager ~= nil and itemId > 0 then
 					playerManager:AddScroll(itemId, 1)
 				end
