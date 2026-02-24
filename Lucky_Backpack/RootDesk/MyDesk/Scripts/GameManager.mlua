@@ -63,6 +63,8 @@ script GameManager extends Component
 
 	property integer stageOutroPlayerWalkSteps = 30
 
+	property number stageEntryCinematicDelay = 0.05
+
 	property boolean isStageTransitioning = false
 
 	property boolean hasStagePlayerAnchor = false
@@ -297,6 +299,7 @@ script GameManager extends Component
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
 		self.currentStage = 1
+		self.hasStagePlayerAnchor = false
 		
 		--
 		if self.playerManager == nil then
@@ -342,8 +345,7 @@ script GameManager extends Component
 		--
 		--
 		self:UpdateBackground()
-		self:PlayStageFadeIn()
-		self:PlayPlayerStageIntro()
+		self:QueueStageEntryCinematic()
 	end
 
 	method void ProceedToStage()
@@ -366,8 +368,26 @@ script GameManager extends Component
 		end
 		
 		self:UpdateBackground()
-		self:PlayStageFadeIn()
-		self:PlayPlayerStageIntro()
+		self:QueueStageEntryCinematic()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void QueueStageEntryCinematic()
+		if not self:IsClient() then
+			return
+		end
+		
+		local delay = self.stageEntryCinematicDelay or 0
+		if delay <= 0 then
+			self:PlayStageFadeIn()
+			self:PlayPlayerStageIntro()
+			return
+		end
+		
+		_TimerService:SetTimerOnce(function()
+			self:PlayStageFadeIn()
+			self:PlayPlayerStageIntro()
+		end, delay)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -471,6 +491,7 @@ script GameManager extends Component
 			
 			local stateAnim = animTarget.StateAnimationComponent
 			if stateAnim ~= nil then
+				stateAnim.Enable = true
 				pcall(function()
 					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("move", "stand"))
 				end)
@@ -492,6 +513,7 @@ script GameManager extends Component
 			
 			local stateAnim = animTarget.StateAnimationComponent
 			if stateAnim ~= nil then
+				stateAnim.Enable = true
 				pcall(function()
 					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("stand", "move"))
 				end)
@@ -519,18 +541,30 @@ script GameManager extends Component
 			return
 		end
 		
-		local targetPos = player.TransformComponent.WorldPosition
-		self.stagePlayerAnchorX = targetPos.x
-		self.stagePlayerAnchorY = targetPos.y
-		self.hasStagePlayerAnchor = true
-
-		local startX = targetPos.x - (self.stageIntroPlayerOffsetX or 0)
-		local startY = targetPos.y
+		local targetX = player.TransformComponent.WorldPosition.x
+		local targetY = player.TransformComponent.WorldPosition.y
+		if self.hasStagePlayerAnchor == true then
+			targetX = self.stagePlayerAnchorX
+			targetY = self.stagePlayerAnchorY
+		else
+			self.stagePlayerAnchorX = targetX
+			self.stagePlayerAnchorY = targetY
+			self.hasStagePlayerAnchor = true
+		end
+		
+		local startX = targetX - (self.stageIntroPlayerOffsetX or 0)
+		local startY = targetY
 		local stepDelay = duration / steps
 		local step = 0
 		
 		self:BeginPlayerCinematic(player)
 		self:SetEntityWorldPosition(player, startX, startY)
+		
+		local sprite = player.SpriteRendererComponent
+		if sprite ~= nil then
+			sprite.FlipX = true
+		end
+		
 		self:PlayPlayerWalkAnim(player)
 		
 		local moveStep = nil
@@ -546,8 +580,8 @@ script GameManager extends Component
 				t = 1
 			end
 			
-			local newX = startX + ((targetPos.x - startX) * t)
-			local newY = startY + ((targetPos.y - startY) * t)
+			local newX = startX + ((targetX - startX) * t)
+			local newY = startY + ((targetY - startY) * t)
 			self:SetEntityWorldPosition(alivePlayer, newX, newY)
 			
 			if step < steps then
@@ -998,3 +1032,4 @@ script GameManager extends Component
 	end
 
 end
+
