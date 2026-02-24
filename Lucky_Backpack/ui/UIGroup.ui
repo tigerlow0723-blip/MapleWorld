@@ -7297,30 +7297,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 827.471863,
-                "y": 432.716675
+                "x": 853.875854,
+                "y": 418.864868
               },
               "OffsetMin": {
-                "x": 325.6701,
-                "y": -306.148254
+                "x": 251.243317,
+                "y": -320.000061
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 501.801727,
+                "x": 602.6325,
                 "y": 738.8649
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 576.571,
-                "y": 63.2842
+                "x": 552.5596,
+                "y": 49.4324
               },
               "Position": {
-                "x": 576.571,
-                "y": 63.2842,
+                "x": 552.5596,
+                "y": 49.4324,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7334,7 +7334,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "c084bd224b584f838e25d041bbabfb7b"
+                "DataId": "4f719dd721d74af3bb57d48376c7f106"
               },
               "OverrideSorting": false,
               "Enable": true
@@ -7379,12 +7379,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -32.1397476,
-                "y": 265.4187
+                "x": -3.918747,
+                "y": 278.6424
               },
               "OffsetMin": {
-                "x": -193.403259,
-                "y": 121.7955
+                "x": -165.182251,
+                "y": 135.0192
               },
               "Pivot": {
                 "x": 0.5,
@@ -7397,12 +7397,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -112.7715,
-                "y": 193.6071
+                "x": -84.5505,
+                "y": 206.8308
               },
               "Position": {
-                "x": -112.7715,
-                "y": 193.6071,
+                "x": -84.5505,
+                "y": 206.8308,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7416,7 +7416,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "691ca26fa0df43d885924fb001d818f5"
+                "DataId": "134bcf5879df48fa8f6fc3a7cbc3c1eb"
               },
               "OverrideSorting": false,
               "Color": {
@@ -11229,7 +11229,7 @@
           "name": "TooltipPanel",
           "path": "/ui/UIGroup/TooltipPanel",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 18,
@@ -11351,30 +11351,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 140.0,
-                "y": 211.552582
+                "x": 167.5104,
+                "y": 213.552582
               },
               "OffsetMin": {
-                "x": -140.0,
-                "y": 164.447418
+                "x": -152.4896,
+                "y": 166.447418
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 280.0,
+                "x": 320.0,
                 "y": 47.1051559
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 0.0,
-                "y": 188.0
+                "x": 7.5104,
+                "y": 190.0
               },
               "Position": {
-                "x": 0.0,
-                "y": 188.0,
+                "x": 7.5104,
+                "y": 190.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11395,7 +11395,7 @@
               "Alignment": 3,
               "AllowAutomaticTranslation": true,
               "Bold": true,
-              "FontSize": 36,
+              "FontSize": 30,
               "MaxSize": 40,
               "MinSize": 10,
               "OutlineDistance": {
@@ -11403,7 +11403,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "목검",
+              "Text": "하급 무기 공격력 주문서",
               "Enable": true
             }
           ],
@@ -11525,12 +11525,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 142.9946,
-                "y": 40.7229
+                "x": 81.300705,
+                "y": 38.5601
               },
               "OffsetMin": {
-                "x": 92.9946,
-                "y": -9.2771
+                "x": 31.3007011,
+                "y": -11.4399
               },
               "Pivot": {
                 "x": 0.5,
@@ -11548,8 +11548,8 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 117.9946,
-                "y": 15.7229
+                "x": 56.3007,
+                "y": 13.5601
               },
               "Rotation": {
                 "x": 0.0,
@@ -11557,8 +11557,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 117.9946,
-                "y": 15.7229,
+                "x": 56.3007,
+                "y": 13.5601,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11812,12 +11812,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 79.0115051,
-                "y": 40.7229
+                "x": 141.3002,
+                "y": 38.5602
               },
               "OffsetMin": {
-                "x": 29.0115013,
-                "y": -9.2771
+                "x": 91.3002,
+                "y": -11.4398
               },
               "Pivot": {
                 "x": 0.5,
@@ -11835,8 +11835,8 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 54.0115,
-                "y": 15.7229
+                "x": 116.3002,
+                "y": 13.5602
               },
               "Rotation": {
                 "x": 0.0,
@@ -11844,8 +11844,8 @@
                 "z": 0.0
               },
               "Position": {
-                "x": 54.0115,
-                "y": 15.7229,
+                "x": 116.3002,
+                "y": 13.5602,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -12191,12 +12191,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 141.300781,
-                "y": -0.326658249
+                "x": 151.300476,
+                "y": -44.5816574
               },
               "OffsetMin": {
-                "x": -34.7355728,
-                "y": -50.73774
+                "x": -24.7358742,
+                "y": -94.9927444
               },
               "Pivot": {
                 "x": 0.5,
@@ -12209,12 +12209,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 53.2826,
-                "y": -25.5322
+                "x": 63.2823,
+                "y": -69.7872
               },
               "Position": {
-                "x": 53.2826,
-                "y": -25.5322,
+                "x": 63.2823,
+                "y": -69.7872,
                 "z": 0.0
               },
               "QuaternionRotation": {

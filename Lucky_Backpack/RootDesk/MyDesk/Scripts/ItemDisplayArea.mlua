@@ -811,6 +811,19 @@ script ItemDisplayArea extends Component
 		-- Horizontal zigzag layout: start from left-bottom and move to the right.
 		local horizontalSpacing = self.verticalSpacing + 20
 		local zigzagOffsetY = self.horizontalOffset + 10
+		local panelWidth = 0
+		if self.Entity ~= nil and self.Entity.UITransformComponent ~= nil then
+			panelWidth = tonumber(self.Entity.UITransformComponent.RectSize.x) or 0
+		end
+		
+		if itemCount > 1 and panelWidth > 0 then
+			local maxUsableWidth = panelWidth * 0.8
+			local maxSpacingByPanel = maxUsableWidth / (itemCount - 1)
+			if horizontalSpacing > maxSpacingByPanel then
+				horizontalSpacing = maxSpacingByPanel
+			end
+		end
+		
 		local totalWidth = (itemCount - 1) * horizontalSpacing
 		local startX = -totalWidth * 0.5
 		

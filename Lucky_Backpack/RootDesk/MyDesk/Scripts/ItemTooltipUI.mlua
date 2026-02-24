@@ -639,7 +639,25 @@ script ItemTooltipUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method boolean IsSynergyScrollId(integer itemId)
-		return itemId == 6 or itemId == 7 or itemId == 8
+		self:ResolvePlayerManager()
+		if self.playerManager ~= nil and self.playerManager.IsSynergyScrollId ~= nil then
+			return self.playerManager:IsSynergyScrollId(itemId)
+		end
+		self:ResolveDataManager()
+		if self.dataManager == nil then
+			return false
+		end
+		local itemData = self.dataManager:GetItemData(itemId)
+		if itemData == nil then
+			return false
+		end
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "scroll" then
+			return false
+		end
+		local minAtk = tonumber(itemData.minAtk) or 0
+		local maxAtk = tonumber(itemData.maxAtk) or 0
+		return (minAtk > 0 or maxAtk > 0)
 	end
 
 	@ExecSpace("ClientOnly")

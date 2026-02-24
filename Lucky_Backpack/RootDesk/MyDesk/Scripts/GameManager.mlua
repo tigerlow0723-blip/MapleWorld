@@ -994,8 +994,23 @@ script GameManager extends Component
 			self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
 		end
 		
-		local rewardSummary = self:BuildRewardSummary(self.pendingRewards)
-		log("[RewardLog][GameManager] pending_rewards index=-1 id=-1 name=pending_rewards type=mixed count=" .. tostring(#self.pendingRewards) .. " items=" .. rewardSummary)
+		local rewardCount = #self.pendingRewards
+		if rewardCount <= 0 then
+			log("[RewardLog][GameManager] pending_reward index=-1 id=-1 name=none type=none count=0")
+		else
+			for i = 1, rewardCount do
+				local reward = self.pendingRewards[i]
+				if reward ~= nil then
+					local rewardId = reward.id or -1
+					local rewardName = reward.name or "unknown"
+					local rewardType = reward.type or "unknown"
+					log("[RewardLog][GameManager] pending_reward index=" .. tostring(i - 1)
+						.. " id=" .. tostring(rewardId)
+						.. " name=" .. tostring(rewardName)
+						.. " type=" .. tostring(rewardType))
+				end
+			end
+		end
 		
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)
