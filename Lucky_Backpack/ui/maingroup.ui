@@ -350,12 +350,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 915.6541,
-                "y": 495.7554
+                "x": 876.0881,
+                "y": -375.2886
               },
               "OffsetMin": {
-                "x": 815.6541,
-                "y": 395.7554
+                "x": 776.0881,
+                "y": -475.2886
               },
               "Pivot": {
                 "x": 0.5,
@@ -368,12 +368,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 865.6541,
-                "y": 445.7554
+                "x": 826.0881,
+                "y": -425.2886
               },
               "Position": {
-                "x": 865.6541,
-                "y": 445.7554,
+                "x": 826.0881,
+                "y": -425.2886,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -387,9 +387,10 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "18c35be086b402c47a73ee7a47e6f97b"
+                "DataId": "1a6ffb171d1ca0a4f857591c8f8d21e9"
               },
               "OverrideSorting": false,
+              "FlipY": true,
               "Enable": true
             },
             {
@@ -477,12 +478,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 851.4424,
-                "y": -375.2886
+                "x": 914.282,
+                "y": 483.5197
               },
               "OffsetMin": {
-                "x": 751.4424,
-                "y": -475.2886
+                "x": 814.282,
+                "y": 383.5197
               },
               "Pivot": {
                 "x": 0.5,
@@ -495,12 +496,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 801.4424,
-                "y": -425.2886
+                "x": 864.282,
+                "y": 433.5197
               },
               "Position": {
-                "x": 801.4424,
-                "y": -425.2886,
+                "x": 864.282,
+                "y": 433.5197,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -514,7 +515,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "1a6ffb171d1ca0a4f857591c8f8d21e9"
+                "DataId": "18c35be086b402c47a73ee7a47e6f97b"
               },
               "OverrideSorting": false,
               "SortingLayer": "MapLayer0",
