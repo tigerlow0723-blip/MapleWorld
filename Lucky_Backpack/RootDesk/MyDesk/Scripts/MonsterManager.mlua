@@ -934,7 +934,18 @@ script MonsterManager extends Component
 		local sheet = stateAnim.ActionSheet
 		if sheet == nil then return end
 		
-		local sheetKey = "stand"
+		local idleKey = "stand"
+		if sheet["stand"] ~= nil then
+			idleKey = "stand"
+		elseif sheet["fly"] ~= nil then
+			idleKey = "fly"
+		elseif sheet["move"] ~= nil then
+			idleKey = "move"
+		elseif sheet["walk"] ~= nil then
+			idleKey = "walk"
+		end
+		
+		local sheetKey = idleKey
 		if stateName == "HIT" then
 			sheetKey = "hit"
 		elseif stateName == "ATTACK1" or stateName == "SKILL1" then
@@ -949,15 +960,17 @@ script MonsterManager extends Component
 			elseif sheet["move"] ~= nil then
 				sheetKey = "move"
 			else
-				sheetKey = "stand"
+				sheetKey = idleKey
 			end
 		elseif stateName == "MOVE" then
 			if sheet["move"] ~= nil then
 				sheetKey = "move"
 			elseif sheet["walk"] ~= nil then
 				sheetKey = "walk"
+			elseif sheet["fly"] ~= nil then
+				sheetKey = "fly"
 			else
-				sheetKey = "stand"
+				sheetKey = idleKey
 			end
 		elseif stateName == "DIE" then
 			sheetKey = "die"
@@ -966,7 +979,7 @@ script MonsterManager extends Component
 		local played = false
 		stateAnim.Enable = true
 		played = pcall(function()
-			stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent(sheetKey, "stand"))
+			stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent(sheetKey, idleKey))
 		end)
 		if played then
 			log("[MonsterManager] state anim key=" .. tostring(sheetKey))
@@ -996,14 +1009,14 @@ script MonsterManager extends Component
 					if aliveStateAnim ~= nil then
 						aliveStateAnim.Enable = true
 						restored = pcall(function()
-							aliveStateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("stand", sheetKey))
+							aliveStateAnim:ReceiveStateChangeEvent(self, StateChangeEvent(idleKey, sheetKey))
 						end)
 					end
 					if restored == false then
 						local aliveSprite = aliveEntity.SpriteRendererComponent
-						local standRUID = sheet["stand"]
-						if aliveSprite ~= nil and standRUID ~= nil and standRUID ~= "" then
-							aliveSprite.SpriteRUID = standRUID
+						local idleRUID = sheet[idleKey]
+						if aliveSprite ~= nil and idleRUID ~= nil and idleRUID ~= "" then
+							aliveSprite.SpriteRUID = idleRUID
 						end
 					end
 				end)
