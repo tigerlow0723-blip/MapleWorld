@@ -1,0 +1,161 @@
+﻿[
+  {
+    "RUID": "8b88372b0229435e9b415b02e60aadde",
+    "clipName": "자쿰쉴드 유지",
+    "subCategory": "object",
+    "sprites": [
+      {
+        "spriteRUID": "41bd3c25cad548109ccc896be8316f88",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "513ca30198d74ad69dece606a9eb201c",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "8a07106760e9403887adf2a16fd8e819",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "30a33c0ea3fc4874bb5cd9968905d524",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "92c1e96d318b4191be20e53269975643",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "4b151102560846be8fc404a647ac0ad6",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "c94c734515b3442bae3db06207f80e62",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "2af4bd33f88d451ba58327023257b724",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "2e4ca6b837864c2886708b17648c0fab",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "af3e4c03cea9403ca207fefdfebc1432",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "2e6503be1ccd48e6b8d4e8b54ae6a833",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "dd34525eeda44236991463a4ba999f51",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "be2fb8f293e84187b58badbf802d0cfc",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "5e7aea4667d64f928b8041aa8f756967",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "74b821bbc1604c40adbf23302e47ea29",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "07fa7d8d7e404eb7a81a042e25a1c186",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "d2dd35b596284fcd9a8b7fafb9cb96a3",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "2c6f3f51d3de487b8926eeb0dedd1bba",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "4a97a19f38b04c6fbe4f4bbb4d85609c",
+        "delay": 0.09,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    ]
+  }
+]

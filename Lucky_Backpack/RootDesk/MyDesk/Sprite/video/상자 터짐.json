@@ -1,0 +1,89 @@
+﻿[
+  {
+    "RUID": "2f2faeb8e27d4e7e987802fd89c4d0bd",
+    "clipName": "상자 오픈 (이펙트)",
+    "subCategory": "object",
+    "sprites": [
+      {
+        "spriteRUID": "fcef311781934e4f96354c3847d22656",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "a87473fbc8b6465b942392d5161d4ea5",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "937c539e8b7b46168f9b5bd04d88f70a",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "bd07a9399ab74a099399175df4a33ba8",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "d6d26bdb0b04458690a204b45016c455",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "1f92d80fa40b4036979e20a271c404f3",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "0844e88222e34be985c56827994a8268",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "85e2c630b16b4e2c9b9780f90d848084",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "d927ac65538c41aaae41b7313df73baf",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "dd8ddb728c3941e0affae98e49854d5e",
+        "delay": 0.12,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    ]
+  }
+]
