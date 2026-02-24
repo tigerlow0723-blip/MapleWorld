@@ -379,18 +379,18 @@ script GameManager extends Component
 			end
 			
 			itemComp.heldStages = math.max(0, tonumber(itemComp.heldStages) or 0) + 1
-			if tonumber(itemComp.itemId) == 2006 and itemComp.heldStages >= 2 then
+			if tonumber(itemComp.itemId) == 2011 and itemComp.heldStages >= 2 then
 				local row = tonumber(itemComp.gridRow) or 0
 				local col = tonumber(itemComp.gridCol) or 0
 				
-				itemComp.itemId = 2007
-				itemComp:InitFromTable(2007)
+				itemComp.itemId = 2012
+				itemComp:InitFromTable(2012)
 				itemComp:SetGridPosition(row, col)
 				itemComp.heldStages = 0
 				
 				local placedInfo = inventoryComp:GetPlacedItemInfoAt(0, row, col)
 				if placedInfo ~= nil then
-					placedInfo.itemId = 2007
+					placedInfo.itemId = 2012
 				end
 				
 				local shapeCells = itemComp:GetShapeCells()
@@ -401,7 +401,7 @@ script GameManager extends Component
 							local absRow = row + (tonumber(cell.row) or 0)
 							local absCol = col + (tonumber(cell.col) or 0)
 							if absRow >= 1 and absRow <= inventoryComp.maxHeight and absCol >= 1 and absCol <= inventoryComp.maxWidth then
-								inventoryComp.grid[absRow][absCol] = 2007
+								inventoryComp.grid[absRow][absCol] = 2012
 							end
 						end
 					end
@@ -988,8 +988,23 @@ script GameManager extends Component
 			self.pendingRewards = self.itemManager:GenerateDropItems(self.currentStage, 5, self.dataManager)
 		end
 		
-		local rewardSummary = self:BuildRewardSummary(self.pendingRewards)
-		log("[RewardLog][GameManager] pending_rewards index=-1 id=-1 name=pending_rewards type=mixed count=" .. tostring(#self.pendingRewards) .. " items=" .. rewardSummary)
+		local rewardCount = #self.pendingRewards
+		if rewardCount <= 0 then
+			log("[RewardLog][GameManager] pending_reward index=-1 id=-1 name=none type=none count=0")
+		else
+			for i = 1, rewardCount do
+				local reward = self.pendingRewards[i]
+				if reward ~= nil then
+					local rewardId = reward.id or -1
+					local rewardName = reward.name or "unknown"
+					local rewardType = reward.type or "unknown"
+					log("[RewardLog][GameManager] pending_reward index=" .. tostring(i - 1)
+						.. " id=" .. tostring(rewardId)
+						.. " name=" .. tostring(rewardName)
+						.. " type=" .. tostring(rewardType))
+				end
+			end
+		end
 		
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)

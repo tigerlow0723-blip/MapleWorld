@@ -69,21 +69,74 @@ script PlayerManager extends Component
 		return self.inventoryComp
 	end
 
+	method void ResolveDataManager()
+		if self.dataManager ~= nil then
+			return
+		end
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			self.dataManager = gameSystem.DataManager
+		end
+	end
+
+	method table GetSynergyScrollAtkRange(integer itemId)
+		local result = {isSynergy = false, minAtk = 0, maxAtk = 0}
+		if itemId == nil or itemId <= 0 then
+			return result
+		end
+		self:ResolveDataManager()
+		if self.dataManager == nil then
+			return result
+		end
+		local itemData = self.dataManager:GetItemData(itemId)
+		if itemData == nil then
+			return result
+		end
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "scroll" then
+			return result
+		end
+		local minAtk = tonumber(itemData.minAtk) or 0
+		local maxAtk = tonumber(itemData.maxAtk) or 0
+		if minAtk <= 0 and maxAtk <= 0 then
+			return result
+		end
+		result.isSynergy = true
+		result.minAtk = minAtk
+		result.maxAtk = maxAtk
+		return result
+	end
+
 	method boolean IsSynergyScrollId(integer itemId)
-		return itemId == 6 or itemId == 7 or itemId == 8
+		local range = self:GetSynergyScrollAtkRange(itemId)
+		return range.isSynergy == true
 	end
 
 	method integer RollSynergyAtkByScrollId(integer itemId)
-		if itemId == 6 then
-			return math.random(1, 20)
+		local range = self:GetSynergyScrollAtkRange(itemId)
+		if range.isSynergy ~= true then
+			return 0
 		end
-		if itemId == 7 then
-			return math.random(1, 40)
+		local minVal = tonumber(range.minAtk) or 0
+		local maxVal = tonumber(range.maxAtk) or 0
+		if minVal > maxVal then
+			local tmp = minVal
+			minVal = maxVal
+			maxVal = tmp
 		end
-		if itemId == 8 then
-			return math.random(1, 100)
+		if minVal <= 0 and maxVal <= 0 then
+			return 0
 		end
-		return 0
+		if minVal <= 0 then
+			minVal = 1
+		end
+		if maxVal <= 0 then
+			maxVal = minVal
+		end
+		if minVal == maxVal then
+			return minVal
+		end
+		return math.random(minVal, maxVal)
 	end
 
 	method any GetItemComponentById(integer itemId)

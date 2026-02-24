@@ -307,9 +307,18 @@ script BattleManager extends Component
 	end
 
 	method void OnPlayerUseItemById(integer itemId, integer targetMonsterIdx)
+		local itemComp = self:FindInventoryItemComponent(itemId)
+		if itemComp == nil then
+			log_warning("[BattleManager] Item component not found for itemId=" .. tostring(itemId))
+			return
+		end
+		self:OnPlayerUseWeaponByComponent(itemComp, targetMonsterIdx)
+	end
+
+	method boolean OnPlayerUseWeaponByComponent(any itemComp, integer targetMonsterIdx)
 		if self.currentTurn ~= "Player" then
 			log("[BattleManager] Not player turn!")
-			return
+			return false
 		end
 		
 		if self.monsterManager ~= nil then
@@ -328,7 +337,16 @@ script BattleManager extends Component
 		end
 		
 		if self.playerManager.isDead == true then
-			return
+			return false
+		end
+		
+		if itemComp == nil then
+			return false
+		end
+		
+		local itemId = tonumber(itemComp.itemId) or 0
+		if itemId <= 0 then
+			return false
 		end
 		
 		local itemData = nil
@@ -337,31 +355,25 @@ script BattleManager extends Component
 		end
 		if itemData == nil then
 			log("[BattleManager] Invalid item ID: " .. tostring(itemId))
-			return
+			return false
 		end
 		
-		if itemData.type ~= "weapon" then
+		if string.lower(tostring(itemData.type or "")) ~= "weapon" then
 			log("[BattleManager] Cannot attack with a non-weapon item.")
-			return
-		end
-		
-		local itemComp = self:FindInventoryItemComponent(itemId)
-		if itemComp == nil then
-			log_warning("[BattleManager] Item component not found for itemId=" .. tostring(itemId))
-			return
+			return false
 		end
 		
 		local maxAtkCount = math.max(0, tonumber(itemComp.atkCount) or 0)
 		local currentAtkCount = math.max(0, tonumber(itemComp.currentAtkCount) or maxAtkCount)
 		if maxAtkCount > 0 and currentAtkCount < 1 then
 			log("[BattleManager] No attack count left for itemId=" .. tostring(itemId))
-			return
+			return false
 		end
 		
 		-- Validate target monster before attack.
 		if self.monsterManager == nil then
 			log("[BattleManager] MonsterManager is nil.")
-			return
+			return false
 		end
 		
 		if targetMonsterIdx == nil or targetMonsterIdx <= 0 then
@@ -374,7 +386,7 @@ script BattleManager extends Component
 			targetMonster = self.monsterManager.monsterList[targetMonsterIdx]
 			if targetMonster == nil or targetMonster.alive == false then
 				log("[BattleManager] Target monster is missing or already dead: " .. tostring(targetMonsterIdx))
-				return
+				return false
 			end
 			if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
 				self.gameManager.uiMain.targetMonsterIdx = targetMonsterIdx
@@ -392,7 +404,7 @@ script BattleManager extends Component
 		end
 		
 		if self.playerManager:UseCost(finalCost) == false then
-			return
+			return false
 		end
 		
 		local dmgResult = self:CalculatePlayerDamage(itemData, itemComp)
@@ -422,7 +434,7 @@ script BattleManager extends Component
 			_TimerService:SetTimerOnce(function()
 				self:EndBattle("Victory")
 			end, deathDelay)
-			return
+			return true
 		end
 		
 		if result ~= nil and result.killed == true then
@@ -446,6 +458,8 @@ script BattleManager extends Component
 				end
 			end
 		end
+		
+		return true
 	end
 
 	method boolean OnPlayerUseConsumableById(integer itemId)
@@ -642,17 +656,25 @@ script BattleManager extends Component
 			itemData = self.dataManager:GetItemData(itemId)
 		end
 		if itemData == nil then
+			log_warning("[ArmorSynergy] Failed. Missing item data for armorId=" .. tostring(itemId))
 			return false
+		end
+		
+		if armorComp.EnsureArmorRolls ~= nil and (armorComp.armorRollInitialized == nil or armorComp.armorRollInitialized == false) then
+			armorComp:EnsureArmorRolls(itemData)
+			log("[ArmorSynergy] Armor roll initialized on first use. armorId=" .. tostring(itemId))
 		end
 		
 		local remainCount = math.max(0, tonumber(armorComp.armorRemainingCount) or tonumber(itemData.count) or 0)
 		if remainCount < 1 then
 			log("[BattleManager] Armor activation count exhausted. itemId=" .. tostring(itemId))
+			log("[ArmorSynergy] Failed. No activation count left for armorId=" .. tostring(itemId))
 			return false
 		end
 		
 		local activationCost = tonumber(itemData.cost) or 0
 		if self.playerManager:UseCost(activationCost) == false then
+			log("[ArmorSynergy] Failed. Not enough MP for armorId=" .. tostring(itemId) .. " cost=" .. tostring(activationCost))
 			return false
 		end
 		armorComp.armorRemainingCount = math.max(0, remainCount - 1)
@@ -662,6 +684,10 @@ script BattleManager extends Component
 		local critDmgBuff = tonumber(armorComp.armorCritDmg) or 0
 		local weaponCostBuff = tonumber(armorComp.armorWeaponCost) or 0
 		local potionHpRecoveryBuff = tonumber(armorComp.armorHpRecoveryPercent) or 0
+		local synergyTarget = string.lower(tostring(armorComp.armorSynergyTarget or "none"))
+		if synergyTarget ~= "weapon" and synergyTarget ~= "potion" and synergyTarget ~= "none" then
+			synergyTarget = "none"
+		end
 		local sourceRow = tonumber(armorComp.gridRow) or 0
 		local sourceCol = tonumber(armorComp.gridCol) or 0
 		
@@ -678,11 +704,18 @@ script BattleManager extends Component
 			local targetItemId = tonumber(targetComp.itemId) or 0
 			local targetRow = tonumber(targetComp.gridRow) or 0
 			local targetCol = tonumber(targetComp.gridCol) or 0
-			if targetType == "weapon" then
+			if targetType == "weapon" and synergyTarget == "weapon" then
 				targetComp.tempArmorAtkPercent = (tonumber(targetComp.tempArmorAtkPercent) or 0) + atkPercentBuff
 				targetComp.tempArmorCritRate = (tonumber(targetComp.tempArmorCritRate) or 0) + critRateBuff
 				targetComp.tempArmorCritDmg = (tonumber(targetComp.tempArmorCritDmg) or 0) + critDmgBuff
 				targetComp.tempArmorWeaponCost = (tonumber(targetComp.tempArmorWeaponCost) or 0) + weaponCostBuff
+				log("[ArmorSynergy] AppliedToWeapon sourceArmorId=" .. tostring(itemId)
+					.. " targetWeaponId=" .. tostring(targetItemId)
+					.. " targetCell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " atk%=" .. tostring(atkPercentBuff)
+					.. " critRate%=" .. tostring(critRateBuff)
+					.. " critDmg%=" .. tostring(critDmgBuff)
+					.. " weaponCost=" .. tostring(weaponCostBuff))
 				debugEntries[#debugEntries + 1] = "weapon id=" .. tostring(targetItemId)
 					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
 					.. " atk%=" .. tostring(atkPercentBuff)
@@ -690,8 +723,12 @@ script BattleManager extends Component
 					.. " critDmg%=" .. tostring(critDmgBuff)
 					.. " weaponCost=" .. tostring(weaponCostBuff)
 				appliedCount += 1
-			elseif targetType == "potion" then
+			elseif targetType == "potion" and synergyTarget == "potion" then
 				targetComp.tempArmorPotionHpPercent = (tonumber(targetComp.tempArmorPotionHpPercent) or 0) + potionHpRecoveryBuff
+				log("[ArmorSynergy] AppliedToPotion sourceArmorId=" .. tostring(itemId)
+					.. " targetPotionId=" .. tostring(targetItemId)
+					.. " targetCell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " hpRecovery%=" .. tostring(potionHpRecoveryBuff))
 				debugEntries[#debugEntries + 1] = "potion id=" .. tostring(targetItemId)
 					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
 					.. " hpRecovery%=" .. tostring(potionHpRecoveryBuff)
@@ -704,10 +741,17 @@ script BattleManager extends Component
 			detailText = table.concat(debugEntries, " | ")
 		end
 		log("[ArmorSynergyDebug] sourceArmor id=" .. tostring(itemId)
+			.. " targetType=" .. tostring(synergyTarget)
 			.. " cell=(" .. tostring(sourceRow) .. "," .. tostring(sourceCol) .. ")"
 			.. " remain=" .. tostring(armorComp.armorRemainingCount)
 			.. " applied=" .. tostring(appliedCount)
 			.. " details=" .. detailText)
+		if appliedCount <= 0 then
+			log("[ArmorSynergy] Activated but no adjacent weapon/potion target. armorId=" .. tostring(itemId)
+				.. " sourceCell=(" .. tostring(sourceRow) .. "," .. tostring(sourceCol) .. ")")
+		else
+			log("[ArmorSynergy] Triggered. armorId=" .. tostring(itemId) .. " appliedTargetCount=" .. tostring(appliedCount))
+		end
 		log("[BattleManager] Armor activated. itemId=" .. tostring(itemId) .. " targets=" .. tostring(appliedCount))
 		self:RefreshUI()
 		return true

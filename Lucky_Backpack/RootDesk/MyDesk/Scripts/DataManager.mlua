@@ -149,7 +149,7 @@ script DataManager extends Component
 			headers["max_critRate"] = true
 			headers["min_critDmg"] = true
 			headers["max_critDmg"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["imageRUID"] = true
 			headers["desc"] = true
@@ -200,7 +200,7 @@ script DataManager extends Component
 			headers["max_critRate"] = true
 			headers["min_critDmg"] = true
 			headers["max_critDmg"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["imageRUID"] = true
 			headers["desc"] = true
@@ -211,6 +211,7 @@ script DataManager extends Component
 			headers["max_weaponCost"] = true
 			headers["min_hpRecovery"] = true
 			headers["max_hpRecovery"] = true
+			headers["synergyTarget"] = true
 			return headers
 		end
 		
@@ -231,7 +232,7 @@ script DataManager extends Component
 			headers["critDmg"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["desc"] = true
 			headers["text"] = true
@@ -589,6 +590,8 @@ script DataManager extends Component
 						end
 						data.atk = 0
 						if hasCol("atk") then data.atk = getNumber("atk", "", 0) end
+						data.minAtk = getNumber("min_atk", "", 0)
+						data.maxAtk = getNumber("max_atk", "", 0)
 						data.atkPercent = getNumber("atkPercent", "atkPercent (%)", 0)
 						data.accPercent = getNumber("accPercent", "accPercent (%)", 0)
 						data.critRate = getNumber("critRate", "critRate (%)", 0)
@@ -599,7 +602,7 @@ script DataManager extends Component
 						if hasCol("def") then data.def = getNumber("def", "", 0) end
 						data.desc = getString("desc", "")
 						data.text = getString("text", "")
-						data.spawnGroup = getNumber("Spawn_Group", "", 1)
+						data.spawnGroup = getNumber("spawn_Group", "Spawn_Group", 1)
 						
 						data.spawnRate = 0
 						if hasCol("Spawn_Rate(%)") or hasCol("Spawn_Rate (%)") then
@@ -623,6 +626,18 @@ script DataManager extends Component
 						data.armorAtkPercent = getNumber("atkPercent", "atk (%)", 0)
 						data.armorCritRate = getNumber("critRate", "critRate (%)", 0)
 						data.armorCritDmg = getNumber("critDmg", "critDmg (%)", 0)
+						data.armorSynergyTarget = string.lower(getString("synergyTarget", "synergy_target"))
+						if data.armorSynergyTarget == "" then
+							local hasPotionBuff = (data.minHpRecovery ~= 0 or data.maxHpRecovery ~= 0)
+							local hasWeaponBuff = (data.armorAtkPercent ~= 0 or data.armorCritRate ~= 0 or data.armorCritDmg ~= 0 or data.weaponCost ~= 0 or data.minWeaponCost ~= 0 or data.maxWeaponCost ~= 0)
+							if hasPotionBuff and hasWeaponBuff == false then
+								data.armorSynergyTarget = "potion"
+							elseif hasWeaponBuff then
+								data.armorSynergyTarget = "weapon"
+							else
+								data.armorSynergyTarget = "none"
+							end
+						end
 						data.isRewardDrop = getNumber("isRewardDrop", "rewardDrop", 1)
 						data.imageRUID = getString("imageRUID", "")
 						data.grade = getString("grade", "")

@@ -808,8 +808,24 @@ script ItemDisplayArea extends Component
 			return
 		end
 		
-		local totalHeight = (itemCount - 1) * self.verticalSpacing
-		local startY = totalHeight * 0.5
+		-- Horizontal zigzag layout: start from left-bottom and move to the right.
+		local horizontalSpacing = self.verticalSpacing + 20
+		local zigzagOffsetY = self.horizontalOffset + 10
+		local panelWidth = 0
+		if self.Entity ~= nil and self.Entity.UITransformComponent ~= nil then
+			panelWidth = tonumber(self.Entity.UITransformComponent.RectSize.x) or 0
+		end
+		
+		if itemCount > 1 and panelWidth > 0 then
+			local maxUsableWidth = panelWidth * 0.8
+			local maxSpacingByPanel = maxUsableWidth / (itemCount - 1)
+			if horizontalSpacing > maxSpacingByPanel then
+				horizontalSpacing = maxSpacingByPanel
+			end
+		end
+		
+		local totalWidth = (itemCount - 1) * horizontalSpacing
+		local startX = -totalWidth * 0.5
 		
 		for i, itemEntity in ipairs(self.spawnedItems) do
 			if itemEntity == nil or not isvalid(itemEntity) then
@@ -822,10 +838,10 @@ script ItemDisplayArea extends Component
 			end
 		
 			local index = i - 1
-			local posY = startY - (index * self.verticalSpacing)
-			local posX = self.horizontalOffset
+			local posX = startX + (index * horizontalSpacing)
+			local posY = zigzagOffsetY
 			if index % 2 == 0 then
-				posX = -self.horizontalOffset
+				posY = -zigzagOffsetY
 			end
 		
 			uiTransform.anchoredPosition = Vector2(posX, posY)

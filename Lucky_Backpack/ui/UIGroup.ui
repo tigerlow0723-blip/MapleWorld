@@ -842,12 +842,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 58.0403,
-                "y": 60.6321
+                "x": 41.5105972,
+                "y": 39.7833977
               },
               "OffsetMin": {
-                "x": -41.9597,
-                "y": -39.3679
+                "x": -58.4894028,
+                "y": -60.2166023
               },
               "Pivot": {
                 "x": 0.5,
@@ -860,12 +860,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 8.0403,
-                "y": 10.6321
+                "x": -8.489401,
+                "y": -10.2166014
               },
               "Position": {
-                "x": 8.0403,
-                "y": 10.6321,
+                "x": -8.489401,
+                "y": -10.2166014,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -4244,12 +4244,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 121.670845,
-                "y": 173.890472
+                "x": 121.669243,
+                "y": -68.64443
               },
               "OffsetMin": {
-                "x": -57.46624,
-                "y": 55.5181351
+                "x": -57.4678421,
+                "y": -187.016754
               },
               "Pivot": {
                 "x": 0.5,
@@ -4262,12 +4262,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 32.1023026,
-                "y": 114.7043
+                "x": 32.1007,
+                "y": -127.8306
               },
               "Position": {
-                "x": 32.1023026,
-                "y": 114.7043,
+                "x": 32.1007,
+                "y": -127.8306,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6947,12 +6947,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 830.0002,
-                "y": -66.1599
+                "x": -556.4226,
+                "y": -244.999908
               },
               "OffsetMin": {
-                "x": 634.128235,
-                "y": -166.1599
+                "x": -752.294556,
+                "y": -344.9999
               },
               "Pivot": {
                 "x": 0.5,
@@ -6965,12 +6965,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 732.0642,
-                "y": -116.1599
+                "x": -654.3586,
+                "y": -294.9999
               },
               "Position": {
-                "x": 732.0642,
-                "y": -116.1599,
+                "x": -654.3586,
+                "y": -294.9999,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7297,30 +7297,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 827.471863,
-                "y": 432.716675
+                "x": 853.875854,
+                "y": 418.864868
               },
               "OffsetMin": {
-                "x": 325.6701,
-                "y": -306.148254
+                "x": 251.243317,
+                "y": -320.000061
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 501.801727,
+                "x": 602.6325,
                 "y": 738.8649
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 576.571,
-                "y": 63.2842
+                "x": 552.5596,
+                "y": 49.4324
               },
               "Position": {
-                "x": 576.571,
-                "y": 63.2842,
+                "x": 552.5596,
+                "y": 49.4324,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7334,7 +7334,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "c084bd224b584f838e25d041bbabfb7b"
+                "DataId": "4f719dd721d74af3bb57d48376c7f106"
               },
               "OverrideSorting": false,
               "Enable": true
@@ -7379,12 +7379,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -32.1397476,
-                "y": 265.4187
+                "x": 14.6351547,
+                "y": 325.0009
               },
               "OffsetMin": {
-                "x": -193.403259,
-                "y": 121.7955
+                "x": -146.628357,
+                "y": 106.994324
               },
               "Pivot": {
                 "x": 0.5,
@@ -7392,17 +7392,17 @@
               },
               "RectSize": {
                 "x": 161.2635,
-                "y": 143.6232
+                "y": 218.006561
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -112.7715,
-                "y": 193.6071
+                "x": -65.9966,
+                "y": 215.9976
               },
               "Position": {
-                "x": -112.7715,
-                "y": 193.6071,
+                "x": -65.9966,
+                "y": 215.9976,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7416,7 +7416,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "691ca26fa0df43d885924fb001d818f5"
+                "DataId": "134bcf5879df48fa8f6fc3a7cbc3c1eb"
               },
               "OverrideSorting": false,
               "Color": {
@@ -7512,20 +7512,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 40.315876,
-                "y": 62.2367554
+                "x": 50.0,
+                "y": 88.2995453
               },
               "OffsetMin": {
-                "x": -40.315876,
-                "y": 14.3623295
+                "x": -50.0,
+                "y": -11.7004585
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 80.63175,
-                "y": 47.874424
+                "x": 100.0,
+                "y": 100.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -7598,11 +7598,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 80.63175,
-                "y": -28.7246532
+                "y": -29.4823
               },
               "OffsetMin": {
                 "x": -80.63175,
-                "y": -67.02419
+                "y": -109.4823
               },
               "Pivot": {
                 "x": 0.5,
@@ -7610,17 +7610,17 @@
               },
               "RectSize": {
                 "x": 161.2635,
-                "y": 38.29954
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 0.0,
-                "y": -47.874424
+                "y": -69.4823
               },
               "Position": {
                 "x": 0.0,
-                "y": -47.874424,
+                "y": -69.4823,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7687,11 +7687,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 40.315876,
-                "y": 23.937212
+                "y": 1.70401192
               },
               "OffsetMin": {
                 "x": -40.315876,
-                "y": -23.937212
+                "y": -46.17041
               },
               "Pivot": {
                 "x": 0.5,
@@ -7705,11 +7705,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 0.0,
-                "y": 0.0
+                "y": -22.2332
               },
               "Position": {
                 "x": 0.0,
-                "y": 0.0,
+                "y": -22.2332,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11283,7 +11283,9 @@
             },
             {
               "@type": "script.ItemTooltipUI",
-              "Enable": true
+              "Enable": true,
+              "countValuePath": "/ui/UIGroup/TooltipPanel/Count/TxtCount",
+              "costValuePath": "/ui/UIGroup/TooltipPanel/Cost/TxtCost"
             },
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
@@ -11339,30 +11341,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 140.0,
-                "y": 211.552582
+                "x": 167.5104,
+                "y": 213.552582
               },
               "OffsetMin": {
-                "x": -140.0,
-                "y": 164.447418
+                "x": -152.4896,
+                "y": 166.447418
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 280.0,
+                "x": 320.0,
                 "y": 47.1051559
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 0.0,
-                "y": 188.0
+                "x": 7.5104,
+                "y": 190.0
               },
               "Position": {
-                "x": 0.0,
-                "y": 188.0,
+                "x": 7.5104,
+                "y": 190.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11383,7 +11385,7 @@
               "Alignment": 3,
               "AllowAutomaticTranslation": true,
               "Bold": true,
-              "FontSize": 36,
+              "FontSize": 30,
               "MaxSize": 40,
               "MinSize": 10,
               "OutlineDistance": {
@@ -11391,7 +11393,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "목검",
+              "Text": "하급 무기 공격력 주문서",
               "Enable": true
             }
           ],
@@ -11478,6 +11480,582 @@
         }
       },
       {
+        "id": "abc20685-88db-4e8a-a57b-376f779fae4a",
+        "path": "/ui/UIGroup/TooltipPanel/Count",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "Count",
+          "path": "/ui/UIGroup/TooltipPanel/Count",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "abc20685-88db-4e8a-a57b-376f779fae4a",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 81.300705,
+                "y": 38.5601
+              },
+              "OffsetMin": {
+                "x": 31.3007011,
+                "y": -11.4399
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 56.3007,
+                "y": 13.5601
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 56.3007,
+                "y": 13.5601,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "b8b5db69-ae33-482c-a0bc-5edd039ec71f",
+        "path": "/ui/UIGroup/TooltipPanel/Count/ImgCount",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "ImgCount",
+          "path": "/ui/UIGroup/TooltipPanel/Count/ImgCount",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "b8b5db69-ae33-482c-a0bc-5edd039ec71f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 25.0,
+                "y": 25.0
+              },
+              "OffsetMin": {
+                "x": -25.0,
+                "y": -25.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "ecabb6fff10ac864697292bdbeda2606"
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 0.42327714,
+                "g": 0.7675781,
+                "b": 0.379291534,
+                "a": 1.0
+              },
+              "FlipX": false,
+              "Type": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "8117e20b-d3ff-4c1d-b5cf-57ac53395e88",
+        "path": "/ui/UIGroup/TooltipPanel/Count/TxtCount",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtCount",
+          "path": "/ui/UIGroup/TooltipPanel/Count/TxtCount",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uitext",
+            "sub_entity_id": null,
+            "root_entity_id": "8117e20b-d3ff-4c1d-b5cf-57ac53395e88",
+            "replaced_model_id": null
+          },
+          "modelId": "uitext",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 25.0,
+                "y": 25.0001
+              },
+              "OffsetMin": {
+                "x": -25.0,
+                "y": -24.9999
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0001
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0001,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "Alignment": 4,
+              "Font": 1,
+              "FontColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "5",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "d72f6bb0-896b-4f8a-ad38-48be059db16c",
+        "path": "/ui/UIGroup/TooltipPanel/Cost",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "Cost",
+          "path": "/ui/UIGroup/TooltipPanel/Cost",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 3,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "abc20685-88db-4e8a-a57b-376f779fae4a",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 141.3002,
+                "y": 38.5602
+              },
+              "OffsetMin": {
+                "x": 91.3002,
+                "y": -11.4398
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 116.3002,
+                "y": 13.5602
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 116.3002,
+                "y": 13.5602,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "986213ce-c6ee-45a8-b6e7-6eb4b2b397ab",
+        "path": "/ui/UIGroup/TooltipPanel/Cost/ImgCost",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "ImgCost",
+          "path": "/ui/UIGroup/TooltipPanel/Cost/ImgCost",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "b8b5db69-ae33-482c-a0bc-5edd039ec71f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 25.0,
+                "y": 25.0
+              },
+              "OffsetMin": {
+                "x": -25.0,
+                "y": -25.0
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "ecabb6fff10ac864697292bdbeda2606"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Color": {
+                "r": 0.321568638,
+                "g": 0.3764706,
+                "b": 0.972549,
+                "a": 1.0
+              },
+              "FlipX": false,
+              "Type": 0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "dfce8b61-cfd8-4d38-85a5-2c75bf5164d8",
+        "path": "/ui/UIGroup/TooltipPanel/Cost/TxtCost",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
+        "jsonString": {
+          "name": "TxtCost",
+          "path": "/ui/UIGroup/TooltipPanel/Cost/TxtCost",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uitext",
+            "sub_entity_id": null,
+            "root_entity_id": "8117e20b-d3ff-4c1d-b5cf-57ac53395e88",
+            "replaced_model_id": null
+          },
+          "modelId": "uitext",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 25.0,
+                "y": 25.0001
+              },
+              "OffsetMin": {
+                "x": -25.0,
+                "y": -24.9999
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 50.0,
+                "y": 50.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0001
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0001,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TextComponent",
+              "Alignment": 4,
+              "Font": 1,
+              "FontColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "OutlineDistance": {
+                "x": 1.0,
+                "y": -1.0
+              },
+              "OverrideSorting": false,
+              "Text": "5",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
         "id": "f184a8c6-7618-41d6-9128-092735b60270",
         "path": "/ui/UIGroup/TooltipPanel/TypeText",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
@@ -11488,7 +12066,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 2,
+          "displayOrder": 4,
           "pathConstraints": "////",
           "revision": 1,
           "origin": {
@@ -11513,12 +12091,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 150.0,
-                "y": 4.16605949
+                "x": 143.1403,
+                "y": -46.23494
               },
               "OffsetMin": {
-                "x": -150.0,
-                "y": -44.5920639
+                "x": -156.8597,
+                "y": -94.99306
               },
               "Pivot": {
                 "x": 0.5,
@@ -11531,12 +12109,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 0.0,
-                "y": -20.2130013
+                "x": -6.8597,
+                "y": -70.614
               },
               "Position": {
-                "x": 0.0,
-                "y": -20.2130013,
+                "x": -6.8597,
+                "y": -70.614,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11578,7 +12156,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 3,
+          "displayOrder": 5,
           "pathConstraints": "////",
           "revision": 1,
           "origin": {
@@ -11603,12 +12181,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 138.018173,
-                "y": 33.6114426
+                "x": 151.300476,
+                "y": -44.5816574
               },
               "OffsetMin": {
-                "x": -38.0181732,
-                "y": -16.79964
+                "x": -24.7358742,
+                "y": -94.9927444
               },
               "Pivot": {
                 "x": 0.5,
@@ -11621,12 +12199,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 50.0,
-                "y": 8.4059
+                "x": 63.2823,
+                "y": -69.7872
               },
               "Position": {
-                "x": 50.0,
-                "y": 8.4059,
+                "x": 63.2823,
+                "y": -69.7872,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11646,6 +12224,7 @@
             {
               "@type": "MOD.Core.TextComponent",
               "Alignment": 5,
+              "Bold": true,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -11668,7 +12247,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 4,
+          "displayOrder": 6,
           "pathConstraints": "////",
           "revision": 1,
           "origin": {
@@ -12624,95 +13203,6 @@
         }
       },
       {
-        "id": "8117e20b-d3ff-4c1d-b5cf-57ac53395e88",
-        "path": "/ui/UIGroup/TooltipPanel/TxtAtkCount",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
-        "jsonString": {
-          "name": "TxtAtkCount",
-          "path": "/ui/UIGroup/TooltipPanel/TxtAtkCount",
-          "nameEditable": true,
-          "enable": true,
-          "visible": true,
-          "localize": true,
-          "displayOrder": 5,
-          "pathConstraints": "////",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "uitext",
-            "sub_entity_id": null,
-            "root_entity_id": "8117e20b-d3ff-4c1d-b5cf-57ac53395e88",
-            "replaced_model_id": null
-          },
-          "modelId": "uitext",
-          "@components": [
-            {
-              "@type": "MOD.Core.UITransformComponent",
-              "AlignmentOption": 0,
-              "AnchorsMax": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "AnchorsMin": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "MobileOnly": false,
-              "OffsetMax": {
-                "x": 150.0,
-                "y": -31.4443016
-              },
-              "OffsetMin": {
-                "x": -150.0,
-                "y": -81.4443054
-              },
-              "Pivot": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "RectSize": {
-                "x": 300.0,
-                "y": 50.0
-              },
-              "UIMode": 1,
-              "UIVersion": 2,
-              "anchoredPosition": {
-                "x": 0.0,
-                "y": -56.4443
-              },
-              "Position": {
-                "x": 0.0,
-                "y": -56.4443,
-                "z": 0.0
-              },
-              "QuaternionRotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "OverrideSorting": false,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.TextComponent",
-              "Alignment": 3,
-              "OutlineDistance": {
-                "x": 1.0,
-                "y": -1.0
-              },
-              "OverrideSorting": false,
-              "Enable": true
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
         "id": "bb8028ad-a989-4c54-a2fd-c56e35385b42",
         "path": "/ui/UIGroup/TooltipPanel/StatsText",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
@@ -12723,7 +13213,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 6,
+          "displayOrder": 7,
           "pathConstraints": "////",
           "revision": 1,
           "origin": {
@@ -12748,12 +13238,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 150.0,
-                "y": -61.1908531
+                "x": 143.1405,
+                "y": -84.26596
               },
               "OffsetMin": {
-                "x": -150.0,
-                "y": -174.120148
+                "x": -156.8595,
+                "y": -197.195251
               },
               "Pivot": {
                 "x": 0.5,
@@ -12766,12 +13256,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 0.0,
-                "y": -117.6555
+                "x": -6.8595,
+                "y": -140.7306
               },
               "Position": {
-                "x": 0.0,
-                "y": -117.6555,
+                "x": -6.8595,
+                "y": -140.7306,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -12792,6 +13282,7 @@
               "@type": "MOD.Core.TextComponent",
               "Alignment": 3,
               "AllowAutomaticTranslation": true,
+              "Font": 1,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -12800,94 +13291,6 @@
               "SizeFit": false,
               "UseConstraintX": false,
               "UseConstraintY": false,
-              "Enable": true
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
-        "id": "5893071d-e822-46cc-aa65-1071dc4304c8",
-        "path": "/ui/UIGroup/TooltipPanel/TxtSynergy",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent,MOD.Core.TextComponent",
-        "jsonString": {
-          "name": "TxtSynergy",
-          "path": "/ui/UIGroup/TooltipPanel/TxtSynergy",
-          "nameEditable": true,
-          "enable": true,
-          "visible": true,
-          "localize": true,
-          "displayOrder": 7,
-          "pathConstraints": "////",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "uitext",
-            "sub_entity_id": null,
-            "root_entity_id": "5893071d-e822-46cc-aa65-1071dc4304c8",
-            "replaced_model_id": null
-          },
-          "modelId": "uitext",
-          "@components": [
-            {
-              "@type": "MOD.Core.UITransformComponent",
-              "AlignmentOption": 0,
-              "AnchorsMax": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "AnchorsMin": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "MobileOnly": false,
-              "OffsetMax": {
-                "x": 60.9946,
-                "y": -2.2598
-              },
-              "OffsetMin": {
-                "x": -39.0054,
-                "y": -52.2598
-              },
-              "Pivot": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "RectSize": {
-                "x": 100.0,
-                "y": 50.0
-              },
-              "UIMode": 1,
-              "UIVersion": 2,
-              "anchoredPosition": {
-                "x": 10.9946,
-                "y": -27.2598
-              },
-              "Position": {
-                "x": 10.9946,
-                "y": -27.2598,
-                "z": 0.0
-              },
-              "QuaternionRotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "OverrideSorting": false,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.TextComponent",
-              "OutlineDistance": {
-                "x": 1.0,
-                "y": -1.0
-              },
-              "OverrideSorting": false,
               "Enable": true
             }
           ],

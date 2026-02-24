@@ -56,58 +56,69 @@ script ItemManager extends Component
 	end
 
 	method table GenerateDropItems(integer stageId, integer count, any dataMgr)
-		local spawnInfo = dataMgr:GetSpawnInfo(stageId)
-		local spawnGroup = 1
-		if spawnInfo ~= nil then
-			spawnGroup = spawnInfo.poolId
-		end
-		
-		local availableItems = dataMgr:GetItemsBySpawnGroup(spawnGroup)
 		local drops = {}
-		local filteredItems = {}
-		
-		if #availableItems == 0 then
-			log("[ItemManager] No available items (group: " .. tostring(spawnGroup) .. ")")
+		if dataMgr == nil or dataMgr.ItemTable == nil then
 			return drops
 		end
 		
-		for i = 1, #availableItems do
-			local item = availableItems[i]
-			if item ~= nil then
-				local rewardDropFlag = tonumber(item.isRewardDrop)
-				if rewardDropFlag == nil then
-					rewardDropFlag = 1
-				end
+		local targetSpawnGroup = 1
+		local normalPickCount = 3
+		
+		local expandPool = {}
+		local weaponRarePool = {}
+		local armorPool = {}
+		local etcPool = {}
+		local initialExpandCount = 0
+		local initialWeaponRareCount = 0
+		local initialArmorCount = 0
+		local initialEtcCount = 0
+		local pickedExpandCount = 0
+		local pickedWeaponCount = 0
+		local pickedArmorCount = 0
+		local pickedEtcCount = 0
+		
+		for _, item in pairs(dataMgr.ItemTable) do
+			if item == nil then
+				continue
+			end
+			
+			local itemSpawnGroup = tonumber(item.spawnGroup) or 0
+			local itemType = string.lower(tostring(item.type or ""))
+			local rewardDropFlag = tonumber(item.isRewardDrop) or 1
+			if itemType == "expand" then
 				if rewardDropFlag == 1 then
-					filteredItems[#filteredItems + 1] = item
+					expandPool[#expandPool + 1] = item
 				end
+				continue
 			end
-		end
-		
-		if #filteredItems == 0 then
-			return drops
-		end
-		
-		local expandItems = {}
-		local equipmentItems = {}
-		local normalItems = {}
-		
-		for i = 1, #filteredItems do
-			local item = filteredItems[i]
-			if item.type == "expand" then
-				table.insert(expandItems, item)
-			elseif item.type == "weapon" or item.type == "armor" then
-				table.insert(equipmentItems, item)
+			
+			if itemSpawnGroup ~= targetSpawnGroup then
+				continue
+			end
+			
+			if itemType == "weapon" then
+				local itemGrade = string.lower(tostring(item.grade or ""))
+				if itemGrade == "rare" then
+					weaponRarePool[#weaponRarePool + 1] = item
+				end
+			elseif itemType == "armor" then
+				armorPool[#armorPool + 1] = item
 			else
-				table.insert(normalItems, item)
+				etcPool[#etcPool + 1] = item
 			end
 		end
+		initialExpandCount = #expandPool
+		initialWeaponRareCount = #weaponRarePool
+		initialArmorCount = #armorPool
+		initialEtcCount = #etcPool
 		
 		local function CreateDropItem(item)
 			local drop = {}
 			drop.id = item.id
 			drop.type = item.type
 			drop.name = item.name
+			drop.grade = item.grade or ""
+			drop.nextUpgradeId = item.nextUpgradeId or 0
 			drop.width = item.width or 1
 			drop.height = item.height or 1
 			drop.cost = item.cost or 0
@@ -125,130 +136,142 @@ script ItemManager extends Component
 			return drop
 		end
 		
-		local function PickRandom(list)
+		local function PickAndRemoveRandom(list)
 			if list == nil or #list <= 0 then
 				return nil
 			end
 			local idx = math.random(1, #list)
-			return list[idx]
+			local picked = list[idx]
+			table.remove(list, idx)
+			return picked
 		end
 		
-		local function GetDefaultSpawnRateByIndex(idx)
-			if idx == 1 then
-				return 70
-			elseif idx == 2 then
-				return 25
-			elseif idx == 3 then
-				return 5
-			end
-			return 0
-		end
-		
-		local function PickEquipmentFromGroup(group)
-			if group == nil or #group <= 0 then
+		local function RollWeaponGrade(baseRareWeapon)
+			if baseRareWeapon == nil then
 				return nil
 			end
 			
-			local weights = {}
+			local roll = math.random(1, 100)
+			if roll <= 70 then
+				return baseRareWeapon
+			end
+			
+			local epicItem = nil
+			local epicId = tonumber(baseRareWeapon.nextUpgradeId) or 0
+			if epicId > 0 then
+				epicItem = dataMgr:GetItemData(epicId)
+			end
+			
+			if roll <= 95 then
+				if epicItem ~= nil then
+					return epicItem
+				end
+				return baseRareWeapon
+			end
+			
+			if epicItem ~= nil then
+				local uniqueId = tonumber(epicItem.nextUpgradeId) or 0
+				if uniqueId > 0 then
+					local uniqueItem = dataMgr:GetItemData(uniqueId)
+					if uniqueItem ~= nil then
+						return uniqueItem
+					end
+				end
+			end
+			
+			return baseRareWeapon
+		end
+		
+		local function IsCategoryAvailable(category)
+			if category == "weapon" then
+				return #weaponRarePool > 0
+			elseif category == "armor" then
+				return #armorPool > 0
+			elseif category == "etc" then
+				return #etcPool > 0
+			end
+			return false
+		end
+		
+		local function PickCategoryByWeight()
 			local totalWeight = 0
-			for gi = 1, #group do
-				local gItem = group[gi]
-				local w = tonumber(gItem.spawnRate) or tonumber(gItem.spawn_rate) or 0
-				if w <= 0 then
-					w = GetDefaultSpawnRateByIndex(gi)
-				end
-				if w < 0 then
-					w = 0
-				end
-				weights[gi] = w
-				totalWeight += w
+			local weaponWeight = 0
+			local armorWeight = 0
+			local etcWeight = 0
+			
+			if IsCategoryAvailable("weapon") then
+				weaponWeight = 4
+				totalWeight += weaponWeight
+			end
+			if IsCategoryAvailable("armor") then
+				armorWeight = 2
+				totalWeight += armorWeight
+			end
+			if IsCategoryAvailable("etc") then
+				etcWeight = 4
+				totalWeight += etcWeight
 			end
 			
 			if totalWeight <= 0 then
-				return group[1]
+				return ""
 			end
 			
-			local roll = math.random() * totalWeight
-			local cumulative = 0
-			for gi = 1, #group do
-				cumulative += weights[gi]
-				if roll <= cumulative then
-					return group[gi]
-				end
+			local roll = math.random(1, totalWeight)
+			if roll <= weaponWeight then
+				return "weapon"
 			end
-			
-			return group[#group]
-		end
-		
-		-- 1) Expand: random 1~3 (with replacement)
-		if #expandItems > 0 then
-			local expandCount = math.random(1, 3)
-			for i = 1, expandCount do
-				local expandItem = PickRandom(expandItems)
-				if expandItem ~= nil then
-					drops[#drops + 1] = CreateDropItem(expandItem)
-				end
+			roll -= weaponWeight
+			if roll <= armorWeight then
+				return "armor"
 			end
+			return "etc"
 		end
 		
-		-- 2) Equipment grouped by 4
-		local equipmentGroups = {}
-		if #equipmentItems > 0 then
-			table.sort(equipmentItems, function(a, b)
-				return (tonumber(a.id) or 0) < (tonumber(b.id) or 0)
-			end)
-			
-			local idx = 1
-			while idx <= #equipmentItems do
-				local group = {}
-				for j = 0, 3 do
-					local g = equipmentItems[idx + j]
-					if g ~= nil then
-						group[#group + 1] = g
-					end
-				end
-				if #group > 0 then
-					equipmentGroups[#equipmentGroups + 1] = group
-				end
-				idx += 4
+		local expandPickCount = 0
+		if #expandPool > 0 then
+			expandPickCount = math.random(1, 3)
+		end
+		for i = 1, expandPickCount do
+			local pickedExpand = expandPool[math.random(1, #expandPool)]
+			if pickedExpand ~= nil then
+				drops[#drops + 1] = CreateDropItem(pickedExpand)
+				pickedExpandCount += 1
 			end
-		end
-		
-		-- 3) mixed candidates -> random 3
-		local candidates = {}
-		for i = 1, #equipmentGroups do
-			candidates[#candidates + 1] = {kind = "equipment_group", group = equipmentGroups[i]}
-		end
-		for i = 1, #normalItems do
-			candidates[#candidates + 1] = {kind = "single_item", item = normalItems[i]}
-		end
-		
-		local normalPickCount = 3
-		if #candidates < normalPickCount then
-			normalPickCount = #candidates
 		end
 		
 		for i = 1, normalPickCount do
-			local cidx = math.random(1, #candidates)
-			local candidate = candidates[cidx]
-			table.remove(candidates, cidx)
+			local category = PickCategoryByWeight()
+			if category == "" then
+				break
+			end
 			
 			local pickedItem = nil
-			if candidate.kind == "equipment_group" then
-				pickedItem = PickEquipmentFromGroup(candidate.group)
+			if category == "weapon" then
+				local baseRare = PickAndRemoveRandom(weaponRarePool)
+				pickedItem = RollWeaponGrade(baseRare)
+			elseif category == "armor" then
+				pickedItem = PickAndRemoveRandom(armorPool)
 			else
-				pickedItem = candidate.item
+				pickedItem = PickAndRemoveRandom(etcPool)
 			end
 			
 			if pickedItem ~= nil then
 				drops[#drops + 1] = CreateDropItem(pickedItem)
+				if category == "weapon" then
+					pickedWeaponCount += 1
+				elseif category == "armor" then
+					pickedArmorCount += 1
+				else
+					pickedEtcCount += 1
+				end
 			end
 		end
 		
-		for i = #drops, 2, -1 do
-			local j = math.random(1, i)
-			drops[i], drops[j] = drops[j], drops[i]
-		end
+		log("[ItemManager] Drop generated stage=" .. tostring(stageId)
+			.. " count=" .. tostring(#drops)
+			.. " picked(expand/weapon/armor/etc)=" .. tostring(pickedExpandCount) .. "/" .. tostring(pickedWeaponCount) .. "/" .. tostring(pickedArmorCount) .. "/" .. tostring(pickedEtcCount)
+			.. " initialPool(expand/weaponRare/armor/etc)=" .. tostring(initialExpandCount) .. "/" .. tostring(initialWeaponRareCount) .. "/" .. tostring(initialArmorCount) .. "/" .. tostring(initialEtcCount)
+			.. " remainPool(weaponRare/armor/etc)=" .. tostring(#weaponRarePool) .. "/" .. tostring(#armorPool) .. "/" .. tostring(#etcPool))
 		
 		return drops
 	end

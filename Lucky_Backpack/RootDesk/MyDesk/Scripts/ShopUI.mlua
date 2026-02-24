@@ -23,6 +23,8 @@ script ShopUI extends Component
 
 	property number cardSpacing = 20
 
+	property number cardRowSpacing = 20
+
 	property number fallbackListLayoutWidth = 900
 
 	property table shopItems = {}
@@ -130,6 +132,7 @@ script ShopUI extends Component
 		    end
 		
 		    local pool = self:BuildTierPool(self.currentShopTier)
+		    log("[ShopUI] Tier pool count=" .. tostring(#pool) .. " tier=" .. tostring(self.currentShopTier))
 		    if #pool <= 0 then
 		        self:RenderShopItems()
 		        return
@@ -145,6 +148,7 @@ script ShopUI extends Component
 		        table.insert(self.shopItems, pool[randomIdx])
 		        table.remove(pool, randomIdx)
 		    end
+		    log("[ShopUI] Spawned shop item count=" .. tostring(#self.shopItems) .. " tier=" .. tostring(self.currentShopTier))
 		
 		    self:RenderShopItems()
 	end
@@ -155,15 +159,28 @@ script ShopUI extends Component
 		    if self.dataManager == nil or self.dataManager.ItemTable == nil then
 		        return pool
 		    end
-		
-		    local keywords = self:GetTierKeywords(tier)
-		    if #keywords <= 0 then
-		        return pool
+		    local slots = self:CollectShopItemSlots()
+		    local order = {}
+		    if tier == "Rare" then
+		        order = {"lowAtkScroll", "gradeScroll", "shopConsumable"}
+		    elseif tier == "Epic" then
+		        order = {"midAtkScroll", "gradeScroll", "shopConsumable", "goldOre"}
+		    elseif tier == "Unique" then
+		        order = {"midAtkScroll", "highAtkScroll", "gradeScroll", "shopConsumable", "goldOre"}
+		    elseif tier == "Legendary" then
+		        order = {"highAtkScroll", "gradeScroll", "fixedGradeScroll", "shopConsumable", "goldOre"}
 		    end
 		
-		    for itemId, itemData in pairs(self.dataManager.ItemTable) do
-		        if itemData ~= nil and itemData.type ~= "expand" and self:IsAllowedForTier(itemData, keywords) then
-		            pool[#pool + 1] = itemData
+		    local usedItemIds = {}
+		    for i = 1, #order do
+		        local slotKey = order[i]
+		        local itemData = slots[slotKey]
+		        if itemData ~= nil then
+		            local itemId = tonumber(itemData.id) or 0
+		            if itemId > 0 and usedItemIds[itemId] ~= true then
+		                usedItemIds[itemId] = true
+		                pool[#pool + 1] = itemData
+		            end
 		        end
 		    end
 		
@@ -171,45 +188,102 @@ script ShopUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method table GetTierKeywords(string tier)
-		    if tier == "Rare" then
-		        return {"하급 무기 공격력 주문서", "장비 등급 주문서", "돼지고기"}
-		    elseif tier == "Epic" then
-		        return {"고급 무기 공격력 주문서", "장비 등급 주문서", "돼지고기", "금의 원석"}
-		    elseif tier == "Unique" then
-		        return {"고급 무기 공격력 주문서", "랜덤 무기 공격력 주문서", "장비 전용 마법 부여 주문서", "돼지고기", "금의 원석"}
-		    elseif tier == "Legendary" then
-		        return {"고급 무기 공격력 주문서", "장비 등급 주문서", "장비 등급 확정 주문서", "돼지고기", "금의 원석"}
-		    end
-		    return {}
-	end
-
-	@ExecSpace("ClientOnly")
-	method boolean IsAllowedForTier(table itemData, table keywords)
-		    if itemData == nil or itemData.name == nil then
-		        return false
+	method table CollectShopItemSlots()
+		    local slots = {
+		        lowAtkScroll = nil,
+		        midAtkScroll = nil,
+		        highAtkScroll = nil,
+		        gradeScroll = nil,
+		        fixedGradeScroll = nil,
+		        shopConsumable = nil,
+		        goldOre = nil
+		    }
+		    if self.dataManager == nil or self.dataManager.ItemTable == nil then
+		        return slots
 		    end
 		
-		    local itemName = tostring(itemData.name)
-		    for i = 1, #keywords do
-		        local keyword = keywords[i]
-		        if itemName == keyword then
-		            return true
+		    for _, itemData in pairs(self.dataManager.ItemTable) do
+		        if itemData == nil then
+		            continue
 		        end
 		
-		        if keyword == "금의 원석" then
-		            if itemName == "황금 원석" or string.find(itemName, "원석") ~= nil then
-		                return true
+		        local itemType = string.lower(tostring(itemData.type or ""))
+		        local price = math.max(0, tonumber(itemData.price) or tonumber(itemData.cost) or 0)
+		        local minAtk = tonumber(itemData.minAtk) or tonumber(itemData.min_atk) or 0
+		        local maxAtk = tonumber(itemData.maxAtk) or tonumber(itemData.max_atk) or 0
+		        local hp = tonumber(itemData.hp) or 0
+		        local hpPercent = tonumber(itemData.hpPercent) or 0
+		        local isRewardDrop = tonumber(itemData.isRewardDrop) or 1
+		
+		        if itemType == "scroll" then
+		            local hasAtkRange = (minAtk > 0 or maxAtk > 0)
+		            if hasAtkRange == true then
+		                local peakAtk = math.max(minAtk, maxAtk)
+		                if peakAtk <= 20 then
+		                    if slots.lowAtkScroll == nil then
+		                        slots.lowAtkScroll = itemData
+		                    end
+		                elseif peakAtk <= 40 then
+		                    if slots.midAtkScroll == nil then
+		                        slots.midAtkScroll = itemData
+		                    end
+		                else
+		                    if slots.highAtkScroll == nil then
+		                        slots.highAtkScroll = itemData
+		                    end
+		                end
+		            else
+		                if slots.gradeScroll == nil then
+		                    slots.gradeScroll = itemData
+		                else
+		                    local gradePrice = tonumber(slots.gradeScroll.price) or tonumber(slots.gradeScroll.cost) or 0
+		                    if price < gradePrice then
+		                        local previousGrade = slots.gradeScroll
+		                        slots.gradeScroll = itemData
+		                        if previousGrade ~= nil then
+		                            if slots.fixedGradeScroll == nil then
+		                                slots.fixedGradeScroll = previousGrade
+		                            else
+		                                local fixedPrice = tonumber(slots.fixedGradeScroll.price) or tonumber(slots.fixedGradeScroll.cost) or 0
+		                                local prevPrice = tonumber(previousGrade.price) or tonumber(previousGrade.cost) or 0
+		                                if prevPrice > fixedPrice then
+		                                    slots.fixedGradeScroll = previousGrade
+		                                end
+		                            end
+		                        end
+		                    else
+		                        if slots.fixedGradeScroll == nil then
+		                            slots.fixedGradeScroll = itemData
+		                        else
+		                            local fixedPrice = tonumber(slots.fixedGradeScroll.price) or tonumber(slots.fixedGradeScroll.cost) or 0
+		                            if price > fixedPrice then
+		                                slots.fixedGradeScroll = itemData
+		                            end
+		                        end
+		                    end
+		                end
+		            end
+		        elseif itemType == "consumable" then
+		            if isRewardDrop == 0 and (hp > 0 or hpPercent > 0) then
+		                if slots.shopConsumable == nil then
+		                    slots.shopConsumable = itemData
+		                end
+		            end
+		        elseif itemType == "goods" then
+		            if price > 0 then
+		                if slots.goldOre == nil then
+		                    slots.goldOre = itemData
+		                else
+		                    local currentPrice = tonumber(slots.goldOre.price) or tonumber(slots.goldOre.cost) or 0
+		                    if price < currentPrice then
+		                        slots.goldOre = itemData
+		                    end
+		                end
 		            end
 		        end
-		
-		        if keyword == "장비 전용 마법 부여 주문서" then
-		            if itemName == "장비 등급 주문서" then
-		                return true
-		            end
-		        end
 		    end
-		    return false
+		
+		    return slots
 	end
 
 	@ExecSpace("ClientOnly")
@@ -224,6 +298,7 @@ script ShopUI extends Component
 		    else
 		        self.currentShopTier = "Legendary"
 		    end
+		    log("[ShopUI] Tier roll=" .. tostring(rand) .. " selected=" .. tostring(self.currentShopTier))
 		
 		    self:UpdateShopTierText()
 	end
@@ -323,31 +398,20 @@ script ShopUI extends Component
 		        end
 		    end
 		
-		    local minGap = self.cardSpacing
-		    local gap = minGap
-		    local startX = 0
-		
-		    local listWidth = 0
-		    if self.itemListEntity ~= nil and self.itemListEntity.UITransformComponent ~= nil then
-		        listWidth = self:GetUITransformWidth(self.itemListEntity.UITransformComponent, 0)
+		    local cardHeight = 0
+		    if firstCard ~= nil and firstCard.UITransformComponent ~= nil then
+		        cardHeight = self:GetUITransformHeight(firstCard.UITransformComponent, 0)
 		    end
-		    if listWidth <= 0 then
-		        listWidth = self.fallbackListLayoutWidth
+		    if cardHeight <= 0 then
+		        cardHeight = cardWidth
 		    end
 		
-		    if listWidth > 0 then
-		        local remainWidth = listWidth - (cardWidth * cardCount)
-		        if remainWidth > 0 then
-		            gap = remainWidth / (cardCount + 1)
-		            startX = (-listWidth * 0.5) + gap + (cardWidth * 0.5)
-		        else
-		            local totalWidth = (cardWidth * cardCount) + (gap * (cardCount - 1))
-		            startX = (-totalWidth * 0.5) + (cardWidth * 0.5)
-		        end
-		    else
-		        local totalWidth = (cardWidth * cardCount) + (gap * (cardCount - 1))
-		        startX = (-totalWidth * 0.5) + (cardWidth * 0.5)
-		    end
+		    local columns = 2
+		    local rowCount = math.ceil(cardCount / columns)
+		    local horizontalGap = math.max(0, self.cardSpacing)
+		    local verticalGap = math.max(0, self.cardRowSpacing)
+		    local totalHeight = (rowCount * cardHeight) + ((rowCount - 1) * verticalGap)
+		    local topY = (totalHeight * 0.5) - (cardHeight * 0.5)
 		
 		    for i = 1, cardCount do
 		        local cardEntity = self.cardEntities[i]
@@ -357,8 +421,16 @@ script ShopUI extends Component
 		
 		        local uiTransform = cardEntity.UITransformComponent
 		        if uiTransform ~= nil then
-		            local posX = startX + (i - 1) * (cardWidth + gap)
-		            uiTransform.anchoredPosition = Vector2(posX, 0)
+		            local rowIndex = math.floor((i - 1) / columns)
+		            local colIndex = (i - 1) % columns
+		            local firstIndexInRow = rowIndex * columns + 1
+		            local itemsInRow = math.min(columns, cardCount - firstIndexInRow + 1)
+		
+		            local rowWidth = (itemsInRow * cardWidth) + ((itemsInRow - 1) * horizontalGap)
+		            local rowStartX = (-rowWidth * 0.5) + (cardWidth * 0.5)
+		            local posX = rowStartX + (colIndex * (cardWidth + horizontalGap))
+		            local posY = topY - (rowIndex * (cardHeight + verticalGap))
+		            uiTransform.anchoredPosition = Vector2(posX, posY)
 		        end
 		    end
 	end
