@@ -951,6 +951,24 @@
                 "EntityId": "d860862f-a071-4052-ae98-bae7b14ac77e",
                 "Version2": false
               },
+              "uiPlayerTurn": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "04ee9256-197f-409f-8803-2aa5f317250c",
+                "Version2": false
+              },
+              "uiMonsterTurn": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "2119e6d5-0e05-4a0d-89d6-e088ed13effe",
+                "Version2": false
+              },
+              "uiBossTurn": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "600d8c02-27e6-4498-afae-470a5a5a9767",
+                "Version2": false
+              },
               "uiStage5_1": {
                 "tempEntityId": null,
                 "IsRelative": false,
