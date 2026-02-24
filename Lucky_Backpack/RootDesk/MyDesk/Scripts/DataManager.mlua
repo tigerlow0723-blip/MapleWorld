@@ -105,8 +105,6 @@ script DataManager extends Component
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
-			headers["width"] = true
-			headers["height"] = true
 			headers["cost"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
@@ -117,12 +115,10 @@ script DataManager extends Component
 			headers["critDmg (%)"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["def"] = true
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
 			headers["Spawn_Rate(%)"] = true
-			headers["spawn_rate"] = true
 			headers["1"] = true
 			headers["2"] = true
 			headers["3"] = true
@@ -133,8 +129,6 @@ script DataManager extends Component
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
-			headers["width"] = true
-			headers["height"] = true
 			headers["cost"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
@@ -145,12 +139,10 @@ script DataManager extends Component
 			headers["critDmg (%)"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["def"] = true
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
 			headers["Spawn_Rate(%)"] = true
-			headers["spawn_rate"] = true
 			headers["shapeMask"] = true
 			headers["grade"] = true
 			headers["next_upgrade_id"] = true
@@ -161,8 +153,6 @@ script DataManager extends Component
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
-			headers["width"] = true
-			headers["height"] = true
 			headers["cost"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
@@ -173,7 +163,6 @@ script DataManager extends Component
 			headers["critDmg"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["def"] = true
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
@@ -184,23 +173,27 @@ script DataManager extends Component
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
-			headers["width"] = true
-			headers["height"] = true
 			headers["cost"] = true
-			headers["atk"] = true
-			headers["min_atk"] = true
-			headers["max_atk"] = true
-			headers["atkPercent"] = true
-			headers["accPercent"] = true
-			headers["critRate"] = true
-			headers["critDmg"] = true
-			headers["hp"] = true
-			headers["hpPercent"] = true
-			headers["def"] = true
-			headers["Spawn_Group"] = true
-			headers["desc"] = true
-			headers["imageRUID"] = true
+			headers["count"] = true
 			headers["shapeMask"] = true
+			headers["atk (%)"] = true
+			headers["critRate (%)"] = true
+			headers["critDmg (%)"] = true
+			headers["hp"] = true
+			headers["weaponCost"] = true
+			headers["min_critRate (%)"] = true
+			headers["max_critRate (%)"] = true
+			headers["min_critDmg (%)"] = true
+			headers["max_critDmg (%)"] = true
+			headers["min_weaponCost"] = true
+			headers["max_weaponCost"] = true
+			headers["min_hpRecovery (%)"] = true
+			headers["max_hpRecovery (%)"] = true
+			headers["Spawn_Group"] = true
+			headers["Spawn_Rate (%)"] = true
+			headers["desc"] = true
+			headers["text"] = true
+			headers["imageRUID"] = true
 			return headers
 		end
 		
@@ -221,7 +214,6 @@ script DataManager extends Component
 			headers["critDmg"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["def"] = true
 			headers["Spawn_Group"] = true
 			headers["desc"] = true
 			headers["imageRUID"] = true
@@ -571,17 +563,41 @@ script DataManager extends Component
 						else
 							data.price = data.cost
 						end
-						data.atk = getNumber("atk", "", 0)
+						data.atk = 0
+						if hasCol("atk") then data.atk = getNumber("atk", "", 0) end
 						data.atkPercent = getNumber("atkPercent", "atkPercent (%)", 0)
 						data.accPercent = getNumber("accPercent", "accPercent (%)", 0)
 						data.critRate = getNumber("critRate", "critRate (%)", 0)
 						data.critDmg = getNumber("critDmg", "critDmg (%)", 0)
 						data.hp = getNumber("hp", "", 0)
 						data.hpPercent = getNumber("hpPercent", "hpPercent (%)", 0)
-						data.def = getNumber("def", "", 0)
+						data.def = 0
+						if hasCol("def") then data.def = getNumber("def", "", 0) end
 						data.desc = getString("desc", "")
+						data.text = getString("text", "")
 						data.spawnGroup = getNumber("Spawn_Group", "", 1)
-						data.spawnRate = getNumber("Spawn_Rate(%)", "spawn_rate", 0)
+						
+						data.spawnRate = 0
+						if hasCol("Spawn_Rate(%)") or hasCol("Spawn_Rate (%)") then
+							data.spawnRate = getNumber("Spawn_Rate(%)", "Spawn_Rate (%)", 0)
+						end
+						if data.spawnRate == 0 and hasCol("spawn_rate") then
+							data.spawnRate = getNumber("spawn_rate", "", 0)
+						end
+						
+						data.count = getNumber("count", "", 0)
+						data.weaponCost = getNumber("weaponCost", "", 0)
+						data.minCritRate = getNumber("min_critRate (%)", "", 0)
+						data.maxCritRate = getNumber("max_critRate (%)", "", 0)
+						data.minCritDmg = getNumber("min_critDmg (%)", "", 0)
+						data.maxCritDmg = getNumber("max_critDmg (%)", "", 0)
+						data.minWeaponCost = getNumber("min_weaponCost", "", 0)
+						data.maxWeaponCost = getNumber("max_weaponCost", "", 0)
+						data.minHpRecovery = getNumber("min_hpRecovery (%)", "", 0)
+						data.maxHpRecovery = getNumber("max_hpRecovery (%)", "", 0)
+						if hasCol("atk (%)") then data.armorAtkPercent = getNumber("atk (%)", "", 0) end
+						if hasCol("critRate (%)") then data.armorCritRate = getNumber("critRate (%)", "", 0) end
+						if hasCol("critDmg (%)") then data.armorCritDmg = getNumber("critDmg (%)", "", 0) end
 						data.isRewardDrop = getNumber("isRewardDrop", "rewardDrop", 1)
 						data.imageRUID = getString("imageRUID", "")
 						data.grade = getString("grade", "")
