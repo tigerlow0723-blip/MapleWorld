@@ -272,16 +272,30 @@ script Item extends Component
 		                self.next_upgrade_id = tonumber(nextUpgradeValue) or 0
 		            end
 		
-		            local okAtkCount, atkCountValue = pcall(function()
-		                return weaponDataSet:GetCell(row, "atkCount")
+		            -- Prefer named columns for the unified item schema.
+		            local okGradeByName, gradeByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "grade")
 		            end)
-		            if okAtkCount == false or atkCountValue == nil or atkCountValue == "" then
-		                okAtkCount, atkCountValue = pcall(function()
-		                    return weaponDataSet:GetCell(row, 7)
-		                end)
+		            if okGradeByName and gradeByName ~= nil and gradeByName ~= "" then
+		                self.grade = tostring(gradeByName)
 		            end
-		            if okAtkCount and atkCountValue ~= nil and atkCountValue ~= "" then
-		                self.atkCount = math.max(0, tonumber(atkCountValue) or 0)
+		
+		            local okNextByName, nextByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "next_upgrade_id")
+		            end)
+		            if okNextByName and nextByName ~= nil and nextByName ~= "" then
+		                self.next_upgrade_id = tonumber(nextByName) or self.next_upgrade_id
+		            end
+		
+		            local namedAtkCountValue = nil
+		            local okCountByName, countByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "count")
+		            end)
+		            if okCountByName and countByName ~= nil and countByName ~= "" then
+		                namedAtkCountValue = tonumber(countByName)
+		            end
+		            if namedAtkCountValue ~= nil then
+		                self.atkCount = math.max(0, namedAtkCountValue)
 		            end
 		        end
 		    end
