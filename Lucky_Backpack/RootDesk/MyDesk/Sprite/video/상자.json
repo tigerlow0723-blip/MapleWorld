@@ -1,0 +1,81 @@
+﻿[
+  {
+    "RUID": "83c587ab228d493a96651fc3f59c9f38",
+    "clipName": "상자 오픈 (상자)",
+    "subCategory": "object",
+    "sprites": [
+      {
+        "spriteRUID": "ad51ee64fa31470db824787999da0811",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "ad51ee64fa31470db824787999da0811",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "7f2e5c98094e489fa1976bdd1ecab4c9",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "a0976e46d19c456d84a276c5da206547",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "ae59a0ab116047ed91bb97ba7c83840e",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "8a73416042c94d14a322ca10d7cb0f38",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "e26ca9ea95c442619823368f0fffcd29",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "eea8f5cb44604d84bb3a5c96e77e0d84",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "2a6a65f3252b4f6a81f1d63bf58a5431",
+        "delay": 0.2,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    ]
+  }
+]
