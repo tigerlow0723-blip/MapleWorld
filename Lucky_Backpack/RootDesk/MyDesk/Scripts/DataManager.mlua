@@ -146,7 +146,7 @@ script DataManager extends Component
 			headers["max_critRate"] = true
 			headers["min_critDmg"] = true
 			headers["max_critDmg"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["imageRUID"] = true
 			headers["desc"] = true
@@ -197,7 +197,7 @@ script DataManager extends Component
 			headers["max_critRate"] = true
 			headers["min_critDmg"] = true
 			headers["max_critDmg"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["imageRUID"] = true
 			headers["desc"] = true
@@ -229,7 +229,7 @@ script DataManager extends Component
 			headers["critDmg"] = true
 			headers["hp"] = true
 			headers["hpPercent"] = true
-			headers["Spawn_Group"] = true
+			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["desc"] = true
 			headers["text"] = true
@@ -595,7 +595,7 @@ script DataManager extends Component
 						if hasCol("def") then data.def = getNumber("def", "", 0) end
 						data.desc = getString("desc", "")
 						data.text = getString("text", "")
-						data.spawnGroup = getNumber("Spawn_Group", "", 1)
+						data.spawnGroup = getNumber("spawn_Group", "Spawn_Group", 1)
 						
 						data.spawnRate = 0
 						if hasCol("Spawn_Rate(%)") or hasCol("Spawn_Rate (%)") then

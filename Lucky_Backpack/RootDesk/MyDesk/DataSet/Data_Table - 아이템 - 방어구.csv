@@ -1,4 +1,4 @@
-﻿id,type,name,grade,cost,count,shapeMask,hp,atk,def,atkPercent,accPercent,critRate,critDmg,min_atk,max_atk,min_critRate,max_critRate,min_critDmg,max_critDmg,Spawn_Group,spawn_rate,imageRUID,desc,text,weaponCost,min_weaponCost,max_weaponCost,min_hpRecovery,max_hpRecovery,synergyTarget
+﻿id,type,name,grade,cost,count,shapeMask,hp,atk,def,atkPercent,accPercent,critRate,critDmg,min_atk,max_atk,min_critRate,max_critRate,min_critDmg,max_critDmg,spawn_Group,spawn_rate,imageRUID,desc,text,weaponCost,min_weaponCost,max_weaponCost,min_hpRecovery,max_hpRecovery,synergyTarget
 2001,armor,갈색 삿갓,Epic,1,2,11,300,,,0,,0,0,,,0,0,10,30,1,70,415c7622c36e4812883593a037824b2a,에픽 방어구,사용 옵션 : 무기 인접 시 무기의 치명타 피해 +10% ~ +30%,0,0,0,0,0,weapon
 2002,armor,파란색 가운,Epic,1,1,11,300,,,0,,0,0,,,5,10,0,0,1,70,eb97c5240ff74191bb55ca6ae639982e,에픽 방어구,사용 옵션 : 무기 인접 시 무기의 치명타 확률 +5% ~ +10%,0,0,0,0,0,weapon
 2003,armor,주스팅,Epic,2,1,1/1,300,,,0,,0,0,,,0,0,0,0,1,70,1e70d97ee72747c89b0023f04ac615ff,에픽 방어구,사용 옵션 : 포션 인접 시 체력 회복 +15% ~ +75%,0,0,0,15,75,potion
