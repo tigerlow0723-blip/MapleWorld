@@ -501,6 +501,59 @@ script ShopUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method boolean IsImmediateShopConsumable(table itemData)
+		    if itemData == nil then
+		        return false
+		    end
+		
+		    local itemType = string.lower(tostring(itemData.type or ""))
+		    if itemType ~= "consumable" then
+		        return false
+		    end
+		
+		    local isShopOnly = ((tonumber(itemData.isRewardDrop) or 1) == 0)
+		    local hpValue = tonumber(itemData.hp) or 0
+		    local hpPercentValue = tonumber(itemData.hpPercent) or 0
+		    local isRecoverItem = (hpValue > 0) or (hpPercentValue > 0)
+		    return isShopOnly and isRecoverItem
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyImmediateConsumableEffect(table itemData)
+		    if self.playerManager == nil or itemData == nil then
+		        return
+		    end
+		
+		    local appliedEffect = false
+		    local totalHeal = 0
+		
+		    local hpValue = tonumber(itemData.hp) or 0
+		    if hpValue > 0 then
+		        self.playerManager:Heal(hpValue)
+		        totalHeal += hpValue
+		        appliedEffect = true
+		    end
+		
+		    local hpPercentValue = tonumber(itemData.hpPercent) or 0
+		    if hpPercentValue > 0 then
+		        local maxHp = tonumber(self.playerManager.maxHP) or 0
+		        local healAmount = maxHp * (hpPercentValue / 100.0)
+		        if healAmount > 0 then
+		            self.playerManager:Heal(healAmount)
+		            totalHeal += healAmount
+		            appliedEffect = true
+		        end
+		    end
+		
+		    if appliedEffect == false and self.playerManager.EmitPlayerStatChangedEvent ~= nil then
+		        self.playerManager:EmitPlayerStatChangedEvent()
+		    end
+		
+		    self:NotifyMainUI()
+		    log("[ShopUI] Immediate consumable used. itemId=" .. tostring(itemData.id) .. " healed=" .. tostring(math.floor(totalHeal)))
+	end
+
+	@ExecSpace("ClientOnly")
 	method void OnClickCard(integer index)
 		    local itemData = self.shopItems[index]
 		    if itemData == nil then
@@ -517,17 +570,8 @@ script ShopUI extends Component
 		    end
 		
 	    local purchasedItemId = tonumber(itemData.id) or 0
-	    local isPorkItem = (purchasedItemId == 11 or purchasedItemId == 12) and (itemData.type == "consumable")
-	    if isPorkItem then
-	        local hpPercent = tonumber(itemData.hpPercent) or 0
-	        if hpPercent > 0 then
-	            local maxHp = tonumber(self.playerManager.maxHP) or 0
-	            local healAmount = maxHp * (hpPercent / 100.0)
-	            if healAmount > 0 then
-	                self.playerManager:Heal(healAmount)
-	            end
-	        end
-	        log("[ShopUI] Pork immediately consumed upon purchase. itemId: " .. tostring(purchasedItemId))
+	    if self:IsImmediateShopConsumable(itemData) then
+	        self:ApplyImmediateConsumableEffect(itemData)
 	    elseif purchasedItemId == 9 or purchasedItemId == 10 then
 	        self.playerManager:AddScroll(purchasedItemId, 1)
 	        log("[ShopUI] Scroll purchased directly to scroll inventory. id=" .. tostring(purchasedItemId))

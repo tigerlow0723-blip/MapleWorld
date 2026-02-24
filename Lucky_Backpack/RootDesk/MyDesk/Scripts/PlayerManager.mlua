@@ -363,6 +363,10 @@ script PlayerManager extends Component
 			return
 		end
 		broadcaster:SendEvent(PlayerStatChangedEvent())
+		-- Fallback immediate refresh in case event timing/receiver order delays UI updates.
+		if broadcaster.UIMain ~= nil then
+			broadcaster.UIMain:UpdateUI()
+		end
 	end
 
 	method void SyncInventoryFromGrid()
@@ -370,6 +374,8 @@ script PlayerManager extends Component
 		if self.inventoryComp == nil then
 			return
 		end
+		local prevCurrentHP = tonumber(self.currentHP) or 0
+		local prevMaxHP = tonumber(self.maxHP) or 0
 		self.inventory = {}
 		for placedKey, placedInfo in pairs(self.inventoryComp.placedItems) do
 			if placedInfo == nil then
@@ -406,6 +412,15 @@ script PlayerManager extends Component
 		if self.currentHP > self.maxHP then
 			self.currentHP = self.maxHP
 		end
+		local nextCurrentHP = tonumber(self.currentHP) or 0
+		local nextMaxHP = tonumber(self.maxHP) or 0
+		if prevCurrentHP ~= nextCurrentHP or prevMaxHP ~= nextMaxHP then
+			log("[HPChange][InventorySync] currentHP " .. tostring(prevCurrentHP) .. " -> " .. tostring(nextCurrentHP)
+				.. ", maxHP " .. tostring(prevMaxHP) .. " -> " .. tostring(nextMaxHP)
+				.. ", inventoryCount=" .. tostring(#self.inventory))
+		end
+		-- Ensure HP/Cost UI refreshes immediately for every inventory sync path (drag, reward, auto-add).
+		self:EmitPlayerStatChangedEvent()
 	end
 
 	method void InitPlayer(string selectedClassId, any dataMgr)

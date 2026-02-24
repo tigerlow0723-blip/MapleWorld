@@ -104,32 +104,134 @@ script BattleManager extends Component
 		return nil
 	end
 
-	method void ResetWeaponAttackCounts()
-		local inventoryComp = self:ResolveInventoryComp()
-		if inventoryComp == nil or inventoryComp.placedItems == nil then
-			return
+	method table GetInventoryItemComponents()
+		local result = {}
+		local inventoryEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryEntity == nil or inventoryEntity.Children == nil then
+			return result
 		end
 		
-		for placedKey, placedInfo in pairs(inventoryComp.placedItems) do
-			if placedInfo == nil then
-				continue
+		local children = inventoryEntity.Children
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				result[#result + 1] = child.Item
 			end
-			local itemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
-			if itemId <= 0 then
-				continue
+		end
+		
+		return result
+	end
+
+	method void ResetWeaponAttackCounts()
+		local itemComps = self:GetInventoryItemComponents()
+		for i = 1, #itemComps do
+			local itemComp = itemComps[i]
+			if itemComp ~= nil and string.lower(tostring(itemComp.itemType or "")) == "weapon" then
+				itemComp.currentAtkCount = math.max(0, tonumber(itemComp.atkCount) or 0)
 			end
-			local itemData = nil
-			if self.dataManager ~= nil then
-				itemData = self.dataManager:GetItemData(itemId)
-			end
-			
-			if itemData ~= nil and string.lower(tostring(itemData.type or "")) == "weapon" then
-				local itemComp = self:FindInventoryItemComponent(itemId)
-				if itemComp ~= nil then
-					itemComp.currentAtkCount = math.max(0, tonumber(itemComp.atkCount) or 0)
+		end
+	end
+
+	method void ResetArmorActivationCounts()
+		local itemComps = self:GetInventoryItemComponents()
+		for i = 1, #itemComps do
+			local itemComp = itemComps[i]
+			if itemComp ~= nil and string.lower(tostring(itemComp.itemType or "")) == "armor" then
+				if itemComp.ResetArmorActivationCount ~= nil then
+					itemComp:ResetArmorActivationCount()
+				else
+					itemComp.armorRemainingCount = math.max(0, tonumber(itemComp.armorUseCount) or 0)
 				end
 			end
 		end
+	end
+
+	method void ClearArmorTemporaryEffects()
+		local itemComps = self:GetInventoryItemComponents()
+		for i = 1, #itemComps do
+			local itemComp = itemComps[i]
+			if itemComp ~= nil then
+				if itemComp.ResetTemporaryArmorBuffs ~= nil then
+					itemComp:ResetTemporaryArmorBuffs()
+				else
+					itemComp.tempArmorAtkPercent = 0
+					itemComp.tempArmorCritRate = 0
+					itemComp.tempArmorCritDmg = 0
+					itemComp.tempArmorWeaponCost = 0
+					itemComp.tempArmorPotionHpPercent = 0
+				end
+			end
+		end
+	end
+
+	method table CollectAdjacentInventoryItems(any sourceItemComp)
+		local result = {}
+		if sourceItemComp == nil then
+			return result
+		end
+		
+		local baseRow = tonumber(sourceItemComp.gridRow) or 0
+		local baseCol = tonumber(sourceItemComp.gridCol) or 0
+		if baseRow <= 0 or baseCol <= 0 then
+			return result
+		end
+		
+		local inventoryComp = self:ResolveInventoryComp()
+		if inventoryComp == nil or inventoryComp.grid == nil then
+			return result
+		end
+		
+		local maxRow = inventoryComp.maxHeight or #inventoryComp.grid
+		local maxCol = inventoryComp.maxWidth or 0
+		if maxCol <= 0 and inventoryComp.grid[1] ~= nil then
+			maxCol = #inventoryComp.grid[1]
+		end
+		
+		local shapeCells = sourceItemComp:GetShapeCells()
+		if shapeCells == nil or #shapeCells == 0 then
+			shapeCells = {{row = 0, col = 0}}
+		end
+		
+		local usedEntityKey = {}
+		for i = 1, #shapeCells do
+			local cell = shapeCells[i]
+			if cell == nil then
+				continue
+			end
+			
+			local absRow = baseRow + (tonumber(cell.row) or 0)
+			local absCol = baseCol + (tonumber(cell.col) or 0)
+			
+			local function collectAt(targetRow, targetCol)
+				if targetRow < 1 or targetRow > maxRow or targetCol < 1 or targetCol > maxCol then
+					return
+				end
+				local neighborComp = nil
+				if self.playerManager ~= nil and self.playerManager.GetItemComponentAtGridCell ~= nil then
+					neighborComp = self.playerManager:GetItemComponentAtGridCell(targetRow, targetCol)
+				end
+				if neighborComp == nil or neighborComp == sourceItemComp then
+					return
+				end
+				
+				local key = "row:" .. tostring(targetRow) .. ":col:" .. tostring(targetCol)
+				if neighborComp.Entity ~= nil and neighborComp.Entity.Id ~= nil then
+					key = "entity:" .. tostring(neighborComp.Entity.Id)
+				end
+				if usedEntityKey[key] == true then
+					return
+				end
+				usedEntityKey[key] = true
+				result[#result + 1] = neighborComp
+			end
+			
+			collectAt(absRow, absCol - 1)
+			collectAt(absRow, absCol + 1)
+			collectAt(absRow - 1, absCol)
+			collectAt(absRow + 1, absCol)
+		end
+		
+		return result
 	end
 
 	method void StartBattle(integer stageId)
@@ -154,7 +256,9 @@ script BattleManager extends Component
 		
 		--
 		self.playerManager:RestoreCost()
+		self:ClearArmorTemporaryEffects()
 		self:ResetWeaponAttackCounts()
+		self:ResetArmorActivationCounts()
 		
 		--
 		self.currentTurn = "Player"
@@ -263,11 +367,20 @@ script BattleManager extends Component
 			end
 		end
 		
-		if self.playerManager:UseCost(itemData.cost) == false then
+		local weaponCostBuff = 0
+		if itemComp.tempArmorWeaponCost ~= nil then
+			weaponCostBuff = tonumber(itemComp.tempArmorWeaponCost) or 0
+		end
+		local finalCost = (tonumber(itemData.cost) or 0) + weaponCostBuff
+		if finalCost < 0 then
+			finalCost = 0
+		end
+		
+		if self.playerManager:UseCost(finalCost) == false then
 			return
 		end
 		
-		local dmgResult = self:CalculatePlayerDamage(itemData)
+		local dmgResult = self:CalculatePlayerDamage(itemData, itemComp)
 		local damage = dmgResult.damage
 		local isCritical = dmgResult.critical
 		local accuracy = self.playerManager:CalcFinalACC(itemId)
@@ -321,6 +434,11 @@ script BattleManager extends Component
 	end
 
 	method boolean OnPlayerUseConsumableById(integer itemId)
+		local itemComp = self:FindInventoryItemComponent(itemId)
+		if itemComp ~= nil and string.lower(tostring(itemComp.itemType or "")) == "potion" then
+			return self:OnPlayerUsePotionByComponent(itemComp)
+		end
+		
 		if self.currentTurn ~= "Player" then
 			return false
 		end
@@ -337,11 +455,8 @@ script BattleManager extends Component
 			return false
 		end
 		
-		if itemData.type ~= "consumable" then
-			return false
-		end
-		
-		if itemId ~= 2 and itemId ~= 3 and itemId ~= 4 and itemId ~= 5 then
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "consumable" and itemType ~= "potion" then
 			return false
 		end
 		
@@ -349,7 +464,6 @@ script BattleManager extends Component
 			return false
 		end
 		
-		--
 		if (itemData.hp or 0) > 0 then
 			self.playerManager:Heal(itemData.hp)
 		end
@@ -375,7 +489,173 @@ script BattleManager extends Component
 		return true
 	end
 
-	method table CalculatePlayerDamage(table itemData)
+	method boolean OnPlayerUsePotionByComponent(any potionComp)
+		if self.currentTurn ~= "Player" then
+			return false
+		end
+		if self.playerManager == nil or self.playerManager.isDead == true then
+			return false
+		end
+		if potionComp == nil then
+			return false
+		end
+		
+		local itemId = tonumber(potionComp.itemId) or 0
+		if itemId <= 0 then
+			return false
+		end
+		
+		local itemData = nil
+		if self.dataManager ~= nil then
+			itemData = self.dataManager:GetItemData(itemId)
+		end
+		if itemData == nil then
+			return false
+		end
+		
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "potion" and itemType ~= "consumable" then
+			return false
+		end
+		
+		local costValue = tonumber(itemData.cost) or 0
+		if self.playerManager:UseCost(costValue) == false then
+			return false
+		end
+		
+		local potionBoostPercent = tonumber(potionComp.tempArmorPotionHpPercent) or 0
+		local boostMultiplier = 1.0 + (potionBoostPercent / 100.0)
+		if boostMultiplier < 0 then
+			boostMultiplier = 0
+		end
+		
+		local flatHeal = tonumber(itemData.hp) or 0
+		if flatHeal > 0 then
+			self.playerManager:Heal(flatHeal * boostMultiplier)
+		end
+		
+		local hpPercent = tonumber(itemData.hpPercent) or 0
+		if hpPercent > 0 then
+			local amplifiedPercent = hpPercent * boostMultiplier
+			local healAmount = self.playerManager.maxHP * (amplifiedPercent / 100.0)
+			self.playerManager:Heal(healAmount)
+		end
+		
+		if (itemData.atkPercent or 0) > 0 then
+			self.playerManager:AddBuff("atkPercent", itemData.atkPercent, 3)
+		end
+		if (itemData.accPercent or 0) > 0 then
+			self.playerManager:AddBuff("accPercent", itemData.accPercent, 3)
+		end
+		if (itemData.critRate or 0) > 0 then
+			self.playerManager:AddBuff("critRate", itemData.critRate, 3)
+		end
+		if (itemData.critDmg or 0) > 0 then
+			self.playerManager:AddBuff("critDmg", itemData.critDmg, 3)
+		end
+		
+		log("[BattleManager] Potion used: " .. tostring(itemData.name) .. " boost=" .. tostring(potionBoostPercent) .. "%")
+		self:RefreshUI()
+		return true
+	end
+
+	method boolean OnPlayerUseArmorByComponent(any armorComp)
+		if self.currentTurn ~= "Player" then
+			return false
+		end
+		if self.playerManager == nil or self.playerManager.isDead == true then
+			return false
+		end
+		if armorComp == nil then
+			return false
+		end
+		
+		if string.lower(tostring(armorComp.itemType or "")) ~= "armor" then
+			return false
+		end
+		
+		local itemId = tonumber(armorComp.itemId) or 0
+		if itemId <= 0 then
+			return false
+		end
+		
+		local itemData = nil
+		if self.dataManager ~= nil then
+			itemData = self.dataManager:GetItemData(itemId)
+		end
+		if itemData == nil then
+			return false
+		end
+		
+		local remainCount = math.max(0, tonumber(armorComp.armorRemainingCount) or tonumber(itemData.count) or 0)
+		if remainCount < 1 then
+			log("[BattleManager] Armor activation count exhausted. itemId=" .. tostring(itemId))
+			return false
+		end
+		
+		local activationCost = tonumber(itemData.cost) or 0
+		if self.playerManager:UseCost(activationCost) == false then
+			return false
+		end
+		armorComp.armorRemainingCount = math.max(0, remainCount - 1)
+		
+		local atkPercentBuff = tonumber(armorComp.armorAtkPercent) or 0
+		local critRateBuff = tonumber(armorComp.armorCritRate) or 0
+		local critDmgBuff = tonumber(armorComp.armorCritDmg) or 0
+		local weaponCostBuff = tonumber(armorComp.armorWeaponCost) or 0
+		local potionHpRecoveryBuff = tonumber(armorComp.armorHpRecoveryPercent) or 0
+		local sourceRow = tonumber(armorComp.gridRow) or 0
+		local sourceCol = tonumber(armorComp.gridCol) or 0
+		
+		local targets = self:CollectAdjacentInventoryItems(armorComp)
+		local appliedCount = 0
+		local debugEntries = {}
+		for i = 1, #targets do
+			local targetComp = targets[i]
+			if targetComp == nil then
+				continue
+			end
+			
+			local targetType = string.lower(tostring(targetComp.itemType or ""))
+			local targetItemId = tonumber(targetComp.itemId) or 0
+			local targetRow = tonumber(targetComp.gridRow) or 0
+			local targetCol = tonumber(targetComp.gridCol) or 0
+			if targetType == "weapon" then
+				targetComp.tempArmorAtkPercent = (tonumber(targetComp.tempArmorAtkPercent) or 0) + atkPercentBuff
+				targetComp.tempArmorCritRate = (tonumber(targetComp.tempArmorCritRate) or 0) + critRateBuff
+				targetComp.tempArmorCritDmg = (tonumber(targetComp.tempArmorCritDmg) or 0) + critDmgBuff
+				targetComp.tempArmorWeaponCost = (tonumber(targetComp.tempArmorWeaponCost) or 0) + weaponCostBuff
+				debugEntries[#debugEntries + 1] = "weapon id=" .. tostring(targetItemId)
+					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " atk%=" .. tostring(atkPercentBuff)
+					.. " critRate%=" .. tostring(critRateBuff)
+					.. " critDmg%=" .. tostring(critDmgBuff)
+					.. " weaponCost=" .. tostring(weaponCostBuff)
+				appliedCount += 1
+			elseif targetType == "potion" then
+				targetComp.tempArmorPotionHpPercent = (tonumber(targetComp.tempArmorPotionHpPercent) or 0) + potionHpRecoveryBuff
+				debugEntries[#debugEntries + 1] = "potion id=" .. tostring(targetItemId)
+					.. " cell=(" .. tostring(targetRow) .. "," .. tostring(targetCol) .. ")"
+					.. " hpRecovery%=" .. tostring(potionHpRecoveryBuff)
+				appliedCount += 1
+			end
+		end
+		
+		local detailText = "no_adjacent_target"
+		if #debugEntries > 0 then
+			detailText = table.concat(debugEntries, " | ")
+		end
+		log("[ArmorSynergyDebug] sourceArmor id=" .. tostring(itemId)
+			.. " cell=(" .. tostring(sourceRow) .. "," .. tostring(sourceCol) .. ")"
+			.. " remain=" .. tostring(armorComp.armorRemainingCount)
+			.. " applied=" .. tostring(appliedCount)
+			.. " details=" .. detailText)
+		log("[BattleManager] Armor activated. itemId=" .. tostring(itemId) .. " targets=" .. tostring(appliedCount))
+		self:RefreshUI()
+		return true
+	end
+
+	method table CalculatePlayerDamage(table itemData, any itemComp)
 		local result = {}
 		result.damage = 0
 		result.critical = false
@@ -388,6 +668,17 @@ script BattleManager extends Component
 		end
 		
 		local finalAtk = self.playerManager:CalcFinalATK(weaponId)
+		local armorAtkPercentBuff = 0
+		local armorCritRateBuff = 0
+		local armorCritDmgBuff = 0
+		if itemComp ~= nil then
+			armorAtkPercentBuff = tonumber(itemComp.tempArmorAtkPercent) or 0
+			armorCritRateBuff = tonumber(itemComp.tempArmorCritRate) or 0
+			armorCritDmgBuff = tonumber(itemComp.tempArmorCritDmg) or 0
+		end
+		if armorAtkPercentBuff ~= 0 then
+			finalAtk = finalAtk * (1 + (armorAtkPercentBuff / 100.0))
+		end
 		
 		local synergyBonus = 0
 		if self.playerManager.CalcWeaponSynergyAtk ~= nil then
@@ -396,10 +687,13 @@ script BattleManager extends Component
 		local preCritAtk = finalAtk
 		log("[DamageDebug] preCritAtk=" .. tostring(preCritAtk) .. " synergyBonus=" .. tostring(synergyBonus))
 		
-		local critRate = self.playerManager:CalcFinalCritRate(weaponId)
+		local critRate = self.playerManager:CalcFinalCritRate(weaponId) + armorCritRateBuff
 		local roll = math.random(1, 100)
 		if roll <= critRate then
-			local critDmg = self.playerManager:CalcFinalCritDMG(weaponId)
+			local critDmg = self.playerManager:CalcFinalCritDMG(weaponId) + armorCritDmgBuff
+			if critDmg < 1 then
+				critDmg = 1
+			end
 			finalAtk = finalAtk * (critDmg / 100)
 			result.critical = true
 			log("[BattleManager] Critical Hit!")
@@ -505,6 +799,7 @@ script BattleManager extends Component
 		
 		log("[BattleManager] >>> Player Turn End -> Monster Turn Start <<<")
 		self.currentTurn = "Monster"
+		self:ClearArmorTemporaryEffects()
 		
 		self:ProcessPlayerDots(function()
 			if self.playerManager.isDead == true then
@@ -722,7 +1017,9 @@ script BattleManager extends Component
 		--
 		self.currentTurn = "Player"
 		self.playerManager:RestoreCost()
+		self:ClearArmorTemporaryEffects()
 		self:ResetWeaponAttackCounts()
+		self:ResetArmorActivationCounts()
 		self.monsterManager:TickMonsterDebuffs()
 		self:RefreshUI()
 	end
