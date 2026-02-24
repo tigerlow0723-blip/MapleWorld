@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://89529857587f462c8a88afa778b6191d",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/89529857587f462c8a88afa778b6191d/639075223869429033",
+      "upload_hash": "DE2EA352FB3A28F1C4F781B27277FE7EA4B0CB0FE44CD595A03CF5173490CF40",
+      "name": "HPMP-1",
+      "resource_guid": "89529857587f462c8a88afa778b6191d",
+      "resource_version": "699d7052b314f0c263cc217d"
+    }
+  }
+}

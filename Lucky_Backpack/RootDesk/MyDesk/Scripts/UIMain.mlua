@@ -60,6 +60,20 @@ script UIMain extends Component
 	property any battleManager = nil
 	property any playerManager = nil
 	property any scrollInventoryUI = nil
+	
+	-- Main Menu Properties
+	property Entity uiMainMenu = nil
+	property Entity btnStartGame = nil
+	property Entity btnHowToPlay = nil
+	
+	-- Tutorial Properties
+	property Entity uiTutorial = nil
+	property Entity btnNextPage = nil
+	property Entity btnPrevPage = nil
+	property Entity btnCloseTutorial = nil
+	property integer currentTutorialPage = 1
+	property table tutorialImages = {} -- user fills in RUIDs here
+	
 	property any rewardUI = nil
 	property integer targetMonsterIdx = 0
 	property table monsterSliders = {}
@@ -95,6 +109,43 @@ script UIMain extends Component
 		if rewardPanel ~= nil then
 			self.rewardUI = rewardPanel.RewardUI
 		end
+		
+		-- Bind Main Menu UI
+		self.uiMainMenu = _EntityService:GetEntityByPath("/ui/maingroup/Main_screen")
+		if self.uiMainMenu ~= nil then
+			self.btnStartGame = self.uiMainMenu:GetChildByName("start")
+			self.btnHowToPlay = self.uiMainMenu:GetChildByName("explanation")
+		end
+		
+		-- Bind Tutorial UI (explanation_screen must be Enable=true in Maker so GetEntityByPath can find it)
+		self.uiTutorial = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+		if self.uiTutorial ~= nil then
+			self.btnNextPage = self.uiTutorial:GetChildByName("right")
+			self.btnPrevPage = self.uiTutorial:GetChildByName("left")
+			self.btnCloseTutorial = self.uiTutorial:GetChildByName("Exit")
+			
+			-- Load tutorial image RUIDs from DataManager
+			if self.gameManager ~= nil and self.gameManager.dataManager ~= nil then
+				local imgTable = self.gameManager.dataManager.TutorialImageTable
+				if imgTable ~= nil then
+					self.tutorialImages = {}
+					for page = 1, 13 do
+						if imgTable[page] ~= nil then
+							self.tutorialImages[page] = imgTable[page]
+						else
+							self.tutorialImages[page] = ""
+						end
+					end
+					log("[UIMain] Tutorial images loaded from DataManager: " .. tostring(#self.tutorialImages))
+				end
+			end
+			
+			-- Hide tutorial screen initially (it must be enabled in Maker for binding to work)
+			self.uiTutorial.Enable = false
+			log("[UIMain] explanation_screen bound and hidden successfully")
+		else
+			log("[UIMain] WARNING: explanation_screen NOT found - make sure it is ENABLED in Maker!")
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -103,6 +154,76 @@ script UIMain extends Component
 	end
 
 	method void ConnectEvents()
+		-- Main Menu / Tutorial Buttons
+		if self.btnStartGame ~= nil then
+			self.btnStartGame:ConnectEvent("ButtonClickEvent", function()
+				self:HideMainMenu()
+				if self.gameManager ~= nil then
+					self.gameManager:StartGame("War")
+				end
+			end)
+		end
+		
+		if self.btnHowToPlay ~= nil then
+			self.btnHowToPlay:ConnectEvent("ButtonClickEvent", function()
+				log("[UIMain] === Explanation button CLICKED! ===")
+				
+				-- Hide Main_screen directly by path
+				local mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/Main_screen")
+				if mainScreen ~= nil then
+					mainScreen:SetEnable(false)
+					log("[UIMain] Main_screen hidden")
+				else
+					log("[UIMain] WARNING: Main_screen not found by path")
+				end
+				
+				-- Show explanation_screen directly by path
+				local tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				if tutScreen ~= nil then
+					tutScreen:SetEnable(true)
+					self.currentTutorialPage = 1
+					self:UpdateTutorialImage()
+					log("[UIMain] explanation_screen shown")
+				else
+					log("[UIMain] WARNING: explanation_screen not found by path")
+				end
+			end)
+			log("[UIMain] explanation button event connected!")
+		else
+			log("[UIMain] WARNING: btnHowToPlay is nil, cannot connect event!")
+		end
+		
+		if self.btnNextPage ~= nil then
+			self.btnNextPage:ConnectEvent("ButtonClickEvent", function()
+				if self.currentTutorialPage < #self.tutorialImages then
+					self.currentTutorialPage = self.currentTutorialPage + 1
+					self:UpdateTutorialImage()
+				end
+			end)
+		end
+		
+		if self.btnPrevPage ~= nil then
+			self.btnPrevPage:ConnectEvent("ButtonClickEvent", function()
+				if self.currentTutorialPage > 1 then
+					self.currentTutorialPage = self.currentTutorialPage - 1
+					self:UpdateTutorialImage()
+				end
+			end)
+		end
+		
+		if self.btnCloseTutorial ~= nil then
+			self.btnCloseTutorial:ConnectEvent("ButtonClickEvent", function()
+				local tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				if tutScreen ~= nil then
+					tutScreen:SetEnable(false)
+				end
+				local mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/Main_screen")
+				if mainScreen ~= nil then
+					mainScreen:SetEnable(true)
+				end
+			end)
+		end
+		
 		-- 턴 종료 버튼
 		if self.btnTurnEnd ~= nil then
 			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
@@ -211,6 +332,62 @@ script UIMain extends Component
 		
 		if self.scrollInventoryUI ~= nil then
 			self.scrollInventoryUI:UpdateUI()
+		end
+	end
+
+	method void ShowMainMenu()
+		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+		if mainGroup ~= nil then
+			mainGroup.Enable = true
+		end
+		
+		if self.uiMainMenu ~= nil then
+			self.uiMainMenu.Enable = true
+		end
+		if self.uiTutorial ~= nil then
+			self.uiTutorial.Enable = false
+		end
+		-- Hide standard game UI
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup ~= nil then
+			uiGroup.Enable = false
+		end
+	end
+	
+	method void HideMainMenu()
+		if self.uiMainMenu ~= nil then
+			self.uiMainMenu.Enable = false
+		end
+		if self.uiTutorial ~= nil then
+			self.uiTutorial.Enable = false
+		end
+		
+		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+		if mainGroup ~= nil then
+			mainGroup.Enable = false
+		end
+		
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup ~= nil then
+			uiGroup.Enable = true
+		end
+	end
+
+	method void UpdateTutorialImage()
+		if self.uiTutorial == nil then return end
+		-- Update the image using SpriteRendererComponent attached to uiTutorial
+		local spriteComp = self.uiTutorial.SpriteRendererComponent
+		if spriteComp == nil then
+			-- It may be an ImageComponent if it's UI
+			spriteComp = self.uiTutorial.SpriteGUIRendererComponent
+		end
+		if spriteComp ~= nil then
+			local ruid = self.tutorialImages[self.currentTutorialPage]
+			if ruid ~= nil and ruid ~= "" and ruid ~= "FillMe" .. tostring(self.currentTutorialPage) then
+				spriteComp.ImageRUID = ruid
+			else
+				log("[UIMain] Missing Tutorial RUID for page: " .. tostring(self.currentTutorialPage))
+			end
 		end
 	end
 
@@ -390,7 +567,18 @@ script UIMain extends Component
 			if phase == "Battle" and self.battleManager ~= nil and self.battleManager.currentTurn == "Player" then
 				isPlayerTurn = true
 			end
-			self.btnTurnEnd.Enable = isPlayerTurn
+			
+			local canAct = true
+			if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
+				local mgr = self.battleManager.monsterManager
+				if mgr.IsSpawnEntranceFinished ~= nil and not mgr:IsSpawnEntranceFinished() then
+					canAct = false
+				elseif mgr.isPhaseTransitioning == true or mgr.isDyingAnimating == true then
+					canAct = false
+				end
+			end
+			
+			self.btnTurnEnd.Enable = isPlayerTurn and canAct
 		end
 		
 		-- Turn Indicator UI Control

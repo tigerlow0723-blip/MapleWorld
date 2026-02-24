@@ -1,0 +1,96 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "model://maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc",
+  "ContentType": "x-mod/model",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "Type": "MODLazyModel",
+      "Name": "자쿰2",
+      "Id": "maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc",
+      "ModelId": "StaticMonster",
+      "DataSetId": "MonsterDataSet",
+      "DataId": "cf1a8ed249ff4d2abf682759dac603cc",
+      "Target": {
+        "Version": 1,
+        "Name": "자쿰2",
+        "BaseModelId": "staticmonster",
+        "Id": "maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc",
+        "Components": [],
+        "Properties": [],
+        "Values": [
+          {
+            "TargetType": null,
+            "Name": "actionSheet",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], MOD.Core, Version=26.1.0.0, Culture=neutral, PublicKeyToken=null"
+            },
+            "Value": {
+              "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+              "stand": "98b76e167501488d8dab63452c26515b",
+              "skill": "c1fc9fa49263492d8762b6655ec6defa",
+              "skill2": "83d47a4f75ee4c52a90efecd4ea67c89",
+              "skill3": "b75cdffb530c4442897142be4335799f",
+              "attack": "59a3d7b4b1c0461cbf6b6b41fad44a10",
+              "attack2": "611f55250a6e452c82214079a038d6bb",
+              "attack3": "ba747aa72033482f9912299d591f7d25",
+              "hit": "011c48c827254bfa8451a2784248a2e2",
+              "die": "43951bd1c15442fabcb53fe6d2ec7e94",
+              "die2": "489074f3ec02476bbd8c1a1e249b662c"
+            }
+          },
+          {
+            "TargetType": null,
+            "Name": "renderguid",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+            },
+            "Value": "98b76e167501488d8dab63452c26515b"
+          },
+          {
+            "TargetType": null,
+            "Name": "renderSetting",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "MOD.Core.RenderSettingType, MOD.Core, Version=26.1.0.0, Culture=neutral, PublicKeyToken=null"
+            },
+            "Value": 1
+          },
+          {
+            "TargetType": "MOD.Core.StateAnimationComponent",
+            "Name": "ActionSheet",
+            "ValueType": {
+              "$type": "MODNativeType",
+              "type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], MOD.Core, Version=26.1.0.0, Culture=neutral, PublicKeyToken=null"
+            },
+            "Value": {
+              "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+              "stand": "98b76e167501488d8dab63452c26515b",
+              "skill": "c1fc9fa49263492d8762b6655ec6defa",
+              "skill2": "83d47a4f75ee4c52a90efecd4ea67c89",
+              "skill3": "b75cdffb530c4442897142be4335799f",
+              "attack": "59a3d7b4b1c0461cbf6b6b41fad44a10",
+              "attack2": "611f55250a6e452c82214079a038d6bb",
+              "attack3": "ba747aa72033482f9912299d591f7d25",
+              "hit": "011c48c827254bfa8451a2784248a2e2",
+              "die": "43951bd1c15442fabcb53fe6d2ec7e94",
+              "die2": "489074f3ec02476bbd8c1a1e249b662c"
+            }
+          }
+        ],
+        "EventLinks": [],
+        "Children": []
+      }
+    }
+  }
+}

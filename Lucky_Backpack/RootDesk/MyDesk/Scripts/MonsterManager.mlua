@@ -52,6 +52,10 @@ script MonsterManager extends Component
 	property any uiMain = nil
 
 	property integer pendingSpawnEntranceCount = 0
+	
+	property boolean isPhaseTransitioning = false
+	
+	property boolean isDyingAnimating = false
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
@@ -63,6 +67,8 @@ script MonsterManager extends Component
 		self.monsterList = {}
 		self.isBossBattle = false
 		self.pendingSpawnEntranceCount = 0
+		self.isPhaseTransitioning = false
+		self.isDyingAnimating = false
 		
 		local spawnInfo = dataMgr:GetSpawnInfo(stageId)
 		if spawnInfo == nil then
@@ -128,6 +134,8 @@ script MonsterManager extends Component
 		self.currentBossId = bossId
 		self.currentBossPhase = 1
 		self.pendingSpawnEntranceCount = 0
+		self.isPhaseTransitioning = false
+		self.isDyingAnimating = false
 		
 		local basicData = dataMgr:GetBossBasicData(bossId)
 		if basicData == nil then
@@ -161,6 +169,12 @@ script MonsterManager extends Component
 		boss.modelPhase1 = basicData.modelPhase1 or ""
 		boss.modelPhase2 = basicData.modelPhase2 or ""
 		boss.modelPhase3 = basicData.modelPhase3 or ""
+		
+		-- Phase Death Delays
+		boss.deathDelayPhase1 = basicData.deathDelayPhase1 or 1.5
+		boss.deathDelayPhase2 = basicData.deathDelayPhase2 or 1.5
+		boss.deathDelayPhase3 = basicData.deathDelayPhase3 or 1.5
+		boss.deathDelay = boss.deathDelayPhase3
 		
 		boss.dotEffects = {}
 		boss.incomingDmgUp = 0
@@ -257,24 +271,52 @@ script MonsterManager extends Component
 					log("[MonsterManager] 보스가 " .. tostring(nextPhase) .. "?�이즈에 ?�입?�습?�다! HP: " .. tostring(monster.maxHP))
 					
 					-- Destroy old model and spawn the new one
+					local currentPhaseForDelay = self.currentBossPhase
+					
+					self.isPhaseTransitioning = true
+					
+					-- Play DIE animation and wait before spawning next phase
 					if oldEntityId ~= nil then
-						local oldEntity = _EntityService:GetEntity(oldEntityId)
-						if oldEntity ~= nil then
-							oldEntity:Destroy()
-						end
+						self:PlayEntityState(oldEntityId, "DIE", 0)
 					end
 					
-					self:SpawnVisual(monster, 1, true)
+					local currentDelay = monster.deathDelayPhase1
+					if currentPhaseForDelay == 2 then
+						currentDelay = monster.deathDelayPhase2
+					end
+					
+					_TimerService:SetTimerOnce(function()
+						if oldEntityId ~= nil then
+							local oldEntity = _EntityService:GetEntity(oldEntityId)
+							if oldEntity ~= nil then
+								oldEntity:Destroy()
+							end
+						end
+						
+						self:SpawnVisual(monster, 1, true)
+						
+						_TimerService:SetTimerOnce(function()
+							self.isPhaseTransitioning = false
+							if self.uiMain ~= nil then
+								self.uiMain:UpdateUI()
+							end
+						end, 1.5)
+					end, currentDelay)
 				else
 					-- Boss Dead (Phase 3 defeated) - play die animation then destroy
 					if oldEntityId ~= nil then
+						self.isDyingAnimating = true
 						self:PlayEntityState(oldEntityId, "DIE", 0)
 						local capturedId = oldEntityId
-						local delay = monster.deathDelay or 0.7
+						local delay = monster.deathDelayPhase3 or 1.5
 						_TimerService:SetTimerOnce(function()
 							local e = _EntityService:GetEntity(capturedId)
 							if e ~= nil then
 								e:Destroy()
+							end
+							self.isDyingAnimating = false
+							if self.uiMain ~= nil then
+								self.uiMain:UpdateUI()
 							end
 						end, delay)
 						log("[MonsterManager] Boss defeated, destroying after delay: " .. oldEntityId)
@@ -284,6 +326,7 @@ script MonsterManager extends Component
 				-- Normal Monster Dead - play die animation then destroy
 				local dieEntityId = monster.animEntityId or monster.entityId
 				if dieEntityId ~= nil then
+					self.isDyingAnimating = true
 					self:PlayEntityState(dieEntityId, "DIE", 0)
 					local capturedId = monster.entityId
 					local delay = monster.deathDelay or 0.7
@@ -291,6 +334,13 @@ script MonsterManager extends Component
 						local e = _EntityService:GetEntity(capturedId)
 						if e ~= nil then
 							e:Destroy()
+						end
+						
+						-- Only clear the flag if all dying animations are supposed to be done.
+						-- Here we assume if it's dead, the battle ends shortly anyway.
+						self.isDyingAnimating = false
+						if self.uiMain ~= nil then
+							self.uiMain:UpdateUI()
 						end
 					end, delay)
 					log("[MonsterManager] Monster defeated, destroying after delay: " .. tostring(capturedId))
@@ -636,6 +686,14 @@ script MonsterManager extends Component
 		
 		local entity = _SpawnService:SpawnByModelId(spawnModelId, "Monster_" .. tostring(index), Vector3(spawnX, spawnY, 0), self.Entity.Parent)
 		if entity ~= nil then
+			
+			if isBoss and self.currentBossPhase == 1 then
+				if entity.TransformComponent ~= nil then
+					local curScale = entity.TransformComponent.Scale
+					entity.TransformComponent.Scale = Vector3(curScale.x * 1.7, curScale.y * 1.7, curScale.z)
+				end
+			end
+			
 			--
 			local touch = entity.TouchReceiveComponent
 			if touch == nil then
@@ -829,6 +887,10 @@ script MonsterManager extends Component
 			else
 				self.pendingSpawnEntranceCount = math.max(0, (self.pendingSpawnEntranceCount or 0) - 1)
 				self:PlayEntityState(targetEntityId, "STAND", 0)
+				
+				if self.pendingSpawnEntranceCount == 0 and self.uiMain ~= nil then
+					self.uiMain:UpdateUI()
+				end
 			end
 		end
 		

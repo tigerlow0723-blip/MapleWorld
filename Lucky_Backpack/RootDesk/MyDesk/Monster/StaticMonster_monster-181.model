@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "model://maplestorymonster$e585cf8dc1ad4a41b875ba11d7d785c2",
+  "EntryKey": "model://maplestorymonster$0e3df4b810934c13a928d1c7ee7a9979",
   "ContentType": "x-mod/model",
   "Content": "",
   "Usage": 0,
@@ -14,16 +14,16 @@
     "Use": "Json",
     "Json": {
       "Type": "MODLazyModel",
-      "Name": "StaticMonster_monster-3188",
-      "Id": "maplestorymonster$e585cf8dc1ad4a41b875ba11d7d785c2",
+      "Name": "StaticMonster_monster-181",
+      "Id": "maplestorymonster$0e3df4b810934c13a928d1c7ee7a9979",
       "ModelId": "StaticMonster",
       "DataSetId": "MonsterDataSet",
-      "DataId": "e585cf8dc1ad4a41b875ba11d7d785c2",
+      "DataId": "0e3df4b810934c13a928d1c7ee7a9979",
       "Target": {
         "Version": 1,
-        "Name": "StaticMonster_monster-3188",
+        "Name": "StaticMonster_monster-181",
         "BaseModelId": "staticmonster",
-        "Id": "maplestorymonster$e585cf8dc1ad4a41b875ba11d7d785c2",
+        "Id": "maplestorymonster$0e3df4b810934c13a928d1c7ee7a9979",
         "Components": [],
         "Properties": [],
         "Values": [
@@ -36,15 +36,16 @@
             },
             "Value": {
               "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
-              "stand": "56f8aeaf5ed64fe29c772d7f85b1704c",
-              "skill": "31e20b12d76a453484f79f4d43301c42",
-              "skill2": "238013d5338f4630907dadd420494241",
-              "skill3": "abe76f169689423f980b962ac47ce611",
-              "attack": "2d12d3c4d7a24f6fa2b339bd73e9039e",
-              "attack2": "f3ba313cc58544e9b1333986dc6924b2",
-              "attack3": "55f442ccd8f644a0bb53d9098d164f6e",
-              "hit": "f748e3bb697a46d28e8f34c660162deb",
-              "die": "981bb2e64f1d499e938050d2cdf50c19"
+              "regen": "331707c0f46f44e498f57ef82e60f02e",
+              "stand": "fead7ba73f674186af7ea326ffad46ff",
+              "skill": "774a081dec4b4da2b854072335c3bdca",
+              "skill2": "44e7daeaf1f348f681d2bfb34b069f78",
+              "skill3": "e5f7a394bcc7474a9e00389b8e9af748",
+              "attack": "4b6dab57fa75420dabb819a9e7cf2c63",
+              "attack2": "3de22bb3ddda4b4caacf5a2b519ebea1",
+              "attack3": "53b05d48305f474394211f45c34c64c1",
+              "hit": "5afb786233874621b17a286c57ae0a59",
+              "die": "9fdacaf4318e4196847c5f5e99ffca9a"
             }
           },
           {
@@ -54,7 +55,7 @@
               "$type": "MODNativeType",
               "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
             },
-            "Value": "56f8aeaf5ed64fe29c772d7f85b1704c"
+            "Value": "fead7ba73f674186af7ea326ffad46ff"
           },
           {
             "TargetType": null,
