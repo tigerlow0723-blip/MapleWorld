@@ -140,6 +140,19 @@ script Item extends Component
 		    if self:IsRightClickTouch(event) == true then
 		        return false
 		    end
+
+		    local touchPoint = nil
+		    if event ~= nil then
+		        touchPoint = event.TouchPoint
+		    end
+		    if touchPoint == nil then
+		        touchPoint = _InputService:GetCursorPosition()
+		    end
+		    if touchPoint ~= nil then
+		        if self:IsTouchPointOnOccupiedShapeCell(touchPoint) == false then
+		            return false
+		        end
+		    end
 		
 		    if event ~= nil and event.TouchId ~= nil then
 		        local touchId = tonumber(event.TouchId)
@@ -152,6 +165,143 @@ script Item extends Component
 		        return true
 		    end
 		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsTouchPointOnOccupiedShapeCell(Vector2 touchPoint)
+		    if touchPoint == nil then
+		        return true
+		    end
+
+		    local hasShapeHitCell = false
+		    if self.Entity ~= nil then
+		        local children = self.Entity.Children
+		        if children ~= nil then
+		            for i = 1, #children do
+		                local child = children[i]
+		                if child ~= nil then
+		                    local childName = child.Name or ""
+		                    if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+		                        hasShapeHitCell = true
+		                        local hitUI = child.UITransformComponent
+		                        if hitUI ~= nil then
+		                            local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, hitUI)
+		                            if localPos ~= nil then
+		                                local rect = hitUI.RectSize
+		                                local rectW = 0
+		                                local rectH = 0
+		                                if rect ~= nil then
+		                                    rectW = tonumber(rect.x) or 0
+		                                    rectH = tonumber(rect.y) or 0
+		                                end
+		                                if rectW <= 0 then rectW = 1 end
+		                                if rectH <= 0 then rectH = 1 end
+		                                local halfW = rectW * 0.5
+		                                local halfH = rectH * 0.5
+		                                if math.abs(localPos.x) <= halfW and math.abs(localPos.y) <= halfH then
+		                                    return true
+		                                end
+		                            end
+		                        end
+		                    end
+		                end
+		            end
+		        end
+		    end
+		    if hasShapeHitCell == true then
+		        return false
+		    end
+
+		    local uiTransform = self.Entity.UITransformComponent
+		    if uiTransform == nil then
+		        return true
+		    end
+
+		    local rect = uiTransform.RectSize
+		    if rect == nil then
+		        return true
+		    end
+
+		    local rectW = tonumber(rect.x) or 0
+		    local rectH = tonumber(rect.y) or 0
+		    if rectW <= 0 or rectH <= 0 then
+		        return true
+		    end
+
+		    local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, uiTransform)
+		    if localPos == nil then
+		        return true
+		    end
+
+		    local halfW = rectW * 0.5
+		    local halfH = rectH * 0.5
+		    if localPos.x < -halfW or localPos.x > halfW or localPos.y < -halfH or localPos.y > halfH then
+		        return false
+		    end
+
+		    local shapeCells = self:GetShapeCells()
+		    if shapeCells == nil or #shapeCells <= 0 then
+		        return true
+		    end
+
+		    local minRow = 999
+		    local maxRow = -999
+		    local minCol = 999
+		    local maxCol = -999
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row < minRow then minRow = row end
+		            if row > maxRow then maxRow = row end
+		            if col < minCol then minCol = col end
+		            if col > maxCol then maxCol = col end
+		        end
+		    end
+		    if minRow > maxRow or minCol > maxCol then
+		        return true
+		    end
+
+		    local displayCols = tonumber(self.displayBoundsCols) or 0
+		    local displayRows = tonumber(self.displayBoundsRows) or 0
+		    if displayCols <= 0 then
+		        displayCols = (maxCol - minCol + 1)
+		    end
+		    if displayRows <= 0 then
+		        displayRows = (maxRow - minRow + 1)
+		    end
+		    if displayCols <= 0 or displayRows <= 0 then
+		        return true
+		    end
+
+		    local cellW = rectW / displayCols
+		    local cellH = rectH / displayRows
+		    if cellW <= 0 or cellH <= 0 then
+		        return true
+		    end
+
+		    local colIndex = math.floor((localPos.x + halfW) / cellW)
+		    local rowIndex = math.floor((halfH - localPos.y) / cellH)
+		    if colIndex < 0 then colIndex = 0 end
+		    if rowIndex < 0 then rowIndex = 0 end
+		    if colIndex >= displayCols then colIndex = displayCols - 1 end
+		    if rowIndex >= displayRows then rowIndex = displayRows - 1 end
+
+		    local targetRow = minRow + rowIndex
+		    local targetCol = minCol + colIndex
+
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row == targetRow and col == targetCol then
+		                return true
+		            end
+		        end
+		    end
 		    return false
 	end
 
@@ -600,6 +750,39 @@ script Item extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method void UpdateDisplayBoundsFromShapeCells(table shapeCells)
+		    if shapeCells == nil or #shapeCells <= 0 then
+		        self.displayBoundsCols = math.max(1, tonumber(self.width) or 1)
+		        self.displayBoundsRows = math.max(1, tonumber(self.height) or 1)
+		        return
+		    end
+
+		    local minRow = 999
+		    local maxRow = -999
+		    local minCol = 999
+		    local maxCol = -999
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row < minRow then minRow = row end
+		            if row > maxRow then maxRow = row end
+		            if col < minCol then minCol = col end
+		            if col > maxCol then maxCol = col end
+		        end
+		    end
+
+		    if minRow <= maxRow and minCol <= maxCol then
+		        self.displayBoundsCols = maxCol - minCol + 1
+		        self.displayBoundsRows = maxRow - minRow + 1
+		    else
+		        self.displayBoundsCols = math.max(1, tonumber(self.width) or 1)
+		        self.displayBoundsRows = math.max(1, tonumber(self.height) or 1)
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
 	method void Rotate90Degrees()
 		    if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
 		        return
@@ -637,6 +820,8 @@ script Item extends Component
 		    local temp = self.width
 		    self.width = self.height
 		    self.height = temp
+
+		    self:UpdateDisplayBoundsFromShapeCells(self:GetShapeCells())
 		
 		    local uiTransform = self.Entity.UITransformComponent
 		    if uiTransform ~= nil then
