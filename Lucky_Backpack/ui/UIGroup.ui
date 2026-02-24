@@ -4052,7 +4052,7 @@
           "name": "ItemDisplayArea",
           "path": "/ui/UIGroup/ItemDisplayArea",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 5,
@@ -6042,7 +6042,7 @@
           "name": "ShopPanel",
           "path": "/ui/UIGroup/ShopPanel",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 13,
@@ -7309,30 +7309,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 783.577637,
-                "y": -166.16
+                "x": 858.1621,
+                "y": 469.225555
               },
               "OffsetMin": {
-                "x": -416.4224,
-                "y": -566.160034
+                "x": 256.535,
+                "y": -438.234344
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 1200.0,
-                "y": 400.0
+                "x": 601.627136,
+                "y": 907.4599
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 183.5776,
-                "y": -366.16
+                "x": 557.3486,
+                "y": 15.4956
               },
               "Position": {
-                "x": 183.5776,
-                "y": -366.16,
+                "x": 557.3486,
+                "y": 15.4956,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7346,7 +7346,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "c084bd224b584f838e25d041bbabfb7b"
+                "DataId": "4f719dd721d74af3bb57d48376c7f106"
               },
               "OverrideSorting": false,
               "Enable": true
@@ -7428,7 +7428,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "691ca26fa0df43d885924fb001d818f5"
+                "DataId": "134bcf5879df48fa8f6fc3a7cbc3c1eb"
               },
               "OverrideSorting": false,
               "Color": {
@@ -7651,6 +7651,8 @@
             {
               "@type": "MOD.Core.TextComponent",
               "Bold": true,
+              "EnableProfanityFilter": true,
+              "Font": 1,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -10083,7 +10085,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 16,
@@ -11456,7 +11458,7 @@
           "name": "TooltipPanel",
           "path": "/ui/UIGroup/TooltipPanel",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 18,
@@ -13458,7 +13460,7 @@
           "name": "RewardPanel",
           "path": "/ui/UIGroup/RewardPanel",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 21,
