@@ -15006,7 +15006,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "07f032cfd5174103afad1a0110fcfe5d"
+                "DataId": "97702ed8f7f641e59dc5c1c5a040341d"
               },
               "OverrideSorting": false,
               "Color": {
@@ -15094,7 +15094,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "0f9cd54928b3454bb45d0a8f415f3dba"
+                "DataId": "673bb18e90cc4b56929d6296a5b84c0f"
               },
               "OverrideSorting": false,
               "Enable": true
