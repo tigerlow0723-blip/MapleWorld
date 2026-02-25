@@ -29,6 +29,37 @@ script SoundManager extends Component
 		log("[SoundManager] PlaySFX playing: " .. tostring(soundId) .. " RUID: " .. tostring(soundData.ruid) .. " Vol: " .. tostring(soundData.volume))
 		_SoundService:PlaySound(soundData.ruid, soundData.volume)
 	end
+	
+	@ExecSpace("ClientOnly")
+	method void PlaySFXByTitle(string title, integer defaultSoundId)
+		if self.dataManager == nil or self.dataManager.SoundTable == nil then 
+			log("[SoundManager] PlaySFXByTitle failed: dataManager or SoundTable is nil")
+			self:PlaySFX(defaultSoundId)
+			return 
+		end
+		
+		local foundData = nil
+		for _, data in pairs(self.dataManager.SoundTable) do
+			if data.title == title then
+				foundData = data
+				break
+			end
+		end
+		
+		if foundData == nil then
+			self:PlaySFX(defaultSoundId)
+			return
+		end
+		
+		if foundData.ruid == "" or foundData.ruid == nil then 
+			log("[SoundManager] PlaySFXByTitle failed: Empty RUID for title " .. title)
+			self:PlaySFX(defaultSoundId)
+			return 
+		end
+		
+		log("[SoundManager] PlaySFXByTitle playing: " .. title .. " RUID: " .. tostring(foundData.ruid) .. " Vol: " .. tostring(foundData.volume))
+		_SoundService:PlaySound(foundData.ruid, foundData.volume)
+	end
 
 	@ExecSpace("ClientOnly")
 	method void PlayBGM(integer soundId)

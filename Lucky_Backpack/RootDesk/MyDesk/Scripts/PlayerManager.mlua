@@ -51,6 +51,10 @@ script PlayerManager extends Component
 
 	property string lastSynergyDebugSnapshot = ""
 
+	property integer lastInventoryCount = 0
+
+	property boolean isInitializingItems = false
+
 	method any ResolveInventoryComp()
 		if self.inventoryComp ~= nil then
 			return self.inventoryComp
@@ -530,6 +534,16 @@ script PlayerManager extends Component
 				.. ", maxHP " .. tostring(prevMaxHP) .. " -> " .. tostring(nextMaxHP)
 				.. ", inventoryCount=" .. tostring(#self.inventory))
 		end
+		
+		-- Play item drop sound if an item was added to the inventory
+		if #self.inventory > self.lastInventoryCount and self.isInitializingItems == false then
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem and gameSystem.SoundManager then
+				gameSystem.SoundManager:PlaySFX(4002)
+			end
+		end
+		self.lastInventoryCount = #self.inventory
+		
 		-- Ensure HP/Cost UI refreshes immediately for every inventory sync path (drag, reward, auto-add).
 		self:EmitPlayerStatChangedEvent()
 	end
@@ -543,6 +557,7 @@ script PlayerManager extends Component
 		self.scrollNormal = 0
 		self.scrollGuaranteed = 0
 		self.inventory = {}
+		self.lastInventoryCount = 0
 		self.buffList = {}
 		
 		self.inventoryComp = self:ResolveInventoryComp()
@@ -1095,39 +1110,51 @@ script PlayerManager extends Component
 		local normalizedState = tostring(stateName or "")
 		local upperState = string.upper(normalizedState)
 		
-		local soundId = 0
 		if upperState == "HIT" then
-			soundId = 2004
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
+				gameSystem.SoundManager:PlaySFX(2004)
+			end
 		elseif upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
 			local itemData = self.dataManager:GetItemData(itemId)
 			if itemData ~= nil and itemData.desc ~= nil then
 				local desc = itemData.desc
-				if string.find(desc, "활") or string.find(desc, "석궁") then soundId = 2002
-				elseif string.find(desc, "완드") or string.find(desc, "스태프") then soundId = 2003
-				else soundId = 2001 end
-			end
-		end
-		if soundId > 0 then
-			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
-			if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
-				gameSystem.SoundManager:PlaySFX(soundId)
-			end
-		end
-		
-		if upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
-			local itemData = self.dataManager:GetItemData(itemId)
-			if itemData ~= nil and itemData.desc ~= nil then
-				local desc = itemData.desc
 				local actionName = ""
+				local soundId = 0
 				
-				if string.find(desc, "두손검") then actionName = "swingT1"
-				elseif string.find(desc, "한손검") then actionName = "swingO1"
-				elseif string.find(desc, "완드") then actionName = "swingO2"
-				elseif string.find(desc, "스태프") then actionName = "swingO2"
-				elseif string.find(desc, "활") then actionName = "shoot1"
-				elseif string.find(desc, "석궁") then actionName = "shoot2"
-				elseif string.find(desc, "단검") then actionName = "stabO1"
-				elseif string.find(desc, "아대") then actionName = "swingO1"
+				if string.find(desc, "두손검") then 
+					actionName = "swingT1"
+					soundId = 2006
+				elseif string.find(desc, "한손검") then 
+					actionName = "swingO1"
+					soundId = 2001
+				elseif string.find(desc, "완드") then 
+					actionName = "swingO2"
+					soundId = 2003
+				elseif string.find(desc, "스태프") then 
+					actionName = "swingO2"
+					soundId = 2007
+				elseif string.find(desc, "활") then 
+					actionName = "shoot1"
+					soundId = 2002
+				elseif string.find(desc, "석궁") then 
+					actionName = "shoot2"
+					soundId = 2008
+				elseif string.find(desc, "단검") then 
+					actionName = "stabO1"
+					soundId = 2009
+				elseif string.find(desc, "아대") then 
+					actionName = "swingO1"
+					soundId = 2010
+				else
+					soundId = 2001
+				end
+				
+				if soundId > 0 then
+					local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+					if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
+						gameSystem.SoundManager:PlaySFX(soundId)
+					end
 				end
 				
 				if actionName ~= "" then

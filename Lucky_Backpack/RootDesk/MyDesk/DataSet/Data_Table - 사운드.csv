@@ -6,21 +6,41 @@
 1007,BGM,stage_7,304c754c743341549676338f92fdeb5d,0.5,TRUE,스테이지 7 BGM
 1008,BGM,stage_8_9,bf1f1c64293943baa5ce66a2b6c8ce76,0.5,TRUE,스테이지 8/9 BGM
 1010,BGM,stage_boss,eabdc2ee5dfc4c238104ab9607c3bb11,0.5,TRUE,보스 스테이지 BGM
-2001,SFX,attack_sword,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(검/단검 등) 공격 사운드
-2002,SFX,attack_bow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(활/석궁) 공격 사운드
-2003,SFX,attack_wand,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(스태프/완드) 공격 사운드
+2001,SFX,attack_sword_1h,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(한손검) 공격 사운드
+2002,SFX,attack_bow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(활) 공격 사운드
+2003,SFX,attack_wand,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(완드) 공격 사운드
 2004,SFX,player_hit,826b446f311049eb867b3343f23eb13c,,FALSE,캐릭터 피격 사운드
+2006,SFX,attack_sword_2h,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(두손검) 공격 사운드
+2007,SFX,attack_staff,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(스태프) 공격 사운드
+2008,SFX,attack_crossbow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(석궁) 공격 사운드
+2009,SFX,attack_dagger,cecef9a8b0e74dd5a27dfc702044f76c,,FALSE,캐릭터 무기(단검) 공격 사운드
+2010,SFX,attack_claw,57efe496883a4de5962b6619e634bbba,,FALSE,캐릭터 무기(아대) 공격 사운드
 2005,SFX,use_potion,0a143cc3b50843f7919ba87484d6ca6e,,FALSE,물약 사용 사운드
-3001,SFX,monster_atk_default,,,FALSE,기본 몬스터 공격 사운드
-3002,SFX,monster_hit_default,,,FALSE,기본 몬스터 피격 사운드
-3003,SFX,boss_atk_default,,,FALSE,보스 몬스터 공격 사운드
-3004,SFX,boss_hit_default,,,FALSE,보스 몬스터 피격 사운드
+3001,SFX,monster_atk_default,daf324c852d540f6a4ebc1c3dfcb8f0f,,FALSE,기본 몬스터 공격 사운드
 4001,SFX,chest_open,d40f5ebbf76048a0961bd947f9fcf727,,FALSE,보상 상자 오픈 사운드
-4002,SFX,scroll_drag,,,FALSE,주문서 아이템 드래그 시작 사운드
+4002,SFX,item_drop_inventory,043041aa562f43e0b36af92c7bad239d,,FALSE,가방에 아이템 넣을 때 사운드
 4003,SFX,scroll_success,c638b287d5de4200aa9d2aca9593d76d,,FALSE,주문서 성공 사운드
 4004,SFX,scroll_fail,8425d159eea041e090eaea610b4a1add,,FALSE,주문서 실패 사운드
-4005,SFX,dice_roll,,,FALSE,주사위 굴리는 사운드
+4005,SFX,dice_roll,38aff2f3f67f413e90ecf128573a8431,,FALSE,주사위 굴리는 사운드
 5001,SFX,turn_end,12256e27193d43f690965a2da71eab83,,FALSE,정비턴 끝/상점 닫기/자동판매 사운드
 5002,SFX,shop_trade,21600ec9d3a04cfeb69c6fe0c50e197c,,FALSE,상점 사고 팔 때 사운드
 5003,SFX,shop_eat,508dab88de1749328cbdd7b83254691e,,FALSE,상점 돼지고기 먹는 사운드
 5004,SFX,ui_click,972843e759204d3e9ad84e7d3fa94f83,,FALSE,마우스 UI 클릭 사운드
+6001,SFX,monster_hit_M_01,7f339fced24d43fa9841da4535a1e1ba,,FALSE,주니어 페페 피격 사운드
+6002,SFX,monster_hit_M_02,7f339fced24d43fa9841da4535a1e1ba,,FALSE,페페 피격 사운드
+6003,SFX,monster_hit_M_03,00803c7de8bb4a8091fdf03cdfb82372,,FALSE,주니어 예티 피격 사운드
+6004,SFX,monster_hit_M_04,00803c7de8bb4a8091fdf03cdfb82372,,FALSE,예티와 페페 피격 사운드
+6005,SFX,monster_hit_M_05,0309365101fa4699ab835140347e7595,,FALSE,화이트팽 피격 사운드
+6006,SFX,monster_hit_M_06,0309365101fa4699ab835140347e7595,,FALSE,헥터 피격 사운드
+6007,SFX,monster_hit_M_07,05608fbd10b843e0bdb9e19ac70af0bc,,FALSE,웨어울프 피격 사운드
+6008,SFX,monster_hit_M_08,e00df54f031d43079d14dc9beede4259,,FALSE,쿨리좀비 피격 사운드
+6009,SFX,monster_hit_M_09,e00df54f031d43079d14dc9beede4259,,FALSE,마이너좀비 피격 사운드
+6010,SFX,monster_hit_M_10,0069dc813c274c478a3c3eeb1fae179e,,FALSE,플라이아이 피격 사운드
+6011,SFX,monster_hit_M_11,007d1cdf82904653ac6a61d585816938,,FALSE,파이어독 피격 사운드
+6012,SFX,monster_hit_M_12,007d1cdf82904653ac6a61d585816938,,FALSE,파이어봄 피격 사운드
+6013,SFX,monster_hit_M_13,01367189f5984fa2a4b4547271a5ba18,,FALSE,쿠스코 피격 사운드
+7001,SFX,boss_atk_hp_dmg,3ae29b2350844623b477f5fbea3453fd,,FALSE,보스 광역피해 유형 패턴 사운드
+7002,SFX,boss_atk_poison,085f434c82c948959ec78b12ad425577,,FALSE,보스 맹독 유형 패턴 사운드
+7003,SFX,boss_atk_shield,299081e8a23d4f09b9e9858b94662cb2,,FALSE,보스 절대방어 유형 패턴 사운드
+7004,SFX,boss_atk_heal,20e247170b4649e5a405b3e2e420c74d,,FALSE,보스 회복 유형 패턴 사운드
+8001,SFX,boss_hit_B_01,01367189f5984fa2a4b4547271a5ba18,,FALSE,보스 피격 사운드
