@@ -14,7 +14,6 @@ script ScrollInventoryUI extends Component
 	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
 
 	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
-	property number tooltipHoverDelay = 1.0
 
 	property number disabledAlpha = 0.35
 
@@ -39,11 +38,6 @@ script ScrollInventoryUI extends Component
 	property any globalTouchHoldHandler = nil
 
 	property any globalTouchReleaseHandler = nil
-	property integer tooltipHoverTimerId = 0
-	property integer tooltipHoverScrollId = 0
-	property any tooltipMouseMoveHandler = nil
-	property any tooltipRightClickKeyHandler = nil
-	property boolean isScrollTooltipVisible = false
 
 	property string scrollUIPath = ""
 
@@ -59,7 +53,6 @@ script ScrollInventoryUI extends Component
 		self:ResolveUIReferences()
 		self:ConnectIconEvents()
 		self:ConnectGlobalTouchEvents()
-		self:ConnectTooltipInputEvents()
 		self:UpdateUI()
 		
 		-- 처음 시작할 때 성공/실패 이미지는 안 보이게 꺼두기
@@ -78,12 +71,6 @@ script ScrollInventoryUI extends Component
 				end
 			end
 		end
-	end
-
-	@ExecSpace("ClientOnly")
-	method void OnEndPlay()
-		self:DisconnectTooltipInputEvents()
-		self:HideTooltip()
 	end
 
 	@ExecSpace("ClientOnly")
@@ -142,69 +129,37 @@ script ScrollInventoryUI extends Component
 	method void ConnectIconEvents()
 		if self.normalScrollIcon ~= nil and self.normalIconBound == false then
 			self.normalScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
-				if self:IsRightClick(event) then
-					self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
-					return
-				end
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
 				self:BeginScrollDrag(10)
 			end)
 			self.normalScrollIcon:ConnectEvent("PointerClickEvent", function(event)
-				if self:IsRightClick(event) then
-					self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
-				end
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
+			end)
+			self.normalScrollIcon:ConnectEvent(UITouchEnterEvent, function(event)
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
+			end)
+			self.normalScrollIcon:ConnectEvent(UITouchExitEvent, function(event)
+				self:HideTooltip()
 			end)
 			self.normalIconBound = true
 		end
 		
 		if self.guaranteedScrollIcon ~= nil and self.guaranteedIconBound == false then
 			self.guaranteedScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
-				if self:IsRightClick(event) then
-					self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
-					return
-				end
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
 				self:BeginScrollDrag(11)
 			end)
 			self.guaranteedScrollIcon:ConnectEvent("PointerClickEvent", function(event)
-				if self:IsRightClick(event) then
-					self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
-				end
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
+			end)
+			self.guaranteedScrollIcon:ConnectEvent(UITouchEnterEvent, function(event)
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
+			end)
+			self.guaranteedScrollIcon:ConnectEvent(UITouchExitEvent, function(event)
+				self:HideTooltip()
 			end)
 			self.guaranteedIconBound = true
 		end
-	end
-
-	@ExecSpace("ClientOnly")
-	method boolean IsRightClick(any event)
-		if event == nil then
-			return false
-		end
-		if event.TouchId ~= nil and event.TouchId == -3 then
-			return true
-		end
-		
-		local button = event.Button
-		if button == nil then
-			button = event.button
-		end
-		if button ~= nil then
-			if button == 1 or button == 2 or button == -3 then
-				return true
-			end
-			local buttonText = string.lower(tostring(button))
-			if string.find(buttonText, "right", 1, true) ~= nil then
-				return true
-			end
-		end
-		
-		local actionType = event.ActionType
-		if actionType ~= nil then
-			local actionText = string.lower(tostring(actionType))
-			if string.find(actionText, "right", 1, true) ~= nil then
-				return true
-			end
-		end
-		
-		return false
 	end
 
 	@ExecSpace("ClientOnly")
@@ -231,7 +186,6 @@ script ScrollInventoryUI extends Component
 		if itemId <= 0 then
 			return
 		end
-		self:ClearTooltipHoverTimer()
 		local showPoint = point
 		if showPoint == nil then
 			showPoint = _InputService:GetCursorPosition()
@@ -242,186 +196,13 @@ script ScrollInventoryUI extends Component
 		end
 		self.tooltipUI:HideTooltip()
 		self.tooltipUI:ShowTooltip(itemId, showPoint)
-		self.isScrollTooltipVisible = true
 	end
 
 	@ExecSpace("ClientOnly")
 	method void HideTooltip()
-		self:ClearTooltipHoverTimer()
-		if self.isScrollTooltipVisible ~= true then
-			return
-		end
 		self:ResolveTooltipUI()
 		if self.tooltipUI ~= nil then
 			self.tooltipUI:HideTooltip()
-		end
-		self.isScrollTooltipVisible = false
-	end
-
-	@ExecSpace("ClientOnly")
-	method void ClearTooltipHoverTimer()
-		if self.tooltipHoverTimerId ~= nil and self.tooltipHoverTimerId > 0 then
-			_TimerService:ClearTimer(self.tooltipHoverTimerId)
-		end
-		self.tooltipHoverTimerId = 0
-		self.tooltipHoverScrollId = 0
-	end
-
-	@ExecSpace("ClientOnly")
-	method integer ResolveHoveredScrollType(Vector2 cursorPos)
-		if cursorPos == nil then
-			return 0
-		end
-		self:ResolveUIReferences()
-		
-		if self:IsPointInsideEntityRect(self.guaranteedScrollIcon, cursorPos) then
-			return 11
-		end
-		if self:IsPointInsideEntityRect(self.normalScrollIcon, cursorPos) then
-			return 10
-		end
-		return 0
-	end
-
-	@ExecSpace("ClientOnly")
-	method void ScheduleTooltipHover(integer scrollId, Vector2 point)
-		self:ClearTooltipHoverTimer()
-		if scrollId ~= 10 and scrollId ~= 11 then
-			return
-		end
-		
-		self.tooltipHoverScrollId = scrollId
-		local hoverPoint = point
-		self.tooltipHoverTimerId = _TimerService:SetTimerOnce(function()
-			self.tooltipHoverTimerId = 0
-			if self.tooltipHoverScrollId ~= scrollId then
-				return
-			end
-			
-			local cursorPos = _InputService:GetCursorPosition()
-			if self:ResolveHoveredScrollType(cursorPos) ~= scrollId then
-				return
-			end
-			
-			local showPoint = hoverPoint
-			if showPoint == nil then
-				showPoint = cursorPos
-			end
-			self:ShowTooltipForItem(scrollId, showPoint)
-		end, self.tooltipHoverDelay)
-	end
-
-	@ExecSpace("ClientOnly")
-	method void HandleTooltipHoverFromCursor(Vector2 cursorPos)
-		if cursorPos == nil then
-			return
-		end
-		
-		local scrollId = self:ResolveHoveredScrollType(cursorPos)
-		if scrollId <= 0 then
-			self:ClearTooltipHoverTimer()
-			if self.isScrollTooltipVisible == true then
-				self:HideTooltip()
-			end
-			return
-		end
-		
-		if self.isScrollTooltipVisible == true then
-			self:HideTooltip()
-		end
-		self:ScheduleTooltipHover(scrollId, cursorPos)
-	end
-
-	@ExecSpace("ClientOnly")
-	method boolean IsScrollTooltipActive()
-		if self.Entity == nil then
-			return false
-		end
-		if self.Entity.Enable ~= nil and self.Entity.Enable == false then
-			return false
-		end
-		if self.Entity.Visible ~= nil and self.Entity.Visible == false then
-			return false
-		end
-		return true
-	end
-
-	@ExecSpace("ClientOnly")
-	method void OnTooltipMouseMove(MouseMoveEvent event)
-		if self:IsScrollTooltipActive() == false then
-			if self.isScrollTooltipVisible == true then
-				self:HideTooltip()
-			else
-				self:ClearTooltipHoverTimer()
-			end
-			return
-		end
-		if self.dragState ~= nil and self.dragState.isDragging == true then
-			return
-		end
-		
-		if event ~= nil and event.MouseDelta ~= nil then
-			local delta = event.MouseDelta
-			if math.abs(delta.x) < 0.5 and math.abs(delta.y) < 0.5 then
-				return
-			end
-		end
-		
-		self:HandleTooltipHoverFromCursor(_InputService:GetCursorPosition())
-	end
-
-	@ExecSpace("ClientOnly")
-	method void OnTooltipRightClickKeyDown(KeyDownEvent event)
-		if self:IsScrollTooltipActive() == false then
-			return
-		end
-		if self.dragState ~= nil and self.dragState.isDragging == true then
-			return
-		end
-		if event == nil then
-			return
-		end
-		
-		local key = event.key
-		if key ~= KeyboardKey.Mouse1 then
-			return
-		end
-		
-		local cursorPos = _InputService:GetCursorPosition()
-		local scrollId = self:ResolveHoveredScrollType(cursorPos)
-		if scrollId <= 0 then
-			if self.isScrollTooltipVisible == true then
-				self:HideTooltip()
-			end
-			return
-		end
-		
-		self:ShowTooltipForItem(scrollId, cursorPos)
-	end
-
-	@ExecSpace("ClientOnly")
-	method void ConnectTooltipInputEvents()
-		if self.tooltipMouseMoveHandler == nil then
-			self.tooltipMouseMoveHandler = _InputService:ConnectEvent(MouseMoveEvent, function(event)
-				self:OnTooltipMouseMove(event)
-			end)
-		end
-		if self.tooltipRightClickKeyHandler == nil then
-			self.tooltipRightClickKeyHandler = _InputService:ConnectEvent(KeyDownEvent, function(event)
-				self:OnTooltipRightClickKeyDown(event)
-			end)
-		end
-	end
-
-	@ExecSpace("ClientOnly")
-	method void DisconnectTooltipInputEvents()
-		if self.tooltipMouseMoveHandler ~= nil then
-			_InputService:DisconnectEvent(MouseMoveEvent, self.tooltipMouseMoveHandler)
-			self.tooltipMouseMoveHandler = nil
-		end
-		if self.tooltipRightClickKeyHandler ~= nil then
-			_InputService:DisconnectEvent(KeyDownEvent, self.tooltipRightClickKeyHandler)
-			self.tooltipRightClickKeyHandler = nil
 		end
 	end
 

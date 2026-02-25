@@ -29,6 +29,8 @@ script MiniGameManager extends Component
 	
 	property number resultDisplayDuration = 1.2
 	
+	property number successFailDisplayDuration = 1.2
+	
 	property number rollDisplayDuration = 1
 	
 	property integer POWER_ELIXIR_ITEM_ID = 6
@@ -54,6 +56,13 @@ script MiniGameManager extends Component
 		local resultDelay = tonumber(self.dataManager.DiceResultDelay)
 		if resultDelay ~= nil and resultDelay >= 0 then
 			self.resultDisplayDuration = resultDelay
+		end
+		
+		local sfDelay = tonumber(self.dataManager.DiceSuccessFailDelay)
+		if sfDelay ~= nil and sfDelay >= 0 then
+			self.successFailDisplayDuration = sfDelay
+		else
+			self.successFailDisplayDuration = self.resultDisplayDuration
 		end
 	end
 	method void StartMiniGamePhase()
@@ -224,6 +233,11 @@ script MiniGameManager extends Component
 		if resultDelay < 0 then
 			resultDelay = 0
 		end
+		
+		local sfDelay = self.successFailDisplayDuration or 1.2
+		if sfDelay < 0 then
+			sfDelay = 0
+		end
 
 		local savedDice2 = dice2
 
@@ -310,7 +324,7 @@ script MiniGameManager extends Component
 					if self.uiMain ~= nil then
 						self.uiMain:UpdateUI()
 					end
-				end, resultDelay)
+				end, sfDelay)
 			end, rollDelay)
 		end, rollDelay)
 	end

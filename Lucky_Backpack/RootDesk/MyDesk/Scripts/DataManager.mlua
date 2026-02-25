@@ -38,6 +38,8 @@ script DataManager extends Component
 	property number DiceRollDelay = 1
 
 	property number DiceResultDelay = 1.2
+	
+	property number DiceSuccessFailDelay = 1.2
 
 	property table StartItemTable = {}
 
@@ -945,6 +947,7 @@ script DataManager extends Component
 		self.DiceRollTable2 = {}
 		self.DiceRollDelay = 1
 		self.DiceResultDelay = 1.2
+		self.DiceSuccessFailDelay = 1.2
 		
 		local ds = _DataService:GetTable("Data_Table - DiceImage")
 		if ds == nil then
@@ -1015,13 +1018,23 @@ script DataManager extends Component
 					self.DiceResultDelay = resultDelay
 				end
 			end
+			
+			if self.DiceSuccessFailDelay == 1.2 then
+				local sfDelayText = self:GetCellString(ds, i, "success_fail_delay", "ui_delay")
+				local sfDelay = tonumber(sfDelayText)
+				if sfDelay ~= nil and sfDelay >= 0 then
+					self.DiceSuccessFailDelay = sfDelay
+				else
+					self.DiceSuccessFailDelay = self.DiceResultDelay
+				end
+			end
 		end
 		
 		local c1 = 0
 		for _ in pairs(self.DiceImageTable) do c1 = c1 + 1 end
 		local c2 = 0
 		for _ in pairs(self.DiceImageTable2) do c2 = c2 + 1 end
-		log("[DataManager] Dice images loaded: d1=" .. tostring(c1) .. " d2=" .. tostring(c2) .. " roll1=" .. tostring(self.DiceRollTable ~= nil) .. " roll2=" .. tostring(self.DiceRollTable2 ~= nil) .. " rollDelay=" .. tostring(self.DiceRollDelay) .. " resultDelay=" .. tostring(self.DiceResultDelay))
+		log("[DataManager] Dice images loaded: d1=" .. tostring(c1) .. " d2=" .. tostring(c2) .. " roll1=" .. tostring(self.DiceRollTable ~= nil) .. " roll2=" .. tostring(self.DiceRollTable2 ~= nil) .. " rollDelay=" .. tostring(self.DiceRollDelay) .. " resultDelay=" .. tostring(self.DiceResultDelay) .. " sfDelay=" .. tostring(self.DiceSuccessFailDelay))
 	end
 
 	method void LoadSoundTable()
