@@ -129,7 +129,7 @@ script Item extends Component
 		        end
 		
 		        if inventoryUI ~= nil then
-		            inventoryUI:StartDrag(self.Entity)
+		            inventoryUI:StartDrag(self.Entity, event)
 		        else
 		            log_warning("[Item] InventoryUI not found")
 		        end

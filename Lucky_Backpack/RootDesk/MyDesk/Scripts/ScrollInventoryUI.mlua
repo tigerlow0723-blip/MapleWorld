@@ -341,6 +341,48 @@ script ScrollInventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method boolean IsTargetCellInsidePlacedItem(Component itemComp, integer targetRow, integer targetCol)
+		if itemComp == nil then
+			return false
+		end
+		if itemComp.IsPlaced ~= nil and itemComp:IsPlaced() == false then
+			return false
+		end
+		
+		local baseRow = tonumber(itemComp.gridRow) or 0
+		local baseCol = tonumber(itemComp.gridCol) or 0
+		if baseRow <= 0 or baseCol <= 0 then
+			return false
+		end
+		
+		local shapeCells = itemComp:GetShapeCells()
+		if shapeCells ~= nil and #shapeCells > 0 then
+			for i = 1, #shapeCells do
+				local cell = shapeCells[i]
+				if cell ~= nil then
+					local absRow = baseRow + (tonumber(cell.row) or 0)
+					local absCol = baseCol + (tonumber(cell.col) or 0)
+					if absRow == targetRow and absCol == targetCol then
+						return true
+					end
+				end
+			end
+			return false
+		end
+		
+		local width = math.max(1, tonumber(itemComp.width) or 1)
+		local height = math.max(1, tonumber(itemComp.height) or 1)
+		for dr = 0, height - 1 do
+			for dc = 0, width - 1 do
+				if baseRow + dr == targetRow and baseCol + dc == targetCol then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
 	method any FindInventoryWeaponTarget(Vector2 touchPoint)
 		local inventoryEntity = _EntityService:GetEntityByPath(self.inventoryPanelPath)
 		if inventoryEntity == nil or inventoryEntity.Inventory == nil or inventoryEntity.InventoryUI == nil then
@@ -362,7 +404,19 @@ script ScrollInventoryUI extends Component
 			return nil
 		end
 		
-		for i = 1, #children do
+		-- Use grid-cell membership first so duplicates with same itemId are resolved correctly.
+		for i = #children, 1, -1 do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				if itemComp ~= nil and itemComp.itemType == "weapon" and self:IsTargetCellInsidePlacedItem(itemComp, targetCell.row, targetCell.col) then
+					return itemComp
+				end
+			end
+		end
+		
+		-- Fallback to legacy id-match path.
+		for i = #children, 1, -1 do
 			local child = children[i]
 			if child ~= nil and child.Item ~= nil then
 				local itemComp = child.Item
@@ -432,6 +486,21 @@ script ScrollInventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method integer ConvertRotationToClockwiseQuarterTurns(number rotation)
+		local normalized = tonumber(rotation) or 0
+		local steps = math.floor((math.abs(normalized) + 45) / 90) % 4
+		if steps <= 0 then
+			return 0
+		end
+		-- Positive rotation is equivalent to counter-clockwise turns.
+		-- Convert to clockwise turn count used by Item:Rotate90Degrees().
+		if normalized > 0 then
+			steps = (4 - steps) % 4
+		end
+		return steps
+	end
+
+	@ExecSpace("ClientOnly")
 	method void ProcessUpgrade(integer scrollId, Component weaponTarget)
 		self:ResolveManager()
 		if self.playerManager == nil then
@@ -496,6 +565,14 @@ script ScrollInventoryUI extends Component
 		local weaponCol = weaponTarget.gridCol
 		local prevWidth = weaponTarget.width
 		local prevHeight = weaponTarget.height
+		local weaponUI = nil
+		local preservedRotationSteps = 0
+		if weaponTarget.Entity ~= nil then
+			weaponUI = weaponTarget.Entity.UITransformComponent
+			if weaponUI ~= nil then
+				preservedRotationSteps = self:ConvertRotationToClockwiseQuarterTurns(tonumber(weaponUI.ZRotation) or 0)
+			end
+		end
 		local targetInInventory = weaponRow > 0 and weaponCol > 0 and inventory ~= nil
 		
 		if targetInInventory then
@@ -503,6 +580,14 @@ script ScrollInventoryUI extends Component
 		end
 		
 		weaponTarget:InitFromTable(upgradedItemId)
+		if weaponUI ~= nil then
+			weaponUI.ZRotation = 0
+		end
+		if preservedRotationSteps > 0 then
+			for i = 1, preservedRotationSteps do
+				weaponTarget:Rotate90Degrees()
+			end
+		end
 		
 		local weaponRenderer = weaponTarget.Entity.SpriteGUIRendererComponent
 		if weaponRenderer ~= nil and weaponTarget.spriteRUID ~= nil and weaponTarget.spriteRUID ~= "" and weaponTarget.spriteRUID ~= "NONE" then
@@ -516,6 +601,9 @@ script ScrollInventoryUI extends Component
 				weaponTarget:SetGridPosition(weaponRow, weaponCol)
 				if inventoryEntity ~= nil and inventoryEntity.InventoryUI ~= nil then
 					inventoryEntity.InventoryUI:SnapItemToGrid(weaponTarget.Entity, weaponRow, weaponCol, weaponTarget.width, weaponTarget.height, upgradedShape)
+					if inventoryEntity.InventoryUI.RefreshPlacedItemVisualAlignment ~= nil then
+						inventoryEntity.InventoryUI:RefreshPlacedItemVisualAlignment()
+					end
 				end
 			else
 				log_warning("[Upgrade] Upgrade succeeded but placement failed. row=" .. tostring(weaponRow) .. " col=" .. tostring(weaponCol))

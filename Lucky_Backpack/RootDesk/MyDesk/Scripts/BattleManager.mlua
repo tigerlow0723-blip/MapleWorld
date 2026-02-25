@@ -974,14 +974,23 @@ script BattleManager extends Component
 		end
 		
 		if self.monsterManager.lastActionValid == true then
-			local statusName = self.monsterManager.lastStatus
+			local rawStatusName = self.monsterManager.lastStatus
+			local statusName = nil
 			local effectValue = self.monsterManager.lastDamage
 			
-			if statusName == "독" then
+			if rawStatusName ~= nil then
+				statusName = tostring(rawStatusName)
+				statusName = string.gsub(statusName, "^%s+", "")
+				statusName = string.gsub(statusName, "%s+$", "")
+			end
+			
+			if statusName == nil or statusName == "" then
+				statusName = "none"
+			elseif statusName == "독" then
 				statusName = "poison"
 			elseif statusName == "없음" then
 				statusName = "none"
-			elseif statusName ~= nil then
+			else
 				statusName = string.lower(statusName)
 			end
 			

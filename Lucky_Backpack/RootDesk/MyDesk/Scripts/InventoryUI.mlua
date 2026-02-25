@@ -57,6 +57,8 @@ script InventoryUI extends Component
 
 	property boolean isPanelVisible = true
 
+	property number dragActivationDistance = 10
+
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		    self.colorInactive = {r = 0.3, g = 0.3, b = 0.3, a = 0.5}
@@ -78,6 +80,7 @@ script InventoryUI extends Component
 		        originRow = -1,
 		        originCol = -1,
 		        originPosition = nil,
+		        startTouchPoint = nil,
 		        lastTouchPoint = nil,
 		        touchHandler = nil,
 		        releaseHandler = nil,
@@ -422,13 +425,8 @@ script InventoryUI extends Component
 		                    return
 		                end
 		
-		                local inventory = self.Entity.Inventory
-		                if inventory == nil then
-		                    return
-		                end
-		
-		                local itemId = inventory:GetCellValue(row, col)
-		                if itemId == nil or itemId <= 0 then
+		                local itemId = self:ResolveTooltipItemIdAtCell(row, col)
+		                if itemId <= 0 then
 		                    return
 		                end
 		
@@ -447,11 +445,7 @@ script InventoryUI extends Component
 		                    if self.dragState ~= nil and self.dragState.isDragging then
 		                        return
 		                    end
-		                    local nowInventory = self.Entity.Inventory
-		                    if nowInventory == nil then
-		                        return
-		                    end
-		                    local nowItemId = nowInventory:GetCellValue(row, col)
+		                    local nowItemId = self:ResolveTooltipItemIdAtCell(row, col)
 		                    if nowItemId ~= itemId then
 		                        return
 		                    end
@@ -462,13 +456,8 @@ script InventoryUI extends Component
 		            end)
 		
 		            cellEntity:ConnectEvent(UITouchExitEvent, function(event)
-		                local inventory = self.Entity.Inventory
-		                if inventory == nil then
-		                    self:ClearAllTooltipTimers()
-		                    return
-		                end
-		                local itemId = inventory:GetCellValue(row, col)
-		                if itemId ~= nil and itemId > 0 then
+		                local itemId = self:ResolveTooltipItemIdAtCell(row, col)
+		                if itemId > 0 then
 		                    self:ClearTooltipTimer(itemId)
 		                else
 		                    self:ClearAllTooltipTimers()
@@ -490,6 +479,25 @@ script InventoryUI extends Component
 		    if tooltipEntity ~= nil and tooltipEntity.ItemTooltipUI ~= nil then
 		        self.tooltipUI = tooltipEntity.ItemTooltipUI
 		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer ResolveTooltipItemIdAtCell(integer row, integer col)
+		    local inventory = self.Entity.Inventory
+		    if inventory == nil then
+		        return 0
+		    end
+		
+		    if inventory.GetPlacedItemIdAtCell ~= nil then
+		        return tonumber(inventory:GetPlacedItemIdAtCell(row, col)) or 0
+		    end
+		
+		    local cellValue = inventory:GetCellValue(row, col)
+		    local numericId = tonumber(cellValue) or 0
+		    if numericId <= 1 then
+		        return 0
+		    end
+		    return numericId
 	end
 
 	@ExecSpace("ClientOnly")
@@ -561,7 +569,7 @@ script InventoryUI extends Component
 		        if inventory == nil then
 		            return
 		        end
-		        local currentId = inventory:GetCellValue(row, col)
+		        local currentId = self:ResolveTooltipItemIdAtCell(row, col)
 		        if currentId ~= itemId then
 		            return
 		        end
@@ -677,8 +685,8 @@ script InventoryUI extends Component
 		        self:ClearGridHoverTimer()
 		        return
 		    end
-		    local itemId = inventory:GetCellValue(cell.row, cell.col)
-		    if itemId == nil or itemId <= 0 then
+		    local itemId = self:ResolveTooltipItemIdAtCell(cell.row, cell.col)
+		    if itemId <= 0 then
 		        self:ClearGridHoverTimer()
 		        return
 		    end
@@ -767,11 +775,13 @@ script InventoryUI extends Component
 	method void ShowTooltipFromGridCell(integer row, integer col, Vector2 point)
 		    local inventory = self.Entity.Inventory
 		    if inventory == nil then
+		        self:HideTooltip()
 		        return
 		    end
 		
-		    local itemId = inventory:GetCellValue(row, col)
-		    if itemId == nil or itemId <= 0 then
+		    local itemId = self:ResolveTooltipItemIdAtCell(row, col)
+		    if itemId <= 0 then
+		        self:HideTooltip()
 		        return
 		    end
 		
@@ -802,6 +812,8 @@ script InventoryUI extends Component
 		    local cursorPos = _InputService:GetCursorPosition()
 		    local cell = self:ScreenPosToGridCellByBounds(cursorPos)
 		    if cell == nil or cell.row <= 0 or cell.col <= 0 then
+		        self:ClearAllTooltipTimers()
+		        self:HideTooltip()
 		        return
 		    end
 		
@@ -946,7 +958,7 @@ script InventoryUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void StartDrag(Entity itemEntity)
+	method void StartDrag(Entity itemEntity, any startEvent)
 		    self:HideTooltip()
 		    self:ClearAllTooltipTimers()
 		    if self.dragState.isDragging then
@@ -1056,6 +1068,19 @@ script InventoryUI extends Component
 		    self.dragState.originCol = itemComp.gridCol
 		    self.dragState.lastTouchPoint = nil
 		
+		    local startTouchPoint = nil
+		    if startEvent ~= nil then
+		        startTouchPoint = startEvent.TouchPoint
+		    end
+		    if startTouchPoint == nil then
+		        startTouchPoint = _InputService:GetCursorPosition()
+		    end
+		    if startTouchPoint ~= nil then
+		        self.dragState.startTouchPoint = Vector2(startTouchPoint.x, startTouchPoint.y)
+		    else
+		        self.dragState.startTouchPoint = nil
+		    end
+		
 		    if self.dragState.originParent == self.Entity then
 		        local groupParent = self.Entity.Parent
 		        if groupParent ~= nil then
@@ -1154,9 +1179,40 @@ script InventoryUI extends Component
 		        return
 		    end
 		
-		    self:ActivateDragVisual()
+		    local touchPoint = nil
+		    if event ~= nil then
+		        touchPoint = event.TouchPoint
+		    end
+		    if touchPoint == nil then
+		        touchPoint = _InputService:GetCursorPosition()
+		    end
+		    if touchPoint == nil then
+		        return
+		    end
 		
-		    local touchPoint = event.TouchPoint
+		    if self.dragState.dragActivated == false then
+		        local startPoint = self.dragState.startTouchPoint
+		        if startPoint == nil then
+		            self.dragState.startTouchPoint = Vector2(touchPoint.x, touchPoint.y)
+		            startPoint = self.dragState.startTouchPoint
+		        end
+		
+		        local threshold = tonumber(self.dragActivationDistance) or 0
+		        if threshold < 0 then threshold = 0 end
+		        if threshold > 0 and startPoint ~= nil then
+		            local dx = touchPoint.x - startPoint.x
+		            local dy = touchPoint.y - startPoint.y
+		            if (dx * dx + dy * dy) < (threshold * threshold) then
+		                return
+		            end
+		        end
+		
+		        self:ActivateDragVisual()
+		        if self.dragState.dragActivated == false then
+		            return
+		        end
+		    end
+		
 		    self.dragState.lastTouchPoint = touchPoint
 		    local parent = self.dragState.itemEntity.Parent
 		    if parent == nil then
@@ -1193,7 +1249,21 @@ script InventoryUI extends Component
 		        return
 		    end
 		
-		    local touchPoint = event.TouchPoint
+		    local touchPoint = nil
+		    if event ~= nil then
+		        touchPoint = event.TouchPoint
+		    end
+		    if touchPoint == nil then
+		        touchPoint = self.dragState.lastTouchPoint
+		    end
+		    if touchPoint == nil then
+		        touchPoint = _InputService:GetCursorPosition()
+		    end
+		    if touchPoint == nil then
+		        self:ReturnToOrigin()
+		        self:EndDrag()
+		        return
+		    end
 		    self.dragState.lastTouchPoint = touchPoint
 		
 		    local result = self:ScreenPosToGridCell(touchPoint, self.dragState.itemWidth, self.dragState.itemHeight, self.dragState.shapeCells)
@@ -1456,9 +1526,11 @@ script InventoryUI extends Component
 		    self.dragState.originRow = -1
 		    self.dragState.originCol = -1
 		    self.dragState.originPosition = nil
+		    self.dragState.startTouchPoint = nil
 		    self.dragState.lastTouchPoint = nil
 		
 		    self:HideTooltip()
+		    self:RefreshPlacedItemVisualAlignment()
 		
 		    self:RenderGrid()
 	end
@@ -1615,6 +1687,41 @@ script InventoryUI extends Component
 		    if spacingX <= 0 then spacingX = self.cellSize end
 		    if spacingY <= 0 then spacingY = self.cellSize end
 		    return {x = spacingX, y = spacingY}
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshPlacedItemVisualAlignment()
+		    if self.dragState ~= nil and self.dragState.isDragging then
+		        return
+		    end
+		
+		    local children = self.Entity.Children
+		    if children == nil then
+		        return
+		    end
+		
+		    for i = 1, #children do
+		        local child = children[i]
+		        if child == nil or child.Item == nil then
+		            continue
+		        end
+		
+		        local itemComp = child.Item
+		        if itemComp == nil or itemComp:IsPlaced() == false then
+		            continue
+		        end
+		
+		        local row = tonumber(itemComp.gridRow) or 0
+		        local col = tonumber(itemComp.gridCol) or 0
+		        if row <= 0 or col <= 0 then
+		            continue
+		        end
+		
+		        local shapeCells = itemComp:GetShapeCells()
+		        self:ApplyShapeRectSize(child, itemComp, shapeCells, itemComp.width, itemComp.height)
+		        self:SnapItemToGrid(child, row, col, itemComp.width, itemComp.height, shapeCells)
+		        self:SyncShapeHitModeWithParent(child, self.Entity)
+		    end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -1781,6 +1888,7 @@ script InventoryUI extends Component
 	@ExecSpace("ClientOnly")
 	method void OnSyncProperty(string name, any value)
 		    if name == "gridVersion" then
+		        self:RefreshPlacedItemVisualAlignment()
 		        self:RenderGrid()
 		    end
 	end
