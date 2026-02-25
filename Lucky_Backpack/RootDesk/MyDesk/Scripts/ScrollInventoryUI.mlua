@@ -13,9 +13,13 @@ script ScrollInventoryUI extends Component
 
 	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
 
+	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
+
 	property number disabledAlpha = 0.35
 
 	property any playerManager = nil
+
+	property any tooltipUI = nil
 
 	property any normalScrollIcon = nil
 
@@ -106,16 +110,80 @@ script ScrollInventoryUI extends Component
 	method void ConnectIconEvents()
 		if self.normalScrollIcon ~= nil and self.normalIconBound == false then
 			self.normalScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
 				self:BeginScrollDrag(10)
+			end)
+			self.normalScrollIcon:ConnectEvent("PointerClickEvent", function(event)
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
+			end)
+			self.normalScrollIcon:ConnectEvent(UITouchEnterEvent, function(event)
+				self:ShowTooltipForItem(10, self:GetEventTouchPoint(event))
+			end)
+			self.normalScrollIcon:ConnectEvent(UITouchExitEvent, function(event)
+				self:HideTooltip()
 			end)
 			self.normalIconBound = true
 		end
 		
 		if self.guaranteedScrollIcon ~= nil and self.guaranteedIconBound == false then
 			self.guaranteedScrollIcon:ConnectEvent(UITouchDownEvent, function(event)
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
 				self:BeginScrollDrag(11)
 			end)
+			self.guaranteedScrollIcon:ConnectEvent("PointerClickEvent", function(event)
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
+			end)
+			self.guaranteedScrollIcon:ConnectEvent(UITouchEnterEvent, function(event)
+				self:ShowTooltipForItem(11, self:GetEventTouchPoint(event))
+			end)
+			self.guaranteedScrollIcon:ConnectEvent(UITouchExitEvent, function(event)
+				self:HideTooltip()
+			end)
 			self.guaranteedIconBound = true
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector2 GetEventTouchPoint(any event)
+		if event ~= nil and event.TouchPoint ~= nil then
+			return event.TouchPoint
+		end
+		return _InputService:GetCursorPosition()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveTooltipUI()
+		if self.tooltipUI ~= nil then
+			return
+		end
+		local tooltipEntity = _EntityService:GetEntityByPath(self.tooltipPanelPath)
+		if tooltipEntity ~= nil and tooltipEntity.ItemTooltipUI ~= nil then
+			self.tooltipUI = tooltipEntity.ItemTooltipUI
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowTooltipForItem(integer itemId, Vector2 point)
+		if itemId <= 0 then
+			return
+		end
+		local showPoint = point
+		if showPoint == nil then
+			showPoint = _InputService:GetCursorPosition()
+		end
+		self:ResolveTooltipUI()
+		if self.tooltipUI == nil then
+			return
+		end
+		self.tooltipUI:HideTooltip()
+		self.tooltipUI:ShowTooltip(itemId, showPoint)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HideTooltip()
+		self:ResolveTooltipUI()
+		if self.tooltipUI ~= nil then
+			self.tooltipUI:HideTooltip()
 		end
 	end
 
@@ -175,6 +243,7 @@ script ScrollInventoryUI extends Component
 		if scrollId ~= 10 and scrollId ~= 11 then
 			return
 		end
+		self:HideTooltip()
 		
 		if self.dragState.isDragging then
 			self:EndScrollDrag()
@@ -254,6 +323,7 @@ script ScrollInventoryUI extends Component
 	@ExecSpace("ClientOnly")
 	method void EndScrollDrag()
 		self:ResetDragVisual()
+		self:HideTooltip()
 		self.dragState.isDragging = false
 		self.dragState.scrollId = 0
 		self.dragState.iconEntity = nil
