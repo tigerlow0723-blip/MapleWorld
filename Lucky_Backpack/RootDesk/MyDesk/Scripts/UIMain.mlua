@@ -757,10 +757,15 @@ script UIMain extends Component
 		if self.gameManager ~= nil then
 			phase = self.gameManager.gamePhase
 		end
+		local isRewardChestPhase = self:IsRewardChestPhase(phase)
 		self:UpdatePhasePanelVisibility(phase)
 		
 		if self.btnBattleStart ~= nil then
-			self.btnBattleStart.Enable = (phase == "Preparation")
+			local canShowBattleStart = (phase == "Preparation" and isRewardChestPhase == false)
+			if canShowBattleStart and self.itemDisplayAreaEntity ~= nil then
+				canShowBattleStart = (self.itemDisplayAreaEntity.Enable == true)
+			end
+			self.btnBattleStart.Enable = canShowBattleStart
 		end
 		
 		if self.btnTurnEnd ~= nil then
