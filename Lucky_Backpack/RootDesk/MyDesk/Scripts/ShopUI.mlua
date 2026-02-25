@@ -231,6 +231,7 @@ script ShopUI extends Component
 		        end
 		
 		        local itemType = string.lower(tostring(itemData.type or ""))
+		        local itemId = tonumber(itemData.id) or 0
 		        local price = math.max(0, tonumber(itemData.price) or tonumber(itemData.cost) or 0)
 		        local minAtk = tonumber(itemData.minAtk) or tonumber(itemData.min_atk) or 0
 		        local maxAtk = tonumber(itemData.maxAtk) or tonumber(itemData.max_atk) or 0
@@ -291,6 +292,9 @@ script ShopUI extends Component
 		                end
 		            end
 		        elseif itemType == "goods" then
+		            if itemId == 13 and self:CanOfferGoldOreItem() == false then
+		                continue
+		            end
 		            if price > 0 then
 		                if slots.goldOre == nil then
 		                    slots.goldOre = itemData
@@ -305,6 +309,18 @@ script ShopUI extends Component
 		    end
 		
 		    return slots
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean CanOfferGoldOreItem()
+		    if self.gameManager == nil then
+		        return true
+		    end
+		    local stage = tonumber(self.gameManager.currentStage) or 0
+		    if stage >= 6 then
+		        return false
+		    end
+		    return true
 	end
 
 	@ExecSpace("ClientOnly")
@@ -618,6 +634,14 @@ script ShopUI extends Component
 		    local itemData = self.dataManager:GetItemData(itemId)
 		    if itemData == nil then
 		        return 1
+		    end
+		
+		    local itemType = string.lower(tostring(itemData.type or ""))
+		    local spawnGroup = tonumber(itemData.spawnGroup) or 0
+		    -- Reward/drop-tier items are auto-sold at fixed 50 in ItemDisplayArea.
+		    -- Keep manual SellArea behavior aligned, excluding explicit exception groups.
+		    if spawnGroup > 0 and itemType ~= "goods" and itemType ~= "grade_scroll" then
+		        return 50
 		    end
 		
 		    local price = self:GetBaseItemPrice(itemData)
