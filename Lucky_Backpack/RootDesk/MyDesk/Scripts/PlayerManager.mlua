@@ -219,18 +219,76 @@ script PlayerManager extends Component
 			return nil
 		end
 		
+		local inventoryComp = inventoryPanel.Inventory
+		local anchorInfo = nil
+		if inventoryComp ~= nil and inventoryComp.GetPlacedItemAnchorAtCell ~= nil then
+			anchorInfo = inventoryComp:GetPlacedItemAnchorAtCell(row, col)
+		end
+		local anchorItemId = 0
+		local anchorRow = 0
+		local anchorCol = 0
+		if anchorInfo ~= nil then
+			anchorItemId = tonumber(anchorInfo.itemId) or 0
+			anchorRow = tonumber(anchorInfo.row) or 0
+			anchorCol = tonumber(anchorInfo.col) or 0
+		end
+		
 		local children = inventoryPanel.Children
 		if children == nil then
 			return nil
+		end
+		
+		if anchorItemId > 0 and anchorRow > 0 and anchorCol > 0 then
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local itemComp = child.Item
+					local itemId = tonumber(itemComp.itemId) or 0
+					local compRow = tonumber(itemComp.gridRow) or 0
+					local compCol = tonumber(itemComp.gridCol) or 0
+					if itemId == anchorItemId and compRow == anchorRow and compCol == anchorCol then
+						return itemComp
+					end
+				end
+			end
 		end
 		
 		for i = 1, #children do
 			local child = children[i]
 			if child ~= nil and child.Item ~= nil then
 				local itemComp = child.Item
+				local itemId = tonumber(itemComp.itemId) or 0
+				if anchorItemId > 0 and itemId ~= anchorItemId then
+					continue
+				end
 				if self:DoesItemOccupyCell(itemComp, row, col) == true then
 					return itemComp
 				end
+			end
+		end
+		
+		if anchorItemId > 0 then
+			local fallbackComp = nil
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local itemComp = child.Item
+					local itemId = tonumber(itemComp.itemId) or 0
+					if itemId == anchorItemId then
+						if fallbackComp == nil then
+							fallbackComp = itemComp
+						else
+							fallbackComp = nil
+							break
+						end
+					end
+				end
+			end
+			if fallbackComp ~= nil then
+				if anchorRow > 0 and anchorCol > 0 and fallbackComp.SetGridPosition ~= nil then
+					fallbackComp:SetGridPosition(anchorRow, anchorCol)
+				end
+				return fallbackComp
 			end
 		end
 		

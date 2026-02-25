@@ -375,6 +375,54 @@ script Inventory extends Component
 		    return 0
 	end
 
+	method table GetPlacedItemAnchorAtCell(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return nil
+		    end
+		
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo == nil then
+		            continue
+		        end
+		
+		        local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		        if placedItemId <= 0 then
+		            continue
+		        end
+		
+		        local baseRow = tonumber(placedInfo.row) or 0
+		        local baseCol = tonumber(placedInfo.col) or 0
+		        local shapeCells = placedInfo.shapeCells
+		
+		        if shapeCells ~= nil and #shapeCells > 0 then
+		            for i = 1, #shapeCells do
+		                local cell = shapeCells[i]
+		                if cell ~= nil then
+		                    local absRow = baseRow + (tonumber(cell.row) or 0)
+		                    local absCol = baseCol + (tonumber(cell.col) or 0)
+		                    if absRow == row and absCol == col then
+		                        return {
+		                            key = placedKey,
+		                            itemId = placedItemId,
+		                            row = baseRow,
+		                            col = baseCol
+		                        }
+		                    end
+		                end
+		            end
+		        elseif baseRow == row and baseCol == col then
+		            return {
+		                key = placedKey,
+		                itemId = placedItemId,
+		                row = baseRow,
+		                col = baseCol
+		            }
+		        end
+		    end
+		
+		    return nil
+	end
+
 	method table GetPlacedItemInfo(integer itemId)
 		    local found = self:FindPlacedItemEntry(itemId)
 		    if found ~= nil then

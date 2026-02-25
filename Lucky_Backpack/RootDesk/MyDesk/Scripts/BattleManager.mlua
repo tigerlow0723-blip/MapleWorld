@@ -660,11 +660,6 @@ script BattleManager extends Component
 			return false
 		end
 		
-		if armorComp.EnsureArmorRolls ~= nil and (armorComp.armorRollInitialized == nil or armorComp.armorRollInitialized == false) then
-			armorComp:EnsureArmorRolls(itemData)
-			log("[ArmorSynergy] Armor roll initialized on first use. armorId=" .. tostring(itemId))
-		end
-		
 		local remainCount = math.max(0, tonumber(armorComp.armorRemainingCount) or tonumber(itemData.count) or 0)
 		if remainCount < 1 then
 			log("[BattleManager] Armor activation count exhausted. itemId=" .. tostring(itemId))
@@ -678,6 +673,11 @@ script BattleManager extends Component
 			return false
 		end
 		armorComp.armorRemainingCount = math.max(0, remainCount - 1)
+		if armorComp.RollArmorBuffsForUse ~= nil then
+			armorComp:RollArmorBuffsForUse(itemData)
+		elseif armorComp.EnsureArmorRolls ~= nil and (armorComp.armorRollInitialized == nil or armorComp.armorRollInitialized == false) then
+			armorComp:EnsureArmorRolls(itemData)
+		end
 		
 		local atkPercentBuff = tonumber(armorComp.armorAtkPercent) or 0
 		local critRateBuff = tonumber(armorComp.armorCritRate) or 0
