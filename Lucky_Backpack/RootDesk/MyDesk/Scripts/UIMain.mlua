@@ -171,7 +171,7 @@ script UIMain extends Component
 				local imgTable = self.gameManager.dataManager.TutorialImageTable
 				if imgTable ~= nil then
 					self.tutorialImages = {}
-					for page = 1, 13 do
+					for page = 1, 19 do
 						if imgTable[page] ~= nil then
 							self.tutorialImages[page] = imgTable[page]
 						else

@@ -6,10 +6,15 @@
 1007,BGM,stage_7,304c754c743341549676338f92fdeb5d,0.5,TRUE,스테이지 7 BGM
 1008,BGM,stage_8_9,bf1f1c64293943baa5ce66a2b6c8ce76,0.5,TRUE,스테이지 8/9 BGM
 1010,BGM,stage_boss,eabdc2ee5dfc4c238104ab9607c3bb11,0.5,TRUE,보스 스테이지 BGM
-2001,SFX,attack_sword,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(검/단검 등) 공격 사운드
-2002,SFX,attack_bow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(활/석궁) 공격 사운드
-2003,SFX,attack_wand,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(스태프/완드) 공격 사운드
+2001,SFX,attack_sword_1h,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(한손검) 공격 사운드
+2002,SFX,attack_bow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(활) 공격 사운드
+2003,SFX,attack_wand,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(완드) 공격 사운드
 2004,SFX,player_hit,826b446f311049eb867b3343f23eb13c,,FALSE,캐릭터 피격 사운드
+2006,SFX,attack_sword_2h,fc142213ea2148c88f63b4c83b717ff3,,FALSE,캐릭터 무기(두손검) 공격 사운드
+2007,SFX,attack_staff,e7297d00a3cc454bbfaa5e23316a3437,,FALSE,캐릭터 무기(스태프) 공격 사운드
+2008,SFX,attack_crossbow,4346b64f2d0a4cf683980bb0d318b14a,,FALSE,캐릭터 무기(석궁) 공격 사운드
+2009,SFX,attack_dagger,cecef9a8b0e74dd5a27dfc702044f76c,,FALSE,캐릭터 무기(단검) 공격 사운드
+2010,SFX,attack_claw,57efe496883a4de5962b6619e634bbba,,FALSE,캐릭터 무기(아대) 공격 사운드
 2005,SFX,use_potion,0a143cc3b50843f7919ba87484d6ca6e,,FALSE,물약 사용 사운드
 3001,SFX,monster_atk_default,,,FALSE,기본 몬스터 공격 사운드
 3002,SFX,monster_hit_default,,,FALSE,기본 몬스터 피격 사운드
