@@ -753,7 +753,7 @@
       {
         "id": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
         "path": "/maps/map01/GameSystem",
-        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,MOD.Core.CameraComponent,script.MiniGameManager,script.UIMain",
+        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,MOD.Core.CameraComponent,script.MiniGameManager,script.UIMain,script.SoundManager",
         "jsonString": {
           "name": "GameSystem",
           "path": "/maps/map01/GameSystem",
@@ -1163,6 +1163,10 @@
                 "EntityId": "244e51bb-8411-4556-860e-2fd93c7474e2",
                 "Version2": false
               }
+            },
+            {
+              "@type": "script.SoundManager",
+              "Enable": true
             }
           ],
           "@version": 1
