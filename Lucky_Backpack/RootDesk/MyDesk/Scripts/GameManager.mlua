@@ -1115,9 +1115,6 @@ script GameManager extends Component
 		
 		if self.itemDisplayArea ~= nil then
 			self.itemDisplayArea:ClearAllItems()
-			if self.itemDisplayArea.Entity ~= nil then
-				self.itemDisplayArea.Entity:SetEnable(false)
-			end
 		end
 		if self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(false)
