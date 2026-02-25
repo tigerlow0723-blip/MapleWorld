@@ -831,10 +831,10 @@ script GameManager extends Component
 		end
 		
 		self:ProceedToStage()
+		self.isStageTransitioning = false
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
-		self.isStageTransitioning = false
 	end
 
 	method Entity ResolveStageFadeEntity()
@@ -1018,6 +1018,9 @@ script GameManager extends Component
 		else
 			self.gamePhase = "MiniGame"
 			self.miniGameManager:StartMiniGamePhase()
+			if self.uiMain ~= nil then
+				self.uiMain:UpdateUI()
+			end
 		end
 	end
 
@@ -1106,11 +1109,20 @@ script GameManager extends Component
 		end
 		self.isStageTransitioning = true
 		self.pendingStageAdvance = true
+		self.gamePhase = "Transition"
+
+		if self.itemDisplayArea ~= nil and self.itemDisplayArea.Entity ~= nil then
+			self.itemDisplayArea.Entity:SetEnable(false)
+			self.itemDisplayArea.Entity:SetVisible(false)
+		end
 
 		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
 		if shopPanel ~= nil then
 			shopPanel:SetEnable(false)
 			shopPanel:SetVisible(false)
+		end
+		if self.uiMain ~= nil then
+			self.uiMain:UpdateUI()
 		end
 
 		self:ClientPlayShopOutro()
