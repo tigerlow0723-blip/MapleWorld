@@ -1167,6 +1167,8 @@ script BattleManager extends Component
 	method void EndBattle(string result)
 		self.battleState = "End"
 		self.currentTurn = "None"
+		-- Ensure armor-applied temporary synergy buffs are cleared even when battle ends mid-player-turn.
+		self:ClearArmorTemporaryEffects()
 		
 		--
 		if self.monsterTurnTimerId > 0 then
