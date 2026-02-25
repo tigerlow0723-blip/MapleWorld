@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://a8bb31d460b843768399be7efbd0b51c",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/a8bb31d460b843768399be7efbd0b51c/639075842237832958",
+      "upload_hash": "B87E753AD2253079C55DA22D80CB74F08E0799F468746E4F2C1FF08D3C190595",
+      "name": "주문서 아이템 ui-Photoroom (1)",
+      "resource_guid": "a8bb31d460b843768399be7efbd0b51c",
+      "resource_version": "699e61df6d215ce80e46c21c"
+    }
+  }
+}

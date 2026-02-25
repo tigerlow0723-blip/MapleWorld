@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://4499a9c8391947e89230cbba95e4acb5",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/4499a9c8391947e89230cbba95e4acb5/639075842237769922",
+      "upload_hash": "2E24FC31C629A7074B58ED9F22CF116E5A5E0A156ED78C2A4088021B7522606C",
+      "name": "상점 이름",
+      "resource_guid": "4499a9c8391947e89230cbba95e4acb5",
+      "resource_version": "699e61df2b41e21f4b500020"
+    }
+  }
+}

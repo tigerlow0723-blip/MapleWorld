@@ -827,10 +827,12 @@ script UIMain extends Component
                 if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
                 if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
                 if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
-                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Result") end
+                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result") end
 
                 if subState == "Roll" then
                     self:UpdateStage5DiceRollVisual()
+                elseif subState == "Roll2" then
+                    self:UpdateStage5DiceRoll2Visual()
                 elseif subState == "Result" then
                     self:UpdateStage5DiceResult()
                 else
@@ -895,8 +897,10 @@ script UIMain extends Component
 						sprite2.SpriteRUID = self.stage5DiceRollRUIDs2[roll2]
 					end
 				end
+				self.stage5DiceRollEntity2.Enable = true
+			else
+				self.stage5DiceRollEntity2.Enable = false
 			end
-			self.stage5DiceRollEntity2.Enable = true
 		end
 		if self.stage5DiceImageEntity ~= nil then
 			self.stage5DiceImageEntity.Enable = false
@@ -905,7 +909,51 @@ script UIMain extends Component
 			self.stage5DiceImageEntity2.Enable = false
 		end
 	end
-	method void UpdateStage5DiceResult()
+	method void UpdateStage5DiceRoll2Visual()
+		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
+			return
+		end
+		local roll = tonumber(self.gameManager.miniGameManager.lastDiceRoll) or 0
+		local roll2 = tonumber(self.gameManager.miniGameManager.lastDiceRoll2) or 0
+		if self.stage5DiceRollEntity ~= nil then
+			self.stage5DiceRollEntity.Enable = false
+		end
+		if self.stage5DiceImageEntity ~= nil then
+			if self.stage5DiceImageRUIDs ~= nil and roll >= 1 and roll <= 7 and self.stage5DiceImageRUIDs[roll] ~= nil and self.stage5DiceImageRUIDs[roll] ~= "" then
+				local gui = self.stage5DiceImageEntity.SpriteGUIRendererComponent
+				if gui ~= nil then
+					gui.ImageRUID = self.stage5DiceImageRUIDs[roll]
+				else
+					local sprite = self.stage5DiceImageEntity.SpriteRendererComponent
+					if sprite ~= nil then
+						sprite.SpriteRUID = self.stage5DiceImageRUIDs[roll]
+					end
+				end
+			end
+			self.stage5DiceImageEntity.Enable = true
+		end
+		if self.stage5DiceRollEntity2 ~= nil then
+			if self.stage5DiceRollRUIDs2 ~= nil and roll2 >= 1 and roll2 <= 7 and self.stage5DiceRollRUIDs2[roll2] ~= nil and self.stage5DiceRollRUIDs2[roll2] ~= "" then
+				local gui2 = self.stage5DiceRollEntity2.SpriteGUIRendererComponent
+				if gui2 ~= nil then
+					gui2.ImageRUID = self.stage5DiceRollRUIDs2[roll2]
+				else
+					local sprite2 = self.stage5DiceRollEntity2.SpriteRendererComponent
+					if sprite2 ~= nil then
+						sprite2.SpriteRUID = self.stage5DiceRollRUIDs2[roll2]
+					end
+				end
+				self.stage5DiceRollEntity2.Enable = true
+			else
+				self.stage5DiceRollEntity2.Enable = false
+			end
+		end
+		if self.stage5DiceImageEntity2 ~= nil then
+			self.stage5DiceImageEntity2.Enable = false
+		end
+	end
+
+		method void UpdateStage5DiceResult()
 		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
 			return
 		end

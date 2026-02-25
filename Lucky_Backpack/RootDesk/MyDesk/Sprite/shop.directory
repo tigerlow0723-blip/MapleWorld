@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://78c43bc052fe48a1a524ea34cba79a62",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://78c43bc052fe48a1a524ea34cba79a62",
+      "name": "shop",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}
