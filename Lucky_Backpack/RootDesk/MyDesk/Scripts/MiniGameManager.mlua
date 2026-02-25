@@ -202,9 +202,11 @@ script MiniGameManager extends Component
 
 		self.lastChoice = choice
 		self.lastDiceRoll = dice
-		self.lastDiceRoll2 = dice2
+		self.lastDiceRoll2 = 0
 		self.pendingResultParity = result
 		self.subState = "Roll"
+
+		log("[MiniGameManager-DEBUG] Dice 1 rolled: " .. tostring(dice))
 
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
@@ -221,73 +223,91 @@ script MiniGameManager extends Component
 			resultDelay = 0
 		end
 
+		local savedDice2 = dice2
+
 		_TimerService:SetTimerOnce(function()
 			if self.isMiniGameActive ~= true or self.subState ~= "Roll" then
 				return
 			end
 			
-			self.lastRoundWin = (self.lastChoice == self.pendingResultParity)
-			self.subState = "Result"
-			
-			local isDoubleOne = (self.lastDiceRoll == 1 and self.lastDiceRoll2 == 1)
-			local isDoubleSeven = (self.lastDiceRoll == 7 and self.lastDiceRoll2 == 7)
-			if isDoubleOne or isDoubleSeven then
-				self.lastRoundWin = false
-			end
+			self.lastDiceRoll2 = savedDice2
+			self.subState = "Roll2"
 
-			if isDoubleOne then
-				if self.playerManager ~= nil then
-					local curHP = tonumber(self.playerManager.currentHP) or 0
-					local reducedHP = math.ceil(curHP * 0.5)
-					if reducedHP < 1 then
-						reducedHP = 1
-					end
-					self.playerManager.currentHP = reducedHP
-					if self.playerManager.EmitPlayerStatChangedEvent ~= nil then
-						self.playerManager:EmitPlayerStatChangedEvent()
-					end
-				end
-				log("[MiniGameManager] Special result: double 1. Player HP reduced by half.")
-			elseif isDoubleSeven then
-				local powerElixir = nil
-				if self.dataManager ~= nil then
-					powerElixir = self.dataManager:GetItemData(self.POWER_ELIXIR_ITEM_ID)
-				end
-				if powerElixir ~= nil and self.playerManager ~= nil then
-					self.playerManager:AddItem(powerElixir)
-					log("[MiniGameManager] Special result: double 7. Power Elixir granted.")
-				else
-					log("[MiniGameManager] Special result: double 7 but Power Elixir item is missing.")
-				end
-			elseif self.lastRoundWin == true then
-				log("[MiniGameManager] Odd/even result: WIN. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2))
-				local itemData = self.dataManager:GetItemData(14)
-				if itemData ~= nil then
-					self.playerManager:AddItem(itemData)
-				end
-			else
-				log("[MiniGameManager] Odd/even result: LOSE. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2))
-			end
+			log("[MiniGameManager-DEBUG] Dice 2 rolled: " .. tostring(savedDice2))
+			log("[MiniGameManager-DEBUG] Dice sum: " .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
 
 			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()
 			end
-			
+
 			_TimerService:SetTimerOnce(function()
-				if self.isMiniGameActive ~= true then
+				if self.isMiniGameActive ~= true or self.subState ~= "Roll2" then
 					return
 				end
+				
+				self.lastRoundWin = (self.lastChoice == self.pendingResultParity)
+				self.subState = "Result"
+				
+				local isDoubleOne = (self.lastDiceRoll == 1 and self.lastDiceRoll2 == 1)
+				local isDoubleSeven = (self.lastDiceRoll == 7 and self.lastDiceRoll2 == 7)
+				if isDoubleOne or isDoubleSeven then
+					self.lastRoundWin = false
+				end
 
-				if self:GetOreCount() > 0 then
-					self.subState = "Play"
+				if isDoubleOne then
+					if self.playerManager ~= nil then
+						local curHP = tonumber(self.playerManager.currentHP) or 0
+						local reducedHP = math.ceil(curHP * 0.5)
+						if reducedHP < 1 then
+							reducedHP = 1
+						end
+						self.playerManager.currentHP = reducedHP
+						if self.playerManager.EmitPlayerStatChangedEvent ~= nil then
+							self.playerManager:EmitPlayerStatChangedEvent()
+						end
+					end
+					log("[MiniGameManager] Special result: double 1. Player HP reduced by half.")
+				elseif isDoubleSeven then
+					local powerElixir = nil
+					if self.dataManager ~= nil then
+						powerElixir = self.dataManager:GetItemData(self.POWER_ELIXIR_ITEM_ID)
+					end
+					if powerElixir ~= nil and self.playerManager ~= nil then
+						self.playerManager:AddItem(powerElixir)
+						log("[MiniGameManager] Special result: double 7. Power Elixir granted.")
+					else
+						log("[MiniGameManager] Special result: double 7 but Power Elixir item is missing.")
+					end
+				elseif self.lastRoundWin == true then
+					log("[MiniGameManager-DEBUG] Odd/even result: WIN. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2) .. " sum=" .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
+					local itemData = self.dataManager:GetItemData(14)
+					if itemData ~= nil then
+						self.playerManager:AddItem(itemData)
+					end
 				else
-					self.subState = "Shop"
+					log("[MiniGameManager-DEBUG] Odd/even result: LOSE. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2) .. " sum=" .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
 				end
 
 				if self.uiMain ~= nil then
 					self.uiMain:UpdateUI()
 				end
-			end, resultDelay)
+				
+				_TimerService:SetTimerOnce(function()
+					if self.isMiniGameActive ~= true then
+						return
+					end
+
+					if self:GetOreCount() > 0 then
+						self.subState = "Play"
+					else
+						self.subState = "Shop"
+					end
+
+					if self.uiMain ~= nil then
+						self.uiMain:UpdateUI()
+					end
+				end, resultDelay)
+			end, rollDelay)
 		end, rollDelay)
 	end
 
