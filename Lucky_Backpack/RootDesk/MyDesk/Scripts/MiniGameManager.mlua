@@ -205,6 +205,8 @@ script MiniGameManager extends Component
 		self.lastDiceRoll2 = 0
 		self.pendingResultParity = result
 		self.subState = "Roll"
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(4005) end
 
 		log("[MiniGameManager-DEBUG] Dice 1 rolled: " .. tostring(dice))
 
@@ -232,6 +234,8 @@ script MiniGameManager extends Component
 			
 			self.lastDiceRoll2 = savedDice2
 			self.subState = "Roll2"
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(4005) end
 
 			log("[MiniGameManager-DEBUG] Dice 2 rolled: " .. tostring(savedDice2))
 			log("[MiniGameManager-DEBUG] Dice sum: " .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
@@ -320,6 +324,8 @@ script MiniGameManager extends Component
 			local totalGold = count * self.GOLD_BAR_PRICE
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
 			log("[MiniGameManager] Gold bars sold. count=" .. tostring(count) .. " gain=" .. tostring(totalGold))
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(5002) end
 
 			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()

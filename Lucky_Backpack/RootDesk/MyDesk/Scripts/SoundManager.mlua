@@ -1,0 +1,60 @@
+@Component
+script SoundManager extends Component
+
+	property any dataManager = nil
+
+	method void OnBeginPlay()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem then
+			self.dataManager = gameSystem.DataManager
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlaySFX(integer soundId)
+		if self.dataManager == nil or self.dataManager.SoundTable == nil then 
+			log("[SoundManager] PlaySFX failed: dataManager or SoundTable is nil")
+			return 
+		end
+		local soundData = self.dataManager.SoundTable[soundId]
+		if soundData == nil then 
+			log("[SoundManager] PlaySFX failed: No data for ID " .. tostring(soundId))
+			return 
+		end
+		if soundData.ruid == "" or soundData.ruid == nil then 
+			log("[SoundManager] PlaySFX failed: Empty RUID for ID " .. tostring(soundId))
+			return 
+		end
+		
+		log("[SoundManager] PlaySFX playing: " .. tostring(soundId) .. " RUID: " .. tostring(soundData.ruid) .. " Vol: " .. tostring(soundData.volume))
+		_SoundService:PlaySound(soundData.ruid, soundData.volume)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayBGM(integer soundId)
+		if self.dataManager == nil or self.dataManager.SoundTable == nil then 
+			log("[SoundManager] PlayBGM failed: dataManager or SoundTable is nil")
+			return 
+		end
+		local soundData = self.dataManager.SoundTable[soundId]
+		if soundData == nil then 
+			log("[SoundManager] PlayBGM failed: No data for ID " .. tostring(soundId))
+			return 
+		end
+		
+		if soundData.ruid == "" or soundData.ruid == nil then
+			log("[SoundManager] PlayBGM failed: Empty RUID for ID " .. tostring(soundId) .. ", stopping BGM")
+			_SoundService:StopBGM(false)
+			return
+		end
+		
+		log("[SoundManager] PlayBGM playing: " .. tostring(soundId) .. " RUID: " .. tostring(soundData.ruid) .. " Vol: " .. tostring(soundData.volume) .. " Loop: " .. tostring(soundData.loop))
+		_SoundService:PlayBGM(soundData.ruid, soundData.volume)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void StopBGM()
+		_SoundService:StopBGM(false)
+	end
+
+end

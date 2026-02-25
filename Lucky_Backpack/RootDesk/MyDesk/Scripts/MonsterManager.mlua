@@ -242,6 +242,10 @@ script MonsterManager extends Component
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "HIT", 1.5)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then
+			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3004 or 3002)
+		end
 		
 		if monster.currentHP <= 0 then
 			monster.currentHP = 0
@@ -406,6 +410,10 @@ script MonsterManager extends Component
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "ATTACK1", 2.0)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then
+			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3003 or 3001)
+		end
 	end
 	method void MonsterSkillAttack(integer index)
 		local monster = self.monsterList[index]
@@ -452,6 +460,10 @@ script MonsterManager extends Component
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then
+			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3003 or 3001)
+		end
 	end
 	method void MonsterAction(integer index)
 		local monster = self.monsterList[index]
@@ -537,6 +549,10 @@ script MonsterManager extends Component
 		local animTargetId = boss.animEntityId
 		if animTargetId == nil then animTargetId = boss.entityId end
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then
+			gameSystem.SoundManager:PlaySFX(3003)
+		end
 	end
 
 	method void ApplyIncomingDamageDebuff(integer index, number percent, integer turn)

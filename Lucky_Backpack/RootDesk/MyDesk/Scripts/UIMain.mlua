@@ -273,6 +273,7 @@ script UIMain extends Component
 		-- Main Menu / Tutorial Buttons
 		if self.btnStartGame ~= nil then
 			self.btnStartGame:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				self:HideMainMenu()
 				if self.gameManager ~= nil then
 					self.gameManager:StartGame("War")
@@ -282,6 +283,7 @@ script UIMain extends Component
 		
 		if self.btnHowToPlay ~= nil then
 			self.btnHowToPlay:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				log("[UIMain] === Explanation button CLICKED! ===")
 				
 				-- Hide Main_screen directly by path
@@ -311,6 +313,7 @@ script UIMain extends Component
 		
 		if self.btnNextPage ~= nil then
 			self.btnNextPage:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.currentTutorialPage < #self.tutorialImages then
 					self.currentTutorialPage = self.currentTutorialPage + 1
 					self:UpdateTutorialImage()
@@ -320,6 +323,7 @@ script UIMain extends Component
 		
 		if self.btnPrevPage ~= nil then
 			self.btnPrevPage:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.currentTutorialPage > 1 then
 					self.currentTutorialPage = self.currentTutorialPage - 1
 					self:UpdateTutorialImage()
@@ -329,6 +333,7 @@ script UIMain extends Component
 		
 		if self.btnCloseTutorial ~= nil then
 			self.btnCloseTutorial:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				local tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
 				if tutScreen ~= nil then
 					tutScreen:SetEnable(false)
@@ -342,7 +347,8 @@ script UIMain extends Component
 		
 		-- ????��??버�??
 		if self.btnTurnEnd ~= nil then
-			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
+			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end 
 				if self.gameManager == nil or self.gameManager.gamePhase ~= "Battle" then
 					return
 				end
@@ -354,6 +360,7 @@ script UIMain extends Component
 		-- ??????????��??버�??
 		if self.btnBattleStart ~= nil then
 			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
 					if self.gameManager.canEndPreparation == true then
 						self.gameManager:EndPreparation()
@@ -370,6 +377,7 @@ script UIMain extends Component
 		-- ==========================================
 		if self.btnPlayOddEven ~= nil then
 			self.btnPlayOddEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:EnterSubPlay()
 				end
@@ -377,6 +385,7 @@ script UIMain extends Component
 		end
 		if self.btnEnterShop ~= nil then
 			self.btnEnterShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:EnterSubShop()
 				end
@@ -384,6 +393,7 @@ script UIMain extends Component
 		end
 		if self.btnExitMiniGame ~= nil then
 			self.btnExitMiniGame:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:ExitMiniGame()
 				end
@@ -392,6 +402,7 @@ script UIMain extends Component
 		
 		if self.btnOdd ~= nil then
 			self.btnOdd:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:PlayOddEven(1)
 				end
@@ -399,6 +410,7 @@ script UIMain extends Component
 		end
 		if self.btnEven ~= nil then
 			self.btnEven:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:PlayOddEven(2)
 				end
@@ -406,6 +418,7 @@ script UIMain extends Component
 		end
 		if self.btnBackFromPlay ~= nil then
 			self.btnBackFromPlay:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:ExitMiniGame()
 				end
@@ -414,6 +427,7 @@ script UIMain extends Component
 		
 		if self.btnSellAllOre ~= nil then
 			self.btnSellAllOre:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager and self.gameManager.miniGameManager.SellAllOre ~= nil then
 					self.gameManager.miniGameManager:SellAllOre()
 				end
@@ -421,6 +435,7 @@ script UIMain extends Component
 		end
 		if self.btnSellAllGoldBar ~= nil then
 			self.btnSellAllGoldBar:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:SellAllGoldBar()
 				end
@@ -428,6 +443,7 @@ script UIMain extends Component
 		end
 		if self.btnBackFromShop ~= nil then
 			self.btnBackFromShop:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				if self.gameManager and self.gameManager.miniGameManager then
 					self.gameManager.miniGameManager:ExitMiniGame()
 				end
