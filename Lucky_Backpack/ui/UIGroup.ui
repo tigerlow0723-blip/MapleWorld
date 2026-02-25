@@ -10928,7 +10928,9 @@
               "@type": "script.ScrollInventoryUI",
               "Enable": true,
               "normalScrollIconPath": "/ui/UIGroup/ScrollPanel/ScrollNormal/Img",
-              "guaranteedScrollIconPath": "/ui/UIGroup/ScrollPanel/ScrollGuaranteed/Img"
+              "guaranteedScrollIconPath": "/ui/UIGroup/ScrollPanel/ScrollGuaranteed/Img",
+              "guaranteedIconBound": false,
+              "scrollUIPath": "/ui/UIGroup/scroll"
             }
           ],
           "@version": 1
@@ -14851,6 +14853,250 @@
                 "b": 0.0,
                 "a": 1.0
               },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "5247687d-3c1d-4bc8-9aa5-cec732f0f35d",
+        "path": "/ui/UIGroup/scroll",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "scroll",
+          "path": "/ui/UIGroup/scroll",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 28,
+          "pathConstraints": "///",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "5247687d-3c1d-4bc8-9aa5-cec732f0f35d",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -337.9026,
+                "y": 46.1266022
+              },
+              "OffsetMin": {
+                "x": -412.9026,
+                "y": -28.8734
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 75.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -375.4026,
+                "y": 8.6266
+              },
+              "Position": {
+                "x": -375.4026,
+                "y": 8.6266,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "68a2fc64-8576-4856-bfbc-7c8b05e4dae6",
+        "path": "/ui/UIGroup/scroll/success",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "success",
+          "path": "/ui/UIGroup/scroll/success",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "68a2fc64-8576-4856-bfbc-7c8b05e4dae6",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 37.5,
+                "y": 37.5
+              },
+              "OffsetMin": {
+                "x": -37.5,
+                "y": -37.5
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 75.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0001
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "07f032cfd5174103afad1a0110fcfe5d"
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "8df61af2-856b-4d88-9c07-0930060b323a",
+        "path": "/ui/UIGroup/scroll/fail",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "fail",
+          "path": "/ui/UIGroup/scroll/fail",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "8df61af2-856b-4d88-9c07-0930060b323a",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 37.5,
+                "y": 37.5
+              },
+              "OffsetMin": {
+                "x": -37.5,
+                "y": -37.5
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 75.0,
+                "y": 75.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0001
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "0f9cd54928b3454bb45d0a8f415f3dba"
+              },
+              "OverrideSorting": false,
               "Enable": true
             }
           ],

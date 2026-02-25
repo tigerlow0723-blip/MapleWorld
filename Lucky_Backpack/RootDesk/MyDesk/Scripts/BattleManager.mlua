@@ -1195,6 +1195,19 @@ script BattleManager extends Component
 			self.playerManager:AddGold(self.monsterManager.lastRewardGold or 0)
 			log("[BattleManager] Acquired EXP: " .. tostring(self.monsterManager.lastRewardExp) .. " Gold: " .. tostring(self.monsterManager.lastRewardGold))
 		
+			-- Stage clear gold reward
+			local clearGold = 0
+			if self.dataManager ~= nil and self.gameManager ~= nil then
+				local mapData = self.dataManager:GetMapData(self.gameManager.currentStage)
+				if mapData ~= nil then
+					clearGold = mapData.clearGold or 0
+				end
+			end
+			if clearGold > 0 then
+				self.playerManager:AddGold(clearGold)
+				log("[BattleManager] Stage clear gold reward: " .. tostring(clearGold))
+			end
+		
 			--
 			if self.monsterManager.lastRewardExp >= 20 then
 				self.playerManager:LevelUp()
