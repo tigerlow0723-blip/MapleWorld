@@ -1034,7 +1034,10 @@ script PlayerManager extends Component
 		local player = _UserService.LocalPlayer
 		if player == nil then return end
 		
-		if stateName == "Attack" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
+		local normalizedState = tostring(stateName or "")
+		local upperState = string.upper(normalizedState)
+		
+		if upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
 			local itemData = self.dataManager:GetItemData(itemId)
 			if itemData ~= nil and itemData.desc ~= nil then
 				local desc = itemData.desc
@@ -1073,7 +1076,9 @@ script PlayerManager extends Component
 
 		local stateComp = player.StateComponent
 		if stateComp ~= nil then
-			stateComp:ChangeState(stateName)
+			if upperState ~= "" then
+				stateComp:ChangeState(upperState)
+			end
 		end
 	end
 
@@ -1102,7 +1107,7 @@ script PlayerManager extends Component
 		-- Parameter: (방향, ?��?지?�치, ?�리?�컬?��?, 공격?�턴?�름, ?�격횟??
 				local hitComp = player.HitComponent
 		if hitComp ~= nil then
-			hitComp:OnHit(player, math.ceil(damage), false, "Attack", 1)
+			hitComp:OnHit(player, math.ceil(damage), false, "ATTACK", 1)
 		else
 			log_warning("[PlayerManager] HitComponent not found on LocalPlayer.")
 		end

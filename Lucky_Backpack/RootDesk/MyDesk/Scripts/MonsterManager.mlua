@@ -386,7 +386,7 @@ script MonsterManager extends Component
 		
 		if hitComp ~= nil then
 			local critical = (isCritical == true)
-			hitComp:OnHit(targetEntity, math.ceil(damage), critical, "Attack", 1)
+			hitComp:OnHit(targetEntity, math.ceil(damage), critical, "ATTACK", 1)
 		end
 	end
 	method void MonsterBasicAttack(integer index)

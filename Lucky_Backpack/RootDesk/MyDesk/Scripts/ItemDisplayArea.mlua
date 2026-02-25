@@ -235,6 +235,44 @@ script ItemDisplayArea extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method Entity FindDisplayAreaItemAtScreenPos(Vector2 screenPos)
+		if screenPos == nil then
+			return nil
+		end
+		
+		if self.spawnedItems ~= nil then
+			for i = #self.spawnedItems, 1, -1 do
+				local itemEntity = self.spawnedItems[i]
+				if itemEntity ~= nil and isvalid(itemEntity) and itemEntity.Parent == self.Entity and itemEntity.Item ~= nil then
+					local itemComp = itemEntity.Item
+					if itemComp ~= nil and itemComp.IsTouchPointOnOccupiedShapeCell ~= nil then
+						if itemComp:IsTouchPointOnOccupiedShapeCell(screenPos) == true then
+							return itemEntity
+						end
+					end
+				end
+			end
+		end
+		
+		local children = self.Entity.Children
+		if children ~= nil then
+			for i = #children, 1, -1 do
+				local itemEntity = children[i]
+				if itemEntity ~= nil and isvalid(itemEntity) and itemEntity.Item ~= nil then
+					local itemComp = itemEntity.Item
+					if itemComp ~= nil and itemComp.IsTouchPointOnOccupiedShapeCell ~= nil then
+						if itemComp:IsTouchPointOnOccupiedShapeCell(screenPos) == true then
+							return itemEntity
+						end
+					end
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	@ExecSpace("ClientOnly")
 	method void OnDisplayAreaRightClickKeyDown(KeyDownEvent event)
 		if event == nil then
 			return
@@ -248,11 +286,17 @@ script ItemDisplayArea extends Component
 			return
 		end
 		
-		local hovered = self.hoveredHitItemEntity
+		local cursorPos = _InputService:GetCursorPosition()
+		local hovered = self:FindDisplayAreaItemAtScreenPos(cursorPos)
 		if hovered == nil or not isvalid(hovered) then
+			self.hoveredHitItemEntity = nil
+			if self.inventoryUI ~= nil and self.inventoryUI.HideTooltip ~= nil then
+				self.inventoryUI:HideTooltip()
+			end
 			return
 		end
 		
+		self.hoveredHitItemEntity = hovered
 		self:TryShowTooltipFromHitCell(hovered, nil)
 	end
 
@@ -304,7 +348,7 @@ script ItemDisplayArea extends Component
 		end
 		self:ResolveInventoryUI()
 		if self.inventoryUI ~= nil and self.inventoryUI.StartDrag ~= nil then
-			self.inventoryUI:StartDrag(itemEntity)
+			self.inventoryUI:StartDrag(itemEntity, event)
 		end
 	end
 
