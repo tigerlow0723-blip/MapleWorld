@@ -45,6 +45,8 @@ script ScrollInventoryUI extends Component
 	property any tooltipRightClickKeyHandler = nil
 	property boolean isScrollTooltipVisible = false
 
+	property string scrollUIPath = ""
+
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		self.dragState = {
@@ -59,6 +61,23 @@ script ScrollInventoryUI extends Component
 		self:ConnectGlobalTouchEvents()
 		self:ConnectTooltipInputEvents()
 		self:UpdateUI()
+		
+		-- 처음 시작할 때 성공/실패 이미지는 안 보이게 꺼두기
+		if self.scrollUIPath ~= "" then
+			local scrollUI = _EntityService:GetEntityByPath(self.scrollUIPath)
+			if scrollUI ~= nil then
+				local successUI = scrollUI:GetChildByName("success", true)
+				if successUI ~= nil then
+					successUI:SetEnable(false)
+					successUI:SetVisible(false)
+				end
+				local failUI = scrollUI:GetChildByName("fail", true)
+				if failUI ~= nil then
+					failUI:SetEnable(false)
+					failUI:SetVisible(false)
+				end
+			end
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -827,6 +846,56 @@ script ScrollInventoryUI extends Component
 			return
 		end
 		
+		
+		local function ShowResultAnimation(isSuccessMsg)
+			log("[ScrollUI Debug] ShowResultAnimation starts. isSuccess=" .. tostring(isSuccessMsg))
+			if self.scrollUIPath ~= "" then
+				local scrollUI = _EntityService:GetEntityByPath(self.scrollUIPath)
+				if scrollUI ~= nil then
+					local targetEntity = nil
+					if isSuccessMsg then
+						targetEntity = scrollUI:GetChildByName("success", true)
+					else
+						targetEntity = scrollUI:GetChildByName("fail", true)
+					end
+					
+					if targetEntity ~= nil then
+						local renderer = targetEntity.SpriteGUIRendererComponent
+						if renderer ~= nil then
+							renderer.Enable = false
+							renderer.Color = Color(1, 1, 1, 1)
+							_TimerService:SetTimerOnce(function() renderer.Enable = true end, 0.05)
+							log("[ScrollUI Debug] Found target entity: " .. targetEntity.Name .. " with ImageRUID: " .. tostring(renderer.ImageRUID))
+						end
+						
+						local uiTransform = targetEntity.UITransformComponent
+						if uiTransform ~= nil then
+							log("[ScrollUI Debug] UITransform RectSize: " .. tostring(uiTransform.RectSize) .. " anchoredPosition: " .. tostring(uiTransform.anchoredPosition))
+						end
+						
+						if scrollUI.Parent ~= nil then
+							scrollUI.Parent:AttachChild(scrollUI)
+						end
+						
+						targetEntity:SetEnable(true)
+						targetEntity:SetVisible(true)
+						log("[ScrollUI Debug] Target Entity is ENABLED and VISIBLE.")
+						
+						_TimerService:SetTimerOnce(function()
+							if targetEntity ~= nil then
+								targetEntity:SetEnable(false)
+								targetEntity:SetVisible(false)
+							end
+						end, 1.5)
+					else
+						log_error("[ScrollUI Debug] SUCCESS/FAIL child not found under scrollUI")
+					end
+				else
+					log_error("[ScrollUI Debug] Entity not found at scrollUIPath: " .. tostring(self.scrollUIPath))
+				end
+			end
+		end
+
 		if self.playerManager:UseScroll(scrollId, 1) == false then
 			log("[Upgrade] Not enough scroll. type=" .. tostring(scrollId))
 			self:UpdateUI()
@@ -837,6 +906,7 @@ script ScrollInventoryUI extends Component
 		local isSuccess = roll <= successChance
 		if isSuccess == false then
 			log("[Upgrade] Upgrade failed. type=" .. tostring(scrollId) .. " grade=" .. tostring(weaponTarget.grade) .. " roll=" .. tostring(roll) .. " chance=" .. tostring(successChance))
+			ShowResultAnimation(false)
 			self:UpdateUI()
 			self:NotifyMainUI()
 			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
@@ -904,6 +974,7 @@ script ScrollInventoryUI extends Component
 		end
 		
 		log("[Upgrade] Upgrade success: " .. tostring(prevItemId) .. " -> " .. tostring(weaponTarget.itemId) .. " type=" .. tostring(scrollId) .. " roll=" .. tostring(roll) .. " chance=" .. tostring(successChance))
+		ShowResultAnimation(true)
 		self.playerManager:SyncInventoryFromGrid()
 		self:UpdateUI()
 		self:NotifyMainUI()

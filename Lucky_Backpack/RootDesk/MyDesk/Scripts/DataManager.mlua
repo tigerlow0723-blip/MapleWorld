@@ -755,6 +755,7 @@ script DataManager extends Component
 				data.bgPosY = tonumber(ds:GetCell(i, "bgPosY")) or 0
 				data.bgScaleX = tonumber(ds:GetCell(i, "bgScaleX")) or 1
 				data.bgScaleY = tonumber(ds:GetCell(i, "bgScaleY")) or 1
+				data.clearGold = tonumber(ds:GetCell(i, "clearGold")) or 0
 				self.MapTable[stageId] = data
 				count = count + 1
 				log("[DEBUG-MAP] ID: " .. tostring(stageId) .. " Fixed: " .. tostring(data.isFixed) .. " Type: " .. data.fixedMapType)
