@@ -17,6 +17,8 @@ script UIMain extends Component
 
 	property Entity uiBossSkill1 = nil
 
+	property Entity uiBossSkill1Sub = nil
+
 	property Entity uiBossSkill2 = nil
 
 	property Entity uiBossSkill3 = nil
@@ -26,6 +28,12 @@ script UIMain extends Component
 	property Entity uiBossSkill4 = nil
 
 	property any shieldTimer = nil
+
+	property any skill1Timer = nil
+
+	property number bossSkill1ParentDuration = 0.6
+
+	property number bossSkill1ParentDurationOverride = -1
 
 	property Entity btnTurnEnd = nil
 
@@ -256,6 +264,30 @@ script UIMain extends Component
 				self.stage5DiceRollEntity2 = self.uiStage5_game:GetChildByName("DiceRoll2")
 			end
 		end
+
+		-- Auto-resolve Success/Fail/SuccessRoll/FailRoll entities if not bound via property window
+		local searchParents = {}
+		if self.uiStage5_game ~= nil then searchParents[#searchParents + 1] = self.uiStage5_game end
+		if self.uiStage5_4 ~= nil then searchParents[#searchParents + 1] = self.uiStage5_4 end
+		if uiGroupEntity ~= nil then searchParents[#searchParents + 1] = uiGroupEntity end
+
+		local function findByNames(propValue, names)
+			if propValue ~= nil then return propValue end
+			for p = 1, #searchParents do
+				for n = 1, #names do
+					local found = searchParents[p]:GetChildByName(names[n])
+					if found ~= nil then return found end
+				end
+			end
+			return nil
+		end
+
+		self.uiStage5_Success = findByNames(self.uiStage5_Success, {"Stage_5_success", "stage_5_success", "Success", "success"})
+		self.uiStage5_Fail = findByNames(self.uiStage5_Fail, {"Stage_5_fail", "stage_5_fail", "Fail", "fail"})
+		self.uiStage5_SuccessRoll = findByNames(self.uiStage5_SuccessRoll, {"Stage_5_successroll", "stage_5_successroll", "SuccessRoll", "successroll"})
+		self.uiStage5_FailRoll = findByNames(self.uiStage5_FailRoll, {"Stage_5_failroll", "stage_5_failroll", "FailRoll", "failroll"})
+
+		log("[UIMain] Auto-resolve: Success=" .. tostring(self.uiStage5_Success ~= nil) .. " Fail=" .. tostring(self.uiStage5_Fail ~= nil) .. " SuccessRoll=" .. tostring(self.uiStage5_SuccessRoll ~= nil) .. " FailRoll=" .. tostring(self.uiStage5_FailRoll ~= nil))
 
 		self:ResolvePlayerCoinUI()
 	end
@@ -584,6 +616,7 @@ script UIMain extends Component
 		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
 		if uiGroup ~= nil then
 			uiGroup.Enable = true
+			uiGroup.Visible = true
 		end
 	end
 
@@ -945,11 +978,20 @@ script UIMain extends Component
 			if self.stage5DiceRollRUIDs ~= nil and roll >= 1 and roll <= 7 and self.stage5DiceRollRUIDs[roll] ~= nil and self.stage5DiceRollRUIDs[roll] ~= "" then
 				local gui = self.stage5DiceRollEntity.SpriteGUIRendererComponent
 				if gui ~= nil then
+					gui.Enable = false
+					gui.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+					gui.StartFrameIndex = 0
+					gui.PlayRate = 1
 					gui.ImageRUID = self.stage5DiceRollRUIDs[roll]
+					gui.Enable = true
 				else
 					local sprite = self.stage5DiceRollEntity.SpriteRendererComponent
 					if sprite ~= nil then
+						sprite.Enable = false
+						sprite.StartFrameIndex = 0
+						sprite.PlayRate = 1
 						sprite.SpriteRUID = self.stage5DiceRollRUIDs[roll]
+						sprite.Enable = true
 					end
 				end
 			end
@@ -959,11 +1001,20 @@ script UIMain extends Component
 			if self.stage5DiceRollRUIDs2 ~= nil and roll2 >= 1 and roll2 <= 7 and self.stage5DiceRollRUIDs2[roll2] ~= nil and self.stage5DiceRollRUIDs2[roll2] ~= "" then
 				local gui2 = self.stage5DiceRollEntity2.SpriteGUIRendererComponent
 				if gui2 ~= nil then
+					gui2.Enable = false
+					gui2.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+					gui2.StartFrameIndex = 0
+					gui2.PlayRate = 1
 					gui2.ImageRUID = self.stage5DiceRollRUIDs2[roll2]
+					gui2.Enable = true
 				else
 					local sprite2 = self.stage5DiceRollEntity2.SpriteRendererComponent
 					if sprite2 ~= nil then
+						sprite2.Enable = false
+						sprite2.StartFrameIndex = 0
+						sprite2.PlayRate = 1
 						sprite2.SpriteRUID = self.stage5DiceRollRUIDs2[roll2]
+						sprite2.Enable = true
 					end
 				end
 				self.stage5DiceRollEntity2.Enable = true
@@ -976,6 +1027,18 @@ script UIMain extends Component
 		end
 		if self.stage5DiceImageEntity2 ~= nil then
 			self.stage5DiceImageEntity2.Enable = false
+		end
+		if self.uiStage5_Success ~= nil then
+			self.uiStage5_Success.Enable = false
+		end
+		if self.uiStage5_Fail ~= nil then
+			self.uiStage5_Fail.Enable = false
+		end
+		if self.uiStage5_SuccessRoll ~= nil then
+			self.uiStage5_SuccessRoll.Enable = false
+		end
+		if self.uiStage5_FailRoll ~= nil then
+			self.uiStage5_FailRoll.Enable = false
 		end
 	end
 	method void UpdateStage5DiceRoll2Visual()
@@ -1005,11 +1068,20 @@ script UIMain extends Component
 			if self.stage5DiceRollRUIDs2 ~= nil and roll2 >= 1 and roll2 <= 7 and self.stage5DiceRollRUIDs2[roll2] ~= nil and self.stage5DiceRollRUIDs2[roll2] ~= "" then
 				local gui2 = self.stage5DiceRollEntity2.SpriteGUIRendererComponent
 				if gui2 ~= nil then
+					gui2.Enable = false
+					gui2.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+					gui2.StartFrameIndex = 0
+					gui2.PlayRate = 1
 					gui2.ImageRUID = self.stage5DiceRollRUIDs2[roll2]
+					gui2.Enable = true
 				else
 					local sprite2 = self.stage5DiceRollEntity2.SpriteRendererComponent
 					if sprite2 ~= nil then
+						sprite2.Enable = false
+						sprite2.StartFrameIndex = 0
+						sprite2.PlayRate = 1
 						sprite2.SpriteRUID = self.stage5DiceRollRUIDs2[roll2]
+						sprite2.Enable = true
 					end
 				end
 				self.stage5DiceRollEntity2.Enable = true
@@ -1057,13 +1129,20 @@ script UIMain extends Component
 				if dm ~= nil and dm.SuccessAnimRUID ~= nil and dm.SuccessAnimRUID ~= "" then
 					local gui = self.uiStage5_SuccessRoll.SpriteGUIRendererComponent
 					if gui ~= nil then
-						gui.ImageRUID = dm.SuccessAnimRUID
+						gui.Enable = false
+						gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime
+						gui.StartFrameIndex = 0
 						gui.PlayRate = 1
+						gui.ImageRUID = dm.SuccessAnimRUID
+						gui.Enable = true
 					else
 						local sprite = self.uiStage5_SuccessRoll.SpriteRendererComponent
 						if sprite ~= nil then
-							sprite.SpriteRUID = dm.SuccessAnimRUID
+							sprite.Enable = false
 							sprite.PlayRate = 1
+							sprite.StartFrameIndex = 0
+							sprite.SpriteRUID = dm.SuccessAnimRUID
+							sprite.Enable = true
 						end
 					end
 				end
@@ -1077,13 +1156,20 @@ script UIMain extends Component
 				if dm ~= nil and dm.FailAnimRUID ~= nil and dm.FailAnimRUID ~= "" then
 					local gui = self.uiStage5_FailRoll.SpriteGUIRendererComponent
 					if gui ~= nil then
-						gui.ImageRUID = dm.FailAnimRUID
+						gui.Enable = false
+						gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime
+						gui.StartFrameIndex = 0
 						gui.PlayRate = 1
+						gui.ImageRUID = dm.FailAnimRUID
+						gui.Enable = true
 					else
 						local sprite = self.uiStage5_FailRoll.SpriteRendererComponent
 						if sprite ~= nil then
-							sprite.SpriteRUID = dm.FailAnimRUID
+							sprite.Enable = false
 							sprite.PlayRate = 1
+							sprite.StartFrameIndex = 0
+							sprite.SpriteRUID = dm.FailAnimRUID
+							sprite.Enable = true
 						end
 					end
 				end
@@ -1345,6 +1431,14 @@ script UIMain extends Component
 			_TimerService:ClearTimer(self.shieldTimer)
 			self.shieldTimer = nil
 		end
+		if self.skill1Timer ~= nil then
+			_TimerService:ClearTimer(self.skill1Timer)
+			self.skill1Timer = nil
+		end
+		
+		if self.uiBossSkill1Sub == nil and self.uiBossSkill1 ~= nil then
+			self.uiBossSkill1Sub = self.uiBossSkill1:GetChildByName("UISprite", true)
+		end
 		
 		local animDuration = duration
 		if animDuration == nil or animDuration <= 0 then
@@ -1378,8 +1472,50 @@ script UIMain extends Component
 			end
 		end
 		
+		-- Skill1: play parent first, then child entity.
+		if selectedType == "hp_dmg" then
+			if self.uiBossSkill1Sub ~= nil then
+				self.uiBossSkill1Sub.Enable = false
+			end
+			
+			local parentDuration = tonumber(self.bossSkill1ParentDurationOverride) or -1
+			if parentDuration > 0 then
+				self.bossSkill1ParentDurationOverride = -1
+			else
+				parentDuration = tonumber(self.bossSkill1ParentDuration) or 0
+			end
+			if parentDuration <= 0 then
+				parentDuration = animDuration * 0.5
+			end
+			if parentDuration < 0 then
+				parentDuration = 0
+			end
+			if parentDuration > animDuration then
+				parentDuration = animDuration
+			end
+			
+			self.skill1Timer = _TimerService:SetTimerOnce(function()
+				self.skill1Timer = nil
+				if self.uiBossSkill1 ~= nil then
+					self.uiBossSkill1.Enable = false
+				end
+				if self.uiBossSkill1Sub ~= nil then
+					self.uiBossSkill1Sub.Enable = true
+					local subImg = self.uiBossSkill1Sub.SpriteGUIRendererComponent
+					if subImg ~= nil then
+						subImg.Color = Color(1, 1, 1, 1)
+					end
+				end
+			end, parentDuration)
+		else
+			if self.uiBossSkill1Sub ~= nil then
+				self.uiBossSkill1Sub.Enable = false
+			end
+		end
+		
 		-- ???��????????????��??처�??(1.53?????��????반�???????????��?????????
 		if selectedType == "shield" then
+			if self.uiBossSkill1Sub ~= nil then self.uiBossSkill1Sub.Enable = false end
 			if self.uiBossSkill3 ~= nil then
 				self.uiBossSkill3.Enable = true
 				local img = self.uiBossSkill3.SpriteGUIRendererComponent
@@ -1423,7 +1559,7 @@ script UIMain extends Component
 			-- ???�드�? ???��?????��??????????????��?????��????????��??�????��??처�??(???????????��???duration ???��??
 			local hideOtherSkillFunc = function()
 				self.shieldTimer = nil
-				local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
+				local entities = {self.uiBossSkill1, self.uiBossSkill1Sub, self.uiBossSkill2, self.uiBossSkill4}
 				for j = 1, #entities do
 					if entities[j] ~= nil then
 						entities[j].Enable = false
@@ -1437,6 +1573,11 @@ script UIMain extends Component
 	end
 
 	method void ResetBossSkillUI()
+		if self.skill1Timer ~= nil then
+			_TimerService:ClearTimer(self.skill1Timer)
+			self.skill1Timer = nil
+		end
+		
 		local hasShield = false
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 			local monsterMgr = self.battleManager.monsterManager
@@ -1464,10 +1605,13 @@ script UIMain extends Component
 				entities[i].Enable = false
 			end
 		end
+		if self.uiBossSkill1Sub ~= nil then
+			self.uiBossSkill1Sub.Enable = false
+		end
 	end
 
 	method void SetBossSkillUIEnable(boolean enable)
-		local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill3_1, self.uiBossSkill4}
+		local entities = {self.uiBossSkill1, self.uiBossSkill1Sub, self.uiBossSkill2, self.uiBossSkill3, self.uiBossSkill3_1, self.uiBossSkill4}
 		for i = 1, #entities do
 			if entities[i] ~= nil then
 				entities[i].Enable = enable
@@ -1489,6 +1633,31 @@ script UIMain extends Component
 		end
 	end
 
+	method void ShowNoOreWarning()
+		local warningEntity = _EntityService:GetEntityByPath("/ui/UIGroup/UI_NoOreWarning")
+		if warningEntity == nil then
+			warningEntity = _EntityService:GetEntityByPath("/ui/UIGroup/NoOreWarning")
+		end
+		
+		if warningEntity ~= nil then
+			warningEntity.Enable = true
+			if warningEntity.UITransformComponent ~= nil then
+				warningEntity:SetVisible(true)
+			end
+			
+			-- Hide after 2 seconds
+			_TimerService:SetTimerOnce(function()
+				if _EntityService:IsValid(warningEntity) then
+					warningEntity.Enable = false
+					if warningEntity.UITransformComponent ~= nil then
+						warningEntity:SetVisible(false)
+					end
+				end
+			end, 2.0)
+		else
+			log_warning("[UIMain] ShowNoOreWarning called, but UI_NoOreWarning entity not found in /ui/UIGroup/")
+		end
+	end
 end
 
 

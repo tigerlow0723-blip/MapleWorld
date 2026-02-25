@@ -33,7 +33,7 @@ script MiniGameManager extends Component
 	
 	property number rollDisplayDuration = 1
 	
-	property integer POWER_ELIXIR_ITEM_ID = 5
+	property integer DOUBLE_SEVEN_REWARD_ITEM_ID = 14
 
 	method void Init(any gMgr, any pMgr, any dMgr, any ui)
 		self.gameManager = gMgr
@@ -286,15 +286,15 @@ script MiniGameManager extends Component
 					end
 					log("[MiniGameManager] Special result: double 1. Player HP reduced by half.")
 				elseif isDoubleSeven then
-					local powerElixir = nil
+					local rewardItem = nil
 					if self.dataManager ~= nil then
-						powerElixir = self.dataManager:GetItemData(self.POWER_ELIXIR_ITEM_ID)
+						rewardItem = self.dataManager:GetItemData(self.DOUBLE_SEVEN_REWARD_ITEM_ID)
 					end
-					if powerElixir ~= nil and self.playerManager ~= nil then
-						self.playerManager:AddItem(powerElixir)
-						log("[MiniGameManager] Special result: double 7. Power Elixir granted.")
+					if rewardItem ~= nil and self.playerManager ~= nil then
+						self.playerManager:AddItem(rewardItem)
+						log("[MiniGameManager] Special result: double 7. Diamond granted.")
 					else
-						log("[MiniGameManager] Special result: double 7 but Power Elixir item is missing.")
+						log("[MiniGameManager] Special result: double 7 but reward item is missing.")
 					end
 				elseif self.lastRoundWin == true then
 					log("[MiniGameManager-DEBUG] Odd/even result: WIN. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2) .. " sum=" .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
@@ -335,9 +335,27 @@ script MiniGameManager extends Component
 							self.uiMain:UpdateUI()
 						end
 					end, sfDelay)
-				end, 1.2) -- hardcoded animation delay for SuccessRoll/FailRoll; can be exposed to DataManager if needed
+				end, self:GetAnimDelay())
 			end, rollDelay)
 		end, rollDelay)
+	end
+
+	method number GetAnimDelay()
+		local delay = 1.2
+		if self.dataManager ~= nil then
+			if self.lastRoundWin == true then
+				local val = tonumber(self.dataManager.SuccessAnimDelay)
+				if val ~= nil and val >= 0 then
+					delay = val
+				end
+			else
+				local val = tonumber(self.dataManager.FailAnimDelay)
+				if val ~= nil and val >= 0 then
+					delay = val
+				end
+			end
+		end
+		return delay
 	end
 
 	method void SellAllGoldBar()

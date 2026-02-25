@@ -2,22 +2,217 @@
 script RewardChest extends Component
 
 	property string displayAreaPath = ""
+	property string chestOpenAnimRUID = ""
+	property number chestOpenDelay = 1.0
+	property boolean isAnimating = false
 
-	@ExecSpace("ClientOnly")
+	-- Burst effect properties
+	property Entity chestEffectEntity = nil
+	property string chestEffectAnimRUID = ""
+	property number chestEffectDelay = 0.3
+	
+	property string chestClosedAnimRUID = ""
+
 	method void OnBeginPlay()
 			self.Entity:SetEnable(false)
-			local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
-			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
-				gameSystemEntity.GameManager.rewardChestEntity = self.Entity
-			end
+			self.Entity:SetVisible(false)
 			
-		    self.Entity:ConnectEvent(ButtonClickEvent, function(event)
-		        self:SpawnItems()
+		    if self.Entity.UITouchReceiveComponent == nil then
+		    	self.Entity:AddComponent("MOD.Core.UITouchReceiveComponent")
+		    end
+		    if self.Entity.UITouchReceiveComponent ~= nil then
+		    	self.Entity.UITouchReceiveComponent.Enable = true
+		    end
+		    self.Entity:ConnectEvent(UITouchDownEvent, function(event)
+		        self:OnChestClicked()
 		    end)
+
+		    local effectEntity = self:ResolveEffectEntity()
+		    if effectEntity ~= nil then
+		    	effectEntity:SetEnable(false)
+		    	effectEntity:SetVisible(false)
+				log("[RewardChest] ChestEffect entity found and bound automatically.")
+			else
+				log_warning("[RewardChest] ChestEffect entity NOT found. Did you create a child entity named ChestEffect?")
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveEffectEntity()
+		if self.chestEffectEntity ~= nil then
+			return self.chestEffectEntity
+		end
+		
+		local found = self.Entity:GetChildByName("ChestEffect", true)
+		if found == nil then
+			found = self.Entity:GetChildByName("chest_effect", true)
+		end
+		if found == nil then
+			found = self.Entity:GetChildByName("Chest Effect", true)
+		end
+		return found
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearChestTimers()
+		-- no-op: avoid runtime property write errors on environments with fixed component fields
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnChestClicked()
+		if self.isAnimating == true then
+			return
+		end
+		
+		local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystemEntity == nil or gameSystemEntity.GameManager == nil then
+			return
+		end
+		local gameManager = gameSystemEntity.GameManager
+		if gameManager.gamePhase ~= "Preparation" or gameManager.canEndPreparation ~= true then
+			return
+		end
+		if gameManager.pendingRewards == nil or #gameManager.pendingRewards <= 0 then
+			return
+		end
+
+		-- Try to load animation RUIDs from DataManager if not set
+		if self.chestOpenAnimRUID == "" or self.chestEffectAnimRUID == "" then
+			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
+				local dm = gameSystemEntity.GameManager.dataManager
+				if dm ~= nil then
+					if self.chestOpenAnimRUID == "" and dm.ChestOpenAnimRUID ~= nil and dm.ChestOpenAnimRUID ~= "" then
+						self.chestOpenAnimRUID = dm.ChestOpenAnimRUID
+					end
+					if self.chestEffectAnimRUID == "" and dm.ChestEffectAnimRUID ~= nil and dm.ChestEffectAnimRUID ~= "" then
+						self.chestEffectAnimRUID = dm.ChestEffectAnimRUID
+					end
+					if dm.ChestOpenDelay ~= nil then
+						local d = tonumber(dm.ChestOpenDelay)
+						if d ~= nil and d > 0 then
+							self.chestOpenDelay = d
+						end
+					end
+					if dm.ChestEffectDelay ~= nil then
+						local d2 = tonumber(dm.ChestEffectDelay)
+						if d2 ~= nil and d2 >= 0 then
+							self.chestEffectDelay = d2
+						end
+					end
+				end
+			end
+		end
+
+		if self.chestOpenAnimRUID ~= "" then
+			self.isAnimating = true
+			self:ClearChestTimers()
+			self:PlayOpenAnimation()
+			local effectEntity = self:ResolveEffectEntity()
+			local completeDelay = self.chestOpenDelay
+			if completeDelay == nil or completeDelay < 0 then
+				completeDelay = 0
+			end
+
+			-- Play burst effect after delay
+			if self.chestEffectAnimRUID ~= "" and effectEntity ~= nil then
+				_TimerService:SetTimerOnce(function()
+					self:PlayBurstEffect()
+				end, self.chestEffectDelay)
+				local minDelay = self.chestEffectDelay + 0.2
+				if minDelay > completeDelay then
+					completeDelay = minDelay
+				end
+			end
+
+			_TimerService:SetTimerOnce(function()
+				self.isAnimating = false
+				self:SpawnItems()
+			end, completeDelay)
+		else
+			self:SpawnItems()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayOpenAnimation()
+		local gui = self.Entity.SpriteGUIRendererComponent
+		if gui ~= nil then
+			gui.Enable = false
+			gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime
+			gui.StartFrameIndex = 0
+			gui.PlayRate = 1
+			gui.ImageRUID = self.chestOpenAnimRUID
+			gui.Enable = true
+			log("[RewardChest] Playing chest open animation")
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void PlayBurstEffect()
+		local effectEntity = self:ResolveEffectEntity()
+		if effectEntity == nil then
+			return
+		end
+		effectEntity:SetEnable(true)
+		effectEntity:SetVisible(true)
+		local gui = effectEntity.SpriteGUIRendererComponent
+		if gui ~= nil then
+			gui.Enable = false
+			gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime
+			gui.StartFrameIndex = 0
+			gui.PlayRate = 1
+			gui.ImageRUID = self.chestEffectAnimRUID
+			gui.Enable = true
+			log("[RewardChest] Playing burst effect")
+		end
+	end
+
+	@ExecSpace("Client")
+	method void ResetChest()
+		self:ClearChestTimers()
+		pcall(function()
+			self.isAnimating = false
+		end)
+		local touchComp = self.Entity.UITouchReceiveComponent
+		if touchComp ~= nil then
+			pcall(function()
+				touchComp.Enable = true
+			end)
+		end
+		local gui = self.Entity.SpriteGUIRendererComponent
+		if gui ~= nil then
+			local closedRUID = self.chestClosedAnimRUID
+			if closedRUID ~= nil and closedRUID ~= "" then
+				pcall(function() gui.Enable = false end)
+				pcall(function() gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime end)
+				pcall(function() gui.StartFrameIndex = 0 end)
+				pcall(function() gui.PlayRate = 0 end)
+				pcall(function() gui.ImageRUID = closedRUID end)
+				pcall(function() gui.Enable = true end)
+			end
+		end
+		local effectEntity = self:ResolveEffectEntity()
+		if effectEntity ~= nil then
+			pcall(function() effectEntity:SetEnable(false) end)
+			pcall(function() effectEntity:SetVisible(false) end)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void DisableChest()
+		self.Entity:SetEnable(false)
+		self.Entity:SetVisible(false)
 	end
 
 	@ExecSpace("ClientOnly")
 	method void SpawnItems()
+		    -- Hide burst effect
+		    local effectEntity = self:ResolveEffectEntity()
+		    if effectEntity ~= nil then
+		    	effectEntity:SetEnable(false)
+		    	effectEntity:SetVisible(false)
+		    end
+
 		    local gameSystemEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		    if gameSystemEntity == nil or gameSystemEntity.GameManager == nil then
 		        log_warning("[RewardChest] GameManager component not found.")
@@ -28,8 +223,7 @@ script RewardChest extends Component
 		    if gameSystemEntity.SoundManager ~= nil then
 		        gameSystemEntity.SoundManager:PlaySFX(4001)
 		    end
-		    self.Entity:SetEnable(false)
-		    self.Entity:SetVisible(false)
+		    self:DisableChest()
 	end
 
 end

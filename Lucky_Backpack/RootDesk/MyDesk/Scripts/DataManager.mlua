@@ -45,6 +45,8 @@ script DataManager extends Component
 	property string FailAnimRUID = ""
 	property string SuccessImgRUID = ""
 	property string FailImgRUID = ""
+	property number SuccessAnimDelay = 0.81
+	property number FailAnimDelay = 1.2
 
 	property table StartItemTable = {}
 
@@ -1045,6 +1047,15 @@ script DataManager extends Component
 				if val ~= "" then
 					self.FailImgRUID = val
 				end
+			end
+			
+			local saDelay = tonumber(self:GetCellString(ds, i, "success_anim_delay", ""))
+			if saDelay ~= nil and saDelay >= 0 then
+				self.SuccessAnimDelay = saDelay
+			end
+			local faDelay = tonumber(self:GetCellString(ds, i, "fail_anim_delay", ""))
+			if faDelay ~= nil and faDelay >= 0 then
+				self.FailAnimDelay = faDelay
 			end
 		end
 		
