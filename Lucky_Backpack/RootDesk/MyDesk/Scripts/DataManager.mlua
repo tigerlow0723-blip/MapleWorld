@@ -744,6 +744,10 @@ script DataManager extends Component
 				data.fixedMapType = ds:GetCell(i, "fixed_map_type") or "None"
 				data.choiceCount = tonumber(ds:GetCell(i, "choice_count")) or 1
 				data.bgRUID = ds:GetCell(i, "bgRUID") or ""
+				data.bgPosX = tonumber(ds:GetCell(i, "bgPosX")) or 0
+				data.bgPosY = tonumber(ds:GetCell(i, "bgPosY")) or 0
+				data.bgScaleX = tonumber(ds:GetCell(i, "bgScaleX")) or 1
+				data.bgScaleY = tonumber(ds:GetCell(i, "bgScaleY")) or 1
 				self.MapTable[stageId] = data
 				count = count + 1
 				log("[DEBUG-MAP] ID: " .. tostring(stageId) .. " Fixed: " .. tostring(data.isFixed) .. " Type: " .. data.fixedMapType)

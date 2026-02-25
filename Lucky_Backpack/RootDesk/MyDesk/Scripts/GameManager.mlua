@@ -905,7 +905,12 @@ script GameManager extends Component
 			if mapData ~= nil and mapData.bgRUID ~= "" and mapData.bgRUID ~= "NONE" then
 				if self.backgroundRenderer ~= nil then
 					self.backgroundRenderer:ChangeBackgroundByTemplateRUID(mapData.bgRUID)
-					log("[GameManager] Background changed for Stage " .. tostring(self.currentStage) .. " (RUID: " .. mapData.bgRUID .. ")")
+					local bgEntity = self.backgroundRenderer.Entity
+					if bgEntity ~= nil and bgEntity.TransformComponent ~= nil then
+						bgEntity.TransformComponent.Position = Vector3(mapData.bgPosX or 0, mapData.bgPosY or 0, 0)
+						bgEntity.TransformComponent.Scale = Vector3(mapData.bgScaleX or 1, mapData.bgScaleY or 1, 1)
+					end
+					log("[GameManager] Background changed for Stage " .. tostring(self.currentStage) .. " (RUID: " .. mapData.bgRUID .. " Pos: " .. tostring(mapData.bgPosX) .. "," .. tostring(mapData.bgPosY) .. " Scale: " .. tostring(mapData.bgScaleX) .. "," .. tostring(mapData.bgScaleY) .. ")")
 				end
 			end
 		end
