@@ -37,6 +37,34 @@ script GameManager extends Component
 
 	property any soundManager = nil
 
+	property string introGroupPath = "/ui/introgroup"
+
+	property Entity introGroupEntity = nil
+
+	property string introSkipButtonPath = "/ui/introgroup/YoutubePlayerGUI/BtnSkipIntro"
+
+	property Entity introSkipButtonEntity = nil
+
+	property boolean introSkipButtonBound = false
+
+	property string introVideoPlayerPath = "/ui/introgroup/YoutubePlayerGUI"
+
+	property Entity introVideoPlayerEntity = nil
+
+	property number introDuration = 9.0
+
+	property number introLoadBuffer = 0.0
+
+	property number introStartDelay = 0.0
+
+	property boolean introAutoCloseEnabled = true
+
+	property boolean playIntroBeforeMainMenu = true
+
+	property integer introTimerId = 0
+
+	property integer introStartTimerId = 0
+
 	property table pendingRewards = {}
 
 	property string gamePhase = "None"
@@ -161,9 +189,16 @@ script GameManager extends Component
 		end
 		
 		local chestEntity = _EntityService:GetEntityByPath("/maps/map01/RewardChest")
+		if chestEntity == nil then
+			chestEntity = _EntityService:GetEntityByPath("/ui/UIGroup/RewardChest")
+		end
+		if chestEntity == nil then
+			chestEntity = _EntityService:GetEntityByPath("/ui/UIGroup/RewardPanel/RewardChest")
+		end
 		if chestEntity ~= nil then
 			self.rewardChestEntity = chestEntity
 			self.rewardChestEntity:SetEnable(false)
+			self.rewardChestEntity:SetVisible(false)
 		end
 		self:ResolveRewardUI()
 		
@@ -183,17 +218,11 @@ script GameManager extends Component
 		_TimerService:SetTimerOnce(initBgFunc, 0.1)
 		
 		local initFunc = function()
-			log("[GameManager] Initialization complete. Showing Main Menu.")
-			self.gameState = "Title"
-			if self.uiMain ~= nil and self.uiMain.ShowMainMenu ~= nil then
-				self.uiMain:ShowMainMenu()
-			end
-			if self.soundManager ~= nil then
-				self.soundManager:PlayBGM(1001)
-			end
+			log("[GameManager] Initialization complete. Preparing title flow.")
+			self:ShowIntroThenMainMenu()
 		end
-		_TimerService:SetTimerOnce(initFunc, 1.0)
-		log("[GameManager] Init complete. 1 sec timer set to show Main Menu.")
+		initFunc()
+		log("[GameManager] Init complete. Intro/title flow started immediately.")
 	end
 
 	method void ResolveRewardUI()
@@ -212,6 +241,281 @@ script GameManager extends Component
 		local rewardPanel = _EntityService:GetEntityByPath(self.rewardPanelPath)
 		if rewardPanel ~= nil then
 			self.rewardUI = rewardPanel.RewardUI
+		end
+	end
+
+	method Entity ResolveIntroGroup()
+		if self.introGroupEntity ~= nil then
+			return self.introGroupEntity
+		end
+		
+		if self.introGroupPath ~= nil and self.introGroupPath ~= "" then
+			self.introGroupEntity = _EntityService:GetEntityByPath(self.introGroupPath)
+		end
+		if self.introGroupEntity == nil then
+			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/introgroup")
+		end
+		if self.introGroupEntity == nil then
+			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/UIGroup/IntroGroup")
+		end
+		if self.introGroupEntity == nil then
+			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/maingroup/IntroGroup")
+		end
+		if self.introGroupEntity == nil then
+			local uiRoot = _EntityService:GetEntityByPath("/ui")
+			if uiRoot ~= nil then
+				self.introGroupEntity = uiRoot:GetChildByName("IntroGroup", true)
+				if self.introGroupEntity == nil then
+					self.introGroupEntity = uiRoot:GetChildByName("introgroup", true)
+				end
+			end
+		end
+		
+		return self.introGroupEntity
+	end
+
+	method Entity ResolveIntroSkipButton()
+		if self.introSkipButtonEntity ~= nil then
+			return self.introSkipButtonEntity
+		end
+		
+		if self.introSkipButtonPath ~= nil and self.introSkipButtonPath ~= "" then
+			self.introSkipButtonEntity = _EntityService:GetEntityByPath(self.introSkipButtonPath)
+		end
+		if self.introSkipButtonEntity == nil then
+			local introEntity = self:ResolveIntroGroup()
+			if introEntity ~= nil then
+				self.introSkipButtonEntity = introEntity:GetChildByName("BtnSkipIntro", true)
+				if self.introSkipButtonEntity == nil then
+					self.introSkipButtonEntity = introEntity:GetChildByName("Skip", true)
+				end
+				if self.introSkipButtonEntity == nil then
+					self.introSkipButtonEntity = introEntity:GetChildByName("skip", true)
+				end
+				if self.introSkipButtonEntity == nil then
+					self.introSkipButtonEntity = introEntity:GetChildByName("Exit", true)
+				end
+				if self.introSkipButtonEntity == nil then
+					self.introSkipButtonEntity = introEntity:GetChildByName("Close", true)
+				end
+			end
+		end
+		
+		return self.introSkipButtonEntity
+	end
+
+	method Entity ResolveIntroVideoPlayerEntity()
+		if self.introVideoPlayerEntity ~= nil then
+			return self.introVideoPlayerEntity
+		end
+		
+		if self.introVideoPlayerPath ~= nil and self.introVideoPlayerPath ~= "" then
+			self.introVideoPlayerEntity = _EntityService:GetEntityByPath(self.introVideoPlayerPath)
+		end
+		if self.introVideoPlayerEntity == nil then
+			local introEntity = self:ResolveIntroGroup()
+			if introEntity ~= nil then
+				self.introVideoPlayerEntity = introEntity:GetChildByName("YoutubePlayerGUI", true)
+				if self.introVideoPlayerEntity == nil then
+					self.introVideoPlayerEntity = introEntity:GetChildByName("YouTubePlayerGUI", true)
+				end
+				if self.introVideoPlayerEntity == nil then
+					self.introVideoPlayerEntity = introEntity:GetChildByName("VideoPlayer", true)
+				end
+			end
+		end
+		
+		return self.introVideoPlayerEntity
+	end
+
+	method void PlayIntroVideo()
+		if self:IsClient() ~= true then
+			return
+		end
+		
+		local videoEntity = self:ResolveIntroVideoPlayerEntity()
+		if videoEntity == nil then
+			return
+		end
+		
+		local videoComp = videoEntity.YoutubePlayerGUIComponent
+		if videoComp ~= nil and videoComp.Play ~= nil then
+			pcall(function()
+				videoComp:Play()
+			end)
+		end
+	end
+
+	method void StopIntroVideo()
+		if self:IsClient() ~= true then
+			return
+		end
+		
+		local videoEntity = self:ResolveIntroVideoPlayerEntity()
+		if videoEntity == nil then
+			return
+		end
+		
+		local videoComp = videoEntity.YoutubePlayerGUIComponent
+		if videoComp ~= nil then
+			if videoComp.Pause ~= nil then
+				pcall(function()
+					videoComp:Pause()
+				end)
+			end
+		end
+	end
+
+	method void BindIntroSkipButton()
+		if self.introSkipButtonBound == true then
+			return
+		end
+		
+		local skipButton = self:ResolveIntroSkipButton()
+		if skipButton == nil then
+			return
+		end
+		
+		skipButton:ConnectEvent("ButtonClickEvent", function()
+			self:EndIntroAndShowMainMenu("skip_button")
+		end)
+		skipButton:ConnectEvent(UITouchDownEvent, function()
+			self:EndIntroAndShowMainMenu("skip_touch")
+		end)
+		self.introSkipButtonBound = true
+	end
+
+	method void ShowMainMenuTitle()
+		if self.gameState == "Title" then
+			return
+		end
+		self.gameState = "Title"
+		if self.uiMain ~= nil and self.uiMain.ShowMainMenu ~= nil then
+			self.uiMain:ShowMainMenu()
+		end
+		if self.soundManager ~= nil then
+			self.soundManager:PlayBGM(1001)
+		end
+	end
+
+	method void EndIntroAndShowMainMenu(string source)
+		if self:IsClient() ~= true then
+			return
+		end
+		
+		if self.introStartTimerId ~= nil and self.introStartTimerId > 0 then
+			_TimerService:ClearTimer(self.introStartTimerId)
+			self.introStartTimerId = 0
+		end
+		
+		if self.introTimerId ~= nil and self.introTimerId > 0 then
+			_TimerService:ClearTimer(self.introTimerId)
+			self.introTimerId = 0
+		end
+		
+		local introEntity = self:ResolveIntroGroup()
+		if introEntity ~= nil and isvalid(introEntity) then
+			introEntity:SetEnable(false)
+			introEntity:SetVisible(false)
+		end
+		
+		self:ShowMainMenuTitle()
+		_TimerService:SetTimerOnce(function()
+			self:StopIntroVideo()
+		end, 0.01)
+	end
+
+	method void ShowIntroThenMainMenu()
+		if self:IsClient() ~= true then
+			return
+		end
+		
+		local shouldPlayIntro = self.playIntroBeforeMainMenu == true
+		local introEntity = self:ResolveIntroGroup()
+		
+		if shouldPlayIntro ~= true or introEntity == nil then
+			self:EndIntroAndShowMainMenu("skip_intro_config")
+			return
+		end
+		
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup ~= nil then
+			uiGroup:SetEnable(false)
+			uiGroup:SetVisible(true)
+		end
+		
+		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+		if mainGroup ~= nil then
+			mainGroup:SetEnable(true)
+			mainGroup:SetVisible(true)
+		end
+		
+		if self.uiMain ~= nil then
+			if self.uiMain.uiMainMenu ~= nil then
+				self.uiMain.uiMainMenu.Enable = false
+			end
+			if self.uiMain.uiTutorial ~= nil then
+				self.uiMain.uiTutorial.Enable = false
+			end
+		end
+		
+		introEntity:SetEnable(true)
+		introEntity:SetVisible(true)
+		self:BindIntroSkipButton()
+		
+		if self.introStartTimerId ~= nil and self.introStartTimerId > 0 then
+			_TimerService:ClearTimer(self.introStartTimerId)
+			self.introStartTimerId = 0
+		end
+		if self.introTimerId ~= nil and self.introTimerId > 0 then
+			_TimerService:ClearTimer(self.introTimerId)
+			self.introTimerId = 0
+		end
+		
+		local startPlayback = function()
+			self.introStartTimerId = 0
+			self:PlayIntroVideo()
+			
+			if self.introAutoCloseEnabled ~= true then
+				return
+			end
+			
+			local delay = tonumber(self.introDuration) or 0
+			if delay < 0 then
+				delay = 0
+			end
+			
+			local loadBuffer = tonumber(self.introLoadBuffer) or 0
+			if loadBuffer < 0 then
+				loadBuffer = 0
+			end
+			delay += loadBuffer
+			
+			if self.introTimerId ~= nil and self.introTimerId > 0 then
+				_TimerService:ClearTimer(self.introTimerId)
+				self.introTimerId = 0
+			end
+			self.introTimerId = _TimerService:SetTimerOnce(function()
+				self.introTimerId = 0
+				self:EndIntroAndShowMainMenu("timer_complete")
+			end, delay)
+		end
+		
+		local startDelay = tonumber(self.introStartDelay) or 0
+		if startDelay < 0 then
+			startDelay = 0
+		end
+		
+		if startDelay <= 0 then
+			startPlayback()
+		else
+			self.introStartTimerId = _TimerService:SetTimerOnce(function()
+				if self.gameState == "Title" then
+					self.introStartTimerId = 0
+					return
+				end
+				startPlayback()
+			end, startDelay)
 		end
 	end
 
@@ -244,11 +548,6 @@ script GameManager extends Component
 		else
 			log_warning("[GameManager] RewardUI component not found.")
 			self:DistributePendingRewardsWithoutPanel()
-		end
-		
-		if self.rewardChestEntity ~= nil then
-			self.rewardChestEntity:SetEnable(false)
-			self.rewardChestEntity:SetVisible(false)
 		end
 		
 		if self.uiMain ~= nil then
@@ -309,7 +608,9 @@ script GameManager extends Component
 		self.gameState = "Playing"
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
-		self.currentStage = 1
+		self.isStageTransitioning = false
+		self.pendingStageAdvance = false
+		self.currentStage = 10
 		self.hasStagePlayerAnchor = false
 		
 		--
@@ -349,9 +650,27 @@ script GameManager extends Component
 			log("[GameManager] No StartItemTable. Fallback to default weapon (1001).")
 		end
 		self.pendingRewards = {}
+		local introEntity = self:ResolveIntroGroup()
+		if introEntity ~= nil then
+			introEntity:SetEnable(false)
+			introEntity:SetVisible(false)
+		end
+		self:StopIntroVideo()
+		if self.introTimerId ~= nil and self.introTimerId > 0 then
+			_TimerService:ClearTimer(self.introTimerId)
+			self.introTimerId = 0
+		end
 		if self.itemDisplayArea ~= nil and self.itemDisplayArea.Entity ~= nil then
 			self.itemDisplayArea:ClearAllItems()
 			self.itemDisplayArea.Entity:SetEnable(false)
+		end
+		if self.rewardChestEntity ~= nil then
+			local chestComp = self.rewardChestEntity.RewardChest
+			if chestComp ~= nil and chestComp.ResetChest ~= nil then
+				chestComp:ResetChest()
+			end
+			self.rewardChestEntity:SetEnable(false)
+			self.rewardChestEntity:SetVisible(false)
 		end
 		
 		self.playerManager.isInitializingItems = false
@@ -1042,12 +1361,23 @@ script GameManager extends Component
 		local oreCount = self.miniGameManager:GetOreCount()
 		if oreCount <= 0 then
 			log("[GameManager] No golden ore available.")
-			_UIToast:ShowMessage("No golden ore available.")
+			
+			local introDuration = (self.stageIntroPlayerWalkDuration or 1) + (self.stageEntryCinematicDelay or 0.05)
+			local uiDelay = introDuration + 1.0
+			
+			-- Wait for player walk animation to finish + 1 second, then show the UI and Toast
+			_TimerService:SetTimerOnce(function()
+				_UIToast:ShowMessage("No golden ore available.")
+				if self.uiMain ~= nil and self.uiMain.ShowNoOreWarning ~= nil then
+					self.uiMain:ShowNoOreWarning()
+				end
+			end, uiDelay)
+
+			-- Proceed to next stage 2 seconds after the UI appears
 			local nextFunc = function()
 				self:CloseShop()
 			end
-			local introDuration = (self.stageIntroPlayerWalkDuration or 1) + (self.stageEntryCinematicDelay or 0.05)
-			_TimerService:SetTimerOnce(nextFunc, introDuration + 1.5)
+			_TimerService:SetTimerOnce(nextFunc, uiDelay + 2.0)
 		else
 			self.gamePhase = "MiniGame"
 			self.miniGameManager:StartMiniGamePhase()
@@ -1091,12 +1421,38 @@ script GameManager extends Component
 			end
 		end
 		
-		if self.rewardChestEntity ~= nil then
+		if rewardCount > 0 and self.rewardChestEntity == nil then
+			local chestEntity = _EntityService:GetEntityByPath("/maps/map01/RewardChest")
+			if chestEntity == nil then
+				chestEntity = _EntityService:GetEntityByPath("/ui/UIGroup/RewardChest")
+			end
+			if chestEntity == nil then
+				chestEntity = _EntityService:GetEntityByPath("/ui/UIGroup/RewardPanel/RewardChest")
+			end
+			if chestEntity ~= nil then
+				self.rewardChestEntity = chestEntity
+			end
+		end
+		
+		if rewardCount > 0 and self.rewardChestEntity ~= nil then
 			self.rewardChestEntity:SetEnable(true)
 			self.rewardChestEntity:SetVisible(true)
-			log("[GameManager] Reward chest appeared.")
-		else
+			local chestComp = self.rewardChestEntity.RewardChest
+			if chestComp ~= nil and chestComp.ResetChest ~= nil then
+				chestComp:ResetChest()
+			end
+			log("[GameManager] Reward chest appeared and reset to closed state.")
+		elseif rewardCount > 0 then
 			self:OpenRewardChest()
+		else
+			if self.rewardChestEntity ~= nil then
+				local chestComp = self.rewardChestEntity.RewardChest
+				if chestComp ~= nil and chestComp.ResetChest ~= nil then
+					chestComp:ResetChest()
+				end
+				self.rewardChestEntity:SetEnable(false)
+				self.rewardChestEntity:SetVisible(false)
+			end
 		end
 		
 		log("[GameManager] Please sort inventory and check chest rewards.")

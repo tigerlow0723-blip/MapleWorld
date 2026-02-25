@@ -21,7 +21,7 @@ script MonsterManager extends Component
 
 	property number spawnEntranceDuration = 1
 
-	property integer spawnEntranceSteps = 25
+	property integer spawnEntranceSteps = 95
 
 	property Entity targetIndicator = nil
 
@@ -42,6 +42,10 @@ script MonsterManager extends Component
 	property number lastDotDmg = 0
 
 	property integer lastDotTurn = 0
+
+	property number lastPatternDuration = 1.5
+
+	property number bossSkillImpactDelay = 1.75
 
 	property boolean lastActionValid = false
 
@@ -561,6 +565,7 @@ script MonsterManager extends Component
 		self.lastStatus = pattern.effectType  -- 'hp_dmg', 'poison', 'shield', 'heal'
 		self.lastDamage = pattern.effectValue -- percentage or value
 		self.lastDotTurn = pattern.turn -- turns for poison, or 1 for shield
+		self.lastPatternDuration = pattern.duration or 1.5
 		
 		log("[MonsterManager] 보스?�킬 발동: " .. pattern.name .. " [?�?? " .. self.lastStatus .. "] (밸류:" .. tostring(self.lastDamage) .. ")")
 		
@@ -574,11 +579,6 @@ script MonsterManager extends Component
 			log("[MonsterManager] 보스가 체력??" .. tostring(healAmount) .. " ?복?습?다! (?재 HP: " .. tostring(boss.currentHP) .. ")")
 			
 			-- Removed NameTag HP Update
-		end
-		
-		-- Update Boss Skill UI highlight
-		if self.uiMain ~= nil and self.uiMain.UpdateBossSkillUI ~= nil then
-			self.uiMain:UpdateBossSkillUI(self.lastStatus, pattern.duration)
 		end
 		
 		local animTargetId = boss.animEntityId
