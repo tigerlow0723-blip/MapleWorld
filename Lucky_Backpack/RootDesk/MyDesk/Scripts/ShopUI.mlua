@@ -14,6 +14,11 @@ script ShopUI extends Component
 	property string itemListPath = "/ui/UIGroup/ShopPanel/ItemList"
 
 	property string itemCardTemplatePath = "/ui/UIGroup/ShopPanel/ItemCardTemplate"
+	property string shopNPCPath = "/ui/UIGroup/ShopPanel/ShopNPC"
+	property string shopNPCRarePath = "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Rare"
+	property string shopNPCEpicPath = "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Epic"
+	property string shopNPCUniquePath = "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Unique"
+	property string shopNPCLegendaryPath = "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Legendary"
 	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
 	property number tooltipHoverDelay = 1.0
 
@@ -52,6 +57,11 @@ script ShopUI extends Component
 	property any itemListEntity = nil
 
 	property any itemCardTemplateEntity = nil
+	property any shopNPCEntity = nil
+	property any shopNPCRareEntity = nil
+	property any shopNPCEpicEntity = nil
+	property any shopNPCUniqueEntity = nil
+	property any shopNPCLegendaryEntity = nil
 	property any tooltipUI = nil
 	property integer tooltipHoverTimerId = 0
 	property integer tooltipHoverCardIndex = 0
@@ -102,6 +112,11 @@ script ShopUI extends Component
 		    self.playerGoldText = _EntityService:GetEntityByPath(self.playerGoldTextPath)
 		    self.sellAreaEntity = _EntityService:GetEntityByPath(self.sellAreaPath)
 		    self.shopTierTextEntity = _EntityService:GetEntityByPath(self.shopTierTextPath)
+		    self.shopNPCEntity = _EntityService:GetEntityByPath(self.shopNPCPath)
+		    self.shopNPCRareEntity = _EntityService:GetEntityByPath(self.shopNPCRarePath)
+		    self.shopNPCEpicEntity = _EntityService:GetEntityByPath(self.shopNPCEpicPath)
+		    self.shopNPCUniqueEntity = _EntityService:GetEntityByPath(self.shopNPCUniquePath)
+		    self.shopNPCLegendaryEntity = _EntityService:GetEntityByPath(self.shopNPCLegendaryPath)
 		
 		    self.itemListEntity = _EntityService:GetEntityByPath(self.itemListPath)
 		    self.itemCardTemplateEntity = _EntityService:GetEntityByPath(self.itemCardTemplatePath)
@@ -112,6 +127,24 @@ script ShopUI extends Component
 		    if self.itemCardTemplateEntity ~= nil then
 		        self.itemCardTemplateEntity:SetEnable(false)
 		        self.itemCardTemplateEntity:SetVisible(false)
+		    end
+		
+		    if self.shopNPCEntity == nil and self.Entity ~= nil then
+		        self.shopNPCEntity = self.Entity:GetChildByName("ShopNPC", true)
+		    end
+		    if self.shopNPCEntity ~= nil then
+		        if self.shopNPCRareEntity == nil then
+		            self.shopNPCRareEntity = self.shopNPCEntity:GetChildByName("NPC_Rare", true)
+		        end
+		        if self.shopNPCEpicEntity == nil then
+		            self.shopNPCEpicEntity = self.shopNPCEntity:GetChildByName("NPC_Epic", true)
+		        end
+		        if self.shopNPCUniqueEntity == nil then
+		            self.shopNPCUniqueEntity = self.shopNPCEntity:GetChildByName("NPC_Unique", true)
+		        end
+		        if self.shopNPCLegendaryEntity == nil then
+		            self.shopNPCLegendaryEntity = self.shopNPCEntity:GetChildByName("NPC_Legendary", true)
+		        end
 		    end
 	end
 
@@ -364,6 +397,58 @@ script ShopUI extends Component
 		        end
 		        self.shopTierTextEntity.TextComponent.Text = displayName
 		        self.shopTierTextEntity.TextComponent.FontColor = fontColor
+		    end
+		
+		    self:UpdateShopNPCImage()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveShopNPCTierEntity()
+		    if self.currentShopTier == "Rare" then
+		        return self.shopNPCRareEntity
+		    elseif self.currentShopTier == "Epic" then
+		        return self.shopNPCEpicEntity
+		    elseif self.currentShopTier == "Unique" then
+		        return self.shopNPCUniqueEntity
+		    elseif self.currentShopTier == "Legendary" then
+		        return self.shopNPCLegendaryEntity
+		    end
+		    return self.shopNPCRareEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateShopNPCImage()
+		    if self.shopNPCEntity == nil
+		        or self.shopNPCRareEntity == nil
+		        or self.shopNPCEpicEntity == nil
+		        or self.shopNPCUniqueEntity == nil
+		        or self.shopNPCLegendaryEntity == nil then
+		        self:ResolveUIReferences()
+		    end
+		    if self.shopNPCEntity == nil then
+		        return
+		    end
+		    self.shopNPCEntity:SetEnable(true)
+		    self.shopNPCEntity:SetVisible(true)
+		
+		    local targetEntity = self:ResolveShopNPCTierEntity()
+		    if targetEntity ~= nil then
+		        targetEntity:SetEnable(true)
+		        targetEntity:SetVisible(true)
+		    end
+		
+		    local allTiers = {
+		        self.shopNPCRareEntity,
+		        self.shopNPCEpicEntity,
+		        self.shopNPCUniqueEntity,
+		        self.shopNPCLegendaryEntity
+		    }
+		    for i = 1, #allTiers do
+		        local npcEntity = allTiers[i]
+		        if npcEntity ~= nil and npcEntity ~= targetEntity then
+		            npcEntity:SetEnable(false)
+		            npcEntity:SetVisible(false)
+		        end
 		    end
 	end
 
