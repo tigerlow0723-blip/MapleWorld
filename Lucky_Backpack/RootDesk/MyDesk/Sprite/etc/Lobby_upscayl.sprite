@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://1b4b2131fc5149a1b85839c5555a351e",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/1b4b2131fc5149a1b85839c5555a351e/639075877859369441",
+      "upload_hash": "C87C714CD641A41CE04224EDD332644B6E92BBA7050E5CF997D7A55F41ECAAFC",
+      "name": "Lobby_upscayl",
+      "resource_guid": "1b4b2131fc5149a1b85839c5555a351e",
+      "resource_version": "699e6fc9b314f0c263cc234a"
+    }
+  }
+}

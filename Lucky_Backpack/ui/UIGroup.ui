@@ -11659,7 +11659,7 @@
           "name": "TooltipPanel",
           "path": "/ui/UIGroup/TooltipPanel",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 20,
@@ -11823,8 +11823,9 @@
             {
               "@type": "MOD.Core.TextComponent",
               "Alignment": 3,
-              "AllowAutomaticTranslation": true,
+              "AllowAutomaticTranslation": false,
               "Bold": true,
+              "Font": 1,
               "FontSize": 30,
               "MaxSize": 40,
               "MinSize": 10,
@@ -12574,6 +12575,7 @@
             {
               "@type": "MOD.Core.TextComponent",
               "Alignment": 3,
+              "Font": 1,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -12665,6 +12667,7 @@
               "@type": "MOD.Core.TextComponent",
               "Alignment": 5,
               "Bold": true,
+              "Font": 1,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0

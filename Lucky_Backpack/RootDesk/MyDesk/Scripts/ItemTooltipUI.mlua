@@ -437,7 +437,7 @@ script ItemTooltipUI extends Component
 		elseif gradeLower == "legendary" then
 			return "레전더리"
 		elseif gradeLower == "none" or gradeLower == "" then
-			return "없음"
+			return "기본"
 		end
 		return tostring(grade or "")
 	end
@@ -497,12 +497,25 @@ script ItemTooltipUI extends Component
 				lineList[#lineList + 1] = text
 			end
 		end
-		
 		local itemType = string.lower(tostring(itemData.type or ""))
 		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
 		local descriptionText = tostring(itemData.text or "")
 		if descriptionText == "" then
 			descriptionText = tostring(itemData.desc or "")
+		end
+		local potionSynergyHpPercent = 0
+		if (itemType == "potion" or itemType == "consumable") and itemComp ~= nil then
+			potionSynergyHpPercent = tonumber(itemComp.tempArmorPotionHpPercent) or 0
+		end
+		
+		local hp = tonumber(itemData.hp) or 0
+		if itemType == "armor" and hp ~= 0 then
+			appendLine("최대 HP: " .. self:FormatSignedNumber(hp))
+		end
+		
+		local hpPercent = tonumber(itemData.hpPercent) or 0
+		if itemType == "armor" and hpPercent ~= 0 then
+			appendLine("최대 HP: " .. self:FormatSignedPercent(hpPercent))
 		end
 		
 		local atk = tonumber(itemData.atk) or 0
@@ -529,10 +542,62 @@ script ItemTooltipUI extends Component
 			end
 		end
 		if mpCost ~= 0 then
-			appendLine("공격 시 소모 MP: " .. tostring(mpCost))
+			appendLine("<color=#5260f8>사용 시 소모 MP: " .. tostring(mpCost) .. "</color>")
+		end
+		
+		if itemType == "weapon" and itemComp ~= nil then
+			local synergyLineList = {}
+			local weaponSynergyBonus = self:GetWeaponAdjacencySynergyBonus(itemId, screenPos)
+			synergyLineList[#synergyLineList + 1] = "<color=#A855F7>시너지 추가 공격력: +" .. tostring(weaponSynergyBonus) .. "</color>"
+			
+			local armorAtkPercent = tonumber(itemComp.tempArmorAtkPercent) or 0
+			local armorCritRate = tonumber(itemComp.tempArmorCritRate) or 0
+			local armorCritDmg = tonumber(itemComp.tempArmorCritDmg) or 0
+			local armorWeaponCost = tonumber(itemComp.tempArmorWeaponCost) or 0
+			
+			if armorAtkPercent ~= 0 then
+				synergyLineList[#synergyLineList + 1] = "<color=#A855F7>방어구 시너지: 공격력 " .. self:FormatSignedPercent(armorAtkPercent) .. "</color>"
+			end
+			if armorCritRate ~= 0 then
+				synergyLineList[#synergyLineList + 1] = "<color=#A855F7>방어구 시너지: 치명타 확률 " .. self:FormatSignedPercent(armorCritRate) .. "</color>"
+			end
+			if armorCritDmg ~= 0 then
+				synergyLineList[#synergyLineList + 1] = "<color=#A855F7>방어구 시너지: 치명타 피해 " .. self:FormatSignedPercent(armorCritDmg) .. "</color>"
+			end
+			if armorWeaponCost ~= 0 then
+				synergyLineList[#synergyLineList + 1] = "<color=#5260f8>방어구 시너지: 사용 시 소모 MP " .. self:FormatSignedNumber(armorWeaponCost) .. "</color>"
+			end
+			
+			for i = 1, #synergyLineList do
+				appendLine(synergyLineList[i])
+			end
+		end
+		
+		if (itemType == "potion" or itemType == "consumable") and potionSynergyHpPercent ~= 0 then
+			appendLine("<color=#A855F7>방어구 시너지: 체력 회복량 " .. self:FormatSignedPercent(potionSynergyHpPercent) .. "</color>")
+		end
+		
+		if itemType == "armor" then
+			local armorPotionHpRecovery = 0
+			if itemComp ~= nil then
+				armorPotionHpRecovery = tonumber(itemComp.armorHpRecoveryPercent) or 0
+			end
+			if armorPotionHpRecovery == 0 then
+				local minHpRecovery = tonumber(itemData.minHpRecovery) or 0
+				local maxHpRecovery = tonumber(itemData.maxHpRecovery) or 0
+				if minHpRecovery == maxHpRecovery then
+					armorPotionHpRecovery = minHpRecovery
+				end
+			end
+			if armorPotionHpRecovery ~= 0 then
+				appendLine("<color=#A855F7>패시브: 포션 체력 회복량 " .. self:FormatSignedPercent(armorPotionHpRecovery) .. "</color>")
+			end
 		end
 		
 		if descriptionText ~= "" then
+			if #lineList > 0 then
+				lineList[#lineList + 1] = ""
+			end
 			appendLine(descriptionText)
 		end
 		
@@ -714,7 +779,7 @@ script ItemTooltipUI extends Component
 		if currentText ~= "" then
 			currentText = currentText .. "\n\n"
 		end
-		currentText = currentText .. "<color=#FFD54F>무기 시너지: +" .. tostring(bonusValue) .. " (상/하/좌/우)</color>"
+		currentText = currentText .. "<color=#A855F7>무기 시너지: +" .. tostring(bonusValue) .. " (상/하/좌/우)</color>"
 		self.statsText.TextComponent.IsRichText = true
 		self.statsText.TextComponent.Text = currentText
 	end
