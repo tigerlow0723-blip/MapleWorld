@@ -147,15 +147,10 @@ script DataManager extends Component
 			headers["critDmg"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
-			headers["min_critRate"] = true
-			headers["max_critRate"] = true
-			headers["min_critDmg"] = true
-			headers["max_critDmg"] = true
 			headers["spawn_Group"] = true
 			headers["spawn_rate"] = true
 			headers["imageRUID"] = true
 			headers["desc"] = true
-			headers["text"] = true
 			headers["next_upgrade_id"] = true
 			return headers
 		end
@@ -169,14 +164,9 @@ script DataManager extends Component
 			headers["count"] = true
 			headers["shapeMask"] = true
 			headers["hp"] = true
-			headers["atk"] = true
-			headers["def"] = true
 			headers["atkPercent"] = true
-			headers["accPercent"] = true
 			headers["critRate"] = true
 			headers["critDmg"] = true
-			headers["min_atk"] = true
-			headers["max_atk"] = true
 			headers["min_critRate"] = true
 			headers["max_critRate"] = true
 			headers["min_critDmg"] = true
@@ -199,9 +189,7 @@ script DataManager extends Component
 			headers["id"] = true
 			headers["type"] = true
 			headers["name"] = true
-			headers["grade"] = true
 			headers["cost"] = true
-			headers["count"] = true
 			headers["price"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true

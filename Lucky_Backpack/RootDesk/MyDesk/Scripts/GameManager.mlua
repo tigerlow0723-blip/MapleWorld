@@ -426,18 +426,18 @@ script GameManager extends Component
 			end
 			
 			itemComp.heldStages = math.max(0, tonumber(itemComp.heldStages) or 0) + 1
-			if tonumber(itemComp.itemId) == 2011 and itemComp.heldStages >= 2 then
+			if tonumber(itemComp.itemId) == 2010 and itemComp.heldStages >= 2 then
 				local row = tonumber(itemComp.gridRow) or 0
 				local col = tonumber(itemComp.gridCol) or 0
 				
-				itemComp.itemId = 2012
-				itemComp:InitFromTable(2012)
+				itemComp.itemId = 2011
+				itemComp:InitFromTable(2011)
 				itemComp:SetGridPosition(row, col)
 				itemComp.heldStages = 0
 				
 				local placedInfo = inventoryComp:GetPlacedItemInfoAt(0, row, col)
 				if placedInfo ~= nil then
-					placedInfo.itemId = 2012
+					placedInfo.itemId = 2011
 				end
 				
 				local shapeCells = itemComp:GetShapeCells()
@@ -448,7 +448,7 @@ script GameManager extends Component
 							local absRow = row + (tonumber(cell.row) or 0)
 							local absCol = col + (tonumber(cell.col) or 0)
 							if absRow >= 1 and absRow <= inventoryComp.maxHeight and absCol >= 1 and absCol <= inventoryComp.maxWidth then
-								inventoryComp.grid[absRow][absCol] = 2012
+								inventoryComp.grid[absRow][absCol] = 2011
 							end
 						end
 					end
@@ -479,8 +479,6 @@ script GameManager extends Component
 			self:GameClear()
 			return
 		end
-		
-		self:UpdateArmorHeldStageTransforms()
 		
 		log("========================================")
 		log("[GameManager] Proceeding to Stage " .. tostring(self.currentStage))
@@ -1067,6 +1065,7 @@ script GameManager extends Component
 			return
 		end
 
+		self:UpdateArmorHeldStageTransforms()
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
 		self.pendingRewards = {}

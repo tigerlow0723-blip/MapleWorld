@@ -406,31 +406,7 @@ script Item extends Component
 		    if weaponDataSet ~= nil then
 		        local row = self:FindItemRowById(weaponDataSet, id)
 		        if row > 0 then
-		            local okGrade, gradeValue = pcall(function()
-		                return weaponDataSet:GetCell(row, 21)
-		            end)
-		            if okGrade == false or gradeValue == nil or gradeValue == "" then
-		                okGrade, gradeValue = pcall(function()
-		                    return weaponDataSet:GetCell(row, "grade")
-		                end)
-		            end
-		            if okGrade and gradeValue ~= nil and gradeValue ~= "" then
-		                self.grade = tostring(gradeValue)
-		            end
-		
-		            local okNext, nextUpgradeValue = pcall(function()
-		                return weaponDataSet:GetCell(row, 22)
-		            end)
-		            if okNext == false or nextUpgradeValue == nil or nextUpgradeValue == "" then
-		                okNext, nextUpgradeValue = pcall(function()
-		                    return weaponDataSet:GetCell(row, "next_upgrade_id")
-		                end)
-		            end
-		            if okNext and nextUpgradeValue ~= nil and nextUpgradeValue ~= "" then
-		                self.next_upgrade_id = tonumber(nextUpgradeValue) or 0
-		            end
-		
-		            -- Prefer named columns for the unified item schema.
+		            -- Use only named columns so CSV column reordering is safe.
 		            local okGradeByName, gradeByName = pcall(function()
 		                return weaponDataSet:GetCell(row, "grade")
 		            end)

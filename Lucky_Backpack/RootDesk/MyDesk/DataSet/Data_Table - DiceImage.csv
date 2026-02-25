@@ -1,4 +1,4 @@
-﻿dice_num,dice1_ruid,dice2_ruid,dice1_roll_ruid,dice2_roll_ruid,roll_delay,result_delay,success_fail_delay,success_anim_ruid,fail_anim_ruid,success_img_ruid,fail_img_ruid
+dice_num,dice1_ruid,dice2_ruid,dice1_roll_ruid,dice2_roll_ruid,roll_delay,result_delay,success_fail_delay,success_anim_ruid,fail_anim_ruid,success_img_ruid,fail_img_ruid
 1,4d07342af4d54fcea1e77590dcfeb399,4d07342af4d54fcea1e77590dcfeb399,a1435b7942ba4293aa5d8f158b0f3862,a1435b7942ba4293aa5d8f158b0f3862,1.98,1.2,1.2,0.81,1.2,1,1
 2,11b0626327484cde94d5aa7aa76b83e3,11b0626327484cde94d5aa7aa76b83e3,888d015cbf2f4b13a4052b3258bd6aeb,888d015cbf2f4b13a4052b3258bd6aeb,3,1.2,1.2,0.81,1.2,1,1
 3,89dc9719a82444b08177c4d8ffc8bc82,89dc9719a82444b08177c4d8ffc8bc82,9d70f5c455fe451390e27367fc3692f2,9d70f5c455fe451390e27367fc3692f2,3,1.2,1.2,0.81,1.2,1,1
