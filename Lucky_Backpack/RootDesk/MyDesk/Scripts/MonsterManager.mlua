@@ -76,20 +76,53 @@ script MonsterManager extends Component
 			return
 		end
 		
-		local poolMonsters = dataMgr:GetMonstersByPool(stageId)
-		if #poolMonsters == 0 then
-			log_error("[MonsterManager] " .. tostring(stageId))
+		local spawnTemplates = {}
+		local exactSpawns = spawnInfo.exactSpawns or ""
+		
+		if exactSpawns ~= "" then
+			local parts = _UtilLogic:Split(exactSpawns, "/")
+			for p = 1, #parts do
+				local part = parts[p]
+				local subParts = _UtilLogic:Split(part, ":")
+				if #subParts >= 2 then
+					local mId = subParts[1]
+					local mCount = tonumber(subParts[2]) or 1
+					local mData = dataMgr:GetMonsterData(mId)
+					if mData ~= nil then
+						for c = 1, mCount do
+							spawnTemplates[#spawnTemplates + 1] = mData
+						end
+					else
+						log_error("[MonsterManager] Cannot find exact monster ID: " .. tostring(mId))
+					end
+				end
+			end
+		end
+		
+		local minMon = spawnInfo.minMonsters or 0
+		local maxMon = spawnInfo.maxMonsters or 0
+		local poolId = spawnInfo.poolId or 0
+		if minMon > 0 and maxMon > 0 and poolId > 0 then
+			local poolMonsters = dataMgr:GetMonstersByPool(poolId)
+			if #poolMonsters > 0 then
+				local randomCount = math.random(minMon, maxMon)
+				for i = 1, randomCount do
+					local idx = math.random(1, #poolMonsters)
+					spawnTemplates[#spawnTemplates + 1] = poolMonsters[idx]
+				end
+			end
+		end
+		
+		if #spawnTemplates == 0 then
+			log_error("[MonsterManager] No monsters to spawn for stage: " .. tostring(stageId))
 			return
 		end
 		
-		--
-		local count = math.random(spawnInfo.minMonsters, spawnInfo.maxMonsters)
+		local count = #spawnTemplates
 		log("[MonsterManager] Spawn count: " .. tostring(count) .. " (stage group: " .. tostring(stageId) .. ")")
 		
 		for i = 1, count do
-			--
-			local idx = math.random(1, #poolMonsters)
-			local template = poolMonsters[idx]
+			local template = spawnTemplates[i]
 		
 			--
 			local monster = {}
@@ -244,7 +277,9 @@ script MonsterManager extends Component
 		self:PlayEntityState(animTargetId, "HIT", 1.5)
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3004 or 3002)
+			local prefix = monster.isBoss and "boss_hit_" or "monster_hit_"
+			local t = prefix .. tostring(monster.id)
+			gameSystem.SoundManager:PlaySFXByTitle(t, 0)
 		end
 		
 		if monster.currentHP <= 0 then
@@ -551,7 +586,8 @@ script MonsterManager extends Component
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(3003)
+			local t = "boss_atk_" .. tostring(pattern.effectType)
+			gameSystem.SoundManager:PlaySFXByTitle(t, 0)
 		end
 	end
 

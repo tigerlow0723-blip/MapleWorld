@@ -319,6 +319,8 @@ script GameManager extends Component
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		
+		self.playerManager.isInitializingItems = true
+		
 		--
 		log("[DEBUG-STARTITEM] StartItemTable exists=" .. tostring(self.dataManager.StartItemTable ~= nil) .. " count=" .. tostring(#(self.dataManager.StartItemTable or {})))
 		if self.dataManager.StartItemTable ~= nil and #self.dataManager.StartItemTable > 0 then
@@ -351,6 +353,8 @@ script GameManager extends Component
 			self.itemDisplayArea:ClearAllItems()
 			self.itemDisplayArea.Entity:SetEnable(false)
 		end
+		
+		self.playerManager.isInitializingItems = false
 		
 		log("[GameManager] Start item distribution complete")
 		

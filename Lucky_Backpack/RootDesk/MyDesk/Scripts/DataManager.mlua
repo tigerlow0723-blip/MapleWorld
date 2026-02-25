@@ -478,9 +478,10 @@ script DataManager extends Component
 			if stageId > 0 then
 				local data = {}
 				data.stageId = stageId
-				data.minMonsters = tonumber(ds:GetCell(i, "min_monsters")) or 1
-				data.maxMonsters = tonumber(ds:GetCell(i, "max_monsters")) or 1
-				data.poolId = tonumber(ds:GetCell(i, "monster_pool_id")) or 1
+				data.minMonsters = tonumber(ds:GetCell(i, "min_monsters")) or 0
+				data.maxMonsters = tonumber(ds:GetCell(i, "max_monsters")) or 0
+				data.poolId = tonumber(ds:GetCell(i, "monster_pool_id")) or 0
+				data.exactSpawns = self:GetCellString(ds, i, "exact_spawns", "")
 				self.SpawnTable[stageId] = data
 			end
 		end
