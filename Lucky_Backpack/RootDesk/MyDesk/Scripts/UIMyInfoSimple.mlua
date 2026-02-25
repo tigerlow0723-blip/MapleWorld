@@ -1,4 +1,4 @@
-@Component
+﻿@Component
 script UIMyInfoSimple extends Component
 
 	property TextComponent myName = nil
@@ -10,6 +10,13 @@ script UIMyInfoSimple extends Component
 		local currentPath = self.Entity.Path
 		self.myName = _EntityService:GetEntityByPath(currentPath .. "/Text_name").TextComponent
 		self.myHP = _EntityService:GetEntityByPath(currentPath .. "/HP_bar").SliderComponent
+		local canvas = self.myHP.Entity.CanvasGroupComponent
+		if canvas == nil then
+			canvas = self.myHP.Entity:AddComponent("CanvasGroupComponent")
+		end
+		if canvas ~= nil then
+			canvas.Interactable = false
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -26,3 +33,5 @@ script UIMyInfoSimple extends Component
 	end
 
 end
+
+
