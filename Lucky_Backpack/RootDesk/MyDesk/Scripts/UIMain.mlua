@@ -46,6 +46,9 @@ script UIMain extends Component
 	property Entity uiStage5_1 = nil
 	property Entity uiStage5_2 = nil
 	property Entity uiStage5_3 = nil
+	property Entity uiStage5_4 = nil
+	property Entity uiStage5_Success = nil
+	property Entity uiStage5_Fail = nil
 	property Entity uiStage5_game = nil
 	property Entity btnPlayOddEven = nil
 	property Entity btnEnterShop = nil
@@ -224,6 +227,12 @@ script UIMain extends Component
 			self.btnBackFromShop = self.uiStage5_3:GetChildByName("backtomian")
 		end
 		
+		self.uiStage5_4 = _EntityService:GetEntityByPath("/ui/UIGroup/Stage_5_4")
+		if self.uiStage5_4 ~= nil then
+			self.uiStage5_Success = self.uiStage5_4:GetChildByName("성공")
+			self.uiStage5_Fail = self.uiStage5_4:GetChildByName("실패")
+		end
+
 		-- Find Stage_5_game via parent (GetEntityByPath cannot find disabled entities)
 		local uiGroupEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
 		if self.uiStage5_game == nil then
@@ -872,6 +881,7 @@ script UIMain extends Component
                 if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
                 if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
                 if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
+                if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = (subState == "Result") end
                 if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result") end
 
                 if subState == "Roll" then
@@ -890,6 +900,7 @@ script UIMain extends Component
             if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
             if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
             if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
+            if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = false end
             if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = false end
             self:HideStage5DiceVisual()
         end
@@ -907,6 +918,12 @@ script UIMain extends Component
 		end
 		if self.stage5DiceImageEntity2 ~= nil then
 			self.stage5DiceImageEntity2.Enable = false
+		end
+		if self.uiStage5_Success ~= nil then
+			self.uiStage5_Success.Enable = false
+		end
+		if self.uiStage5_Fail ~= nil then
+			self.uiStage5_Fail.Enable = false
 		end
 	end
 
@@ -1048,6 +1065,23 @@ script UIMain extends Component
 						sprite2.SpriteRUID = self.stage5DiceImageRUIDs2[roll2]
 					end
 				end
+			end
+		end
+
+		if self.uiStage5_Success ~= nil then
+			self.uiStage5_Success.Enable = false
+		end
+		if self.uiStage5_Fail ~= nil then
+			self.uiStage5_Fail.Enable = false
+		end
+
+		if self.gameManager.miniGameManager.lastRoundWin == true then
+			if self.uiStage5_Success ~= nil then
+				self.uiStage5_Success.Enable = true
+			end
+		else
+			if self.uiStage5_Fail ~= nil then
+				self.uiStage5_Fail.Enable = true
 			end
 		end
 	end
