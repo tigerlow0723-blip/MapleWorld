@@ -620,6 +620,8 @@ script ScrollInventoryUI extends Component
 			log("[Upgrade] Upgrade failed. type=" .. tostring(scrollId) .. " grade=" .. tostring(weaponTarget.grade) .. " roll=" .. tostring(roll) .. " chance=" .. tostring(successChance))
 			self:UpdateUI()
 			self:NotifyMainUI()
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(4004) end
 			return
 		end
 		
@@ -686,6 +688,8 @@ script ScrollInventoryUI extends Component
 		self.playerManager:SyncInventoryFromGrid()
 		self:UpdateUI()
 		self:NotifyMainUI()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(4003) end
 	end
 
 	@ExecSpace("ClientOnly")

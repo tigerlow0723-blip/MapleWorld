@@ -1095,6 +1095,25 @@ script PlayerManager extends Component
 		local normalizedState = tostring(stateName or "")
 		local upperState = string.upper(normalizedState)
 		
+		local soundId = 0
+		if upperState == "HIT" then
+			soundId = 2004
+		elseif upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
+			local itemData = self.dataManager:GetItemData(itemId)
+			if itemData ~= nil and itemData.desc ~= nil then
+				local desc = itemData.desc
+				if string.find(desc, "활") or string.find(desc, "석궁") then soundId = 2002
+				elseif string.find(desc, "완드") or string.find(desc, "스태프") then soundId = 2003
+				else soundId = 2001 end
+			end
+		end
+		if soundId > 0 then
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
+				gameSystem.SoundManager:PlaySFX(soundId)
+			end
+		end
+		
 		if upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
 			local itemData = self.dataManager:GetItemData(itemId)
 			if itemData ~= nil and itemData.desc ~= nil then

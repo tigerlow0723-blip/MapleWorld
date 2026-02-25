@@ -705,7 +705,11 @@ script ShopUI extends Component
 		    if self.playerManager:SpendGold(price) == false then
 		        return
 		    end
-		
+			local soundId = 5002
+			if self:IsPorkPriceScalingItem(itemData) then soundId = 5003 end
+			local gameSys = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSys and gameSys.SoundManager then gameSys.SoundManager:PlaySFX(soundId) end
+
 	    local purchasedItemId = tonumber(itemData.id) or 0
 	    if self:IsImmediateShopConsumable(itemData) then
 	        self:ApplyImmediateConsumableEffect(itemData)
@@ -1144,6 +1148,8 @@ script ShopUI extends Component
 		    self.playerManager:AddGold(sellPrice)
 		    self:UpdateGoldText()
 		    self:NotifyMainUI()
+			local gameSys = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSys and gameSys.SoundManager then gameSys.SoundManager:PlaySFX(5002) end
 		    return true
 	end
 

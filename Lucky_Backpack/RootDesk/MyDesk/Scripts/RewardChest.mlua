@@ -25,6 +25,9 @@ script RewardChest extends Component
 		    end
 		
 		    gameSystemEntity.GameManager:OpenRewardChest()
+		    if gameSystemEntity.SoundManager ~= nil then
+		        gameSystemEntity.SoundManager:PlaySFX(4001)
+		    end
 		    self.Entity:SetEnable(false)
 		    self.Entity:SetVisible(false)
 	end

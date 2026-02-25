@@ -529,6 +529,7 @@ script BattleManager extends Component
 		end
 		
 		log("[BattleManager] Consumable used: " .. tostring(itemData.name))
+		if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(2005) end
 		self:RefreshUI()
 		return true
 	end
@@ -613,6 +614,7 @@ script BattleManager extends Component
 		end
 		
 		log("[BattleManager] Potion used: " .. tostring(itemData.name) .. " boost=" .. tostring(potionBoostPercent) .. "%")
+		if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(2005) end
 		self:RefreshUI()
 		return true
 	end

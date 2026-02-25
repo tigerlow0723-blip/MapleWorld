@@ -35,6 +35,8 @@ script GameManager extends Component
 
 	property any rewardUI = nil
 
+	property any soundManager = nil
+
 	property table pendingRewards = {}
 
 	property string gamePhase = "None"
@@ -123,6 +125,7 @@ script GameManager extends Component
 		
 		--
 		self.dataManager = self.Entity.DataManager
+		self.soundManager = self.Entity.SoundManager
 		self.playerManager = self.Entity.PlayerManager
 		self.monsterManager = self.Entity.MonsterManager
 		self.battleManager = self.Entity.BattleManager
@@ -184,6 +187,9 @@ script GameManager extends Component
 			self.gameState = "Title"
 			if self.uiMain ~= nil and self.uiMain.ShowMainMenu ~= nil then
 				self.uiMain:ShowMainMenu()
+			end
+			if self.soundManager ~= nil then
+				self.soundManager:PlayBGM(1001)
 			end
 		end
 		_TimerService:SetTimerOnce(initFunc, 1.0)
@@ -361,7 +367,31 @@ script GameManager extends Component
 		--
 		--
 		self:UpdateBackground()
+		self:PlayStageBGM()
 		self:QueueStageEntryCinematic()
+	end
+
+	method void PlayStageBGM()
+		if self.soundManager == nil then
+			return
+		end
+		
+		local bgmId = 1002
+		if self.currentStage >= 1 and self.currentStage <= 3 then
+			bgmId = 1002
+		elseif self.currentStage == 4 or self.currentStage == 6 then
+			bgmId = 1004
+		elseif self.currentStage == 5 then
+			bgmId = 1005
+		elseif self.currentStage == 7 then
+			bgmId = 1007
+		elseif self.currentStage == 8 or self.currentStage == 9 then
+			bgmId = 1008
+		elseif self.currentStage == 10 then
+			bgmId = 1010
+		end
+		
+		self.soundManager:PlayBGM(bgmId)
 	end
 
 	method void UpdateArmorHeldStageTransforms()
@@ -462,6 +492,7 @@ script GameManager extends Component
 		end
 		
 		self:UpdateBackground()
+		self:PlayStageBGM()
 		self:QueueStageEntryCinematic()
 	end
 
