@@ -39,6 +39,8 @@ script DataManager extends Component
 
 	property number DiceResultDelay = 1.2
 
+	property table StartItemTable = {}
+
 	method void OnInitialize()
 		log("[DataManager] (OnInitialize)  (  : Server/Client)")
 	end
@@ -62,6 +64,7 @@ script DataManager extends Component
 		self:LoadSpecialEventTable()
 		self:LoadTutorialImageTable()
 		self:LoadDiceImageTable()
+		self:LoadStartItemTable()
 		
 		log("[DataManager]      .")
 	end
@@ -398,7 +401,7 @@ script DataManager extends Component
 	end
 
 	method void LoadBossTable()
-		-- 1) 보스 기본 ?�보 로드
+		-- 1) 보스 기본 ??보 로드
 		local dsBasic = self:GetDataSet("Data_Table - 보스")
 		if dsBasic ~= nil then
 			local rowCount = dsBasic:GetRowCount()
@@ -423,7 +426,7 @@ script DataManager extends Component
 			end
 		end
 		
-		-- 2) 보스 ?�턴 ?�보 로드
+		-- 2) 보스 ??턴 ??보 로드
 		local dsPattern = self:GetDataSet("Data_Table - 보스패턴")
 		if dsPattern ~= nil then
 			local rowCount = dsPattern:GetRowCount()
@@ -443,7 +446,7 @@ script DataManager extends Component
 					pattern.turn = tonumber(dsPattern:GetCell(i, "turn")) or 0
 					pattern.patternRuid = dsPattern:GetCell(i, "Patten_RUID") or ""
 					
-					-- ?�출 ?�간 추�? (duration 컬럼???�으�?기본�??�용, ?�드�?0.81�? �??�는 1.5�?
+					-- ??출 ??간 추?? (duration 컬럼????으??기본????용, ??드??0.81?? ????는 1.5??
 					local durationValue = tonumber(dsPattern:GetCell(i, "duration"))
 					if durationValue == nil or durationValue <= 0 then
 						if pattern.effectType == "shield" then
@@ -460,7 +463,7 @@ script DataManager extends Component
 			end
 		end
 		
-		log("[DataManager] 보스 ?�트 �??�턴 로드 ?�료")
+		log("[DataManager] 보스 ??트 ????턴 로드 ??료")
 	end
 
 	method void LoadSpawnTable()
@@ -794,6 +797,28 @@ script DataManager extends Component
 			end
 		end
 		log("[DataManager]     ")
+	end
+
+	method void LoadStartItemTable()
+		self.StartItemTable = {}
+		local ds = self:GetDataSet("Data_Table - StartItem")
+		if ds == nil then
+			log("[DataManager] StartItem table not found. Using default.")
+			return
+		end
+		local rowCount = ds:GetRowCount()
+		for i = 1, rowCount do
+			local itemId = tonumber(ds:GetCell(i, "itemId")) or 0
+			if itemId > 0 then
+				local count = tonumber(ds:GetCell(i, "count")) or 1
+				local entry = {}
+				entry.itemId = itemId
+				entry.count = count
+				self.StartItemTable[#self.StartItemTable + 1] = entry
+				log("[DataManager] StartItem loaded: id=" .. tostring(itemId) .. " count=" .. tostring(count))
+			end
+		end
+		log("[DataManager] StartItem table loaded. entries=" .. tostring(#self.StartItemTable))
 	end
 
 	method table GetMonsterData(string monsterId)

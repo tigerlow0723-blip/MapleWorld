@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://0e598fcd6de84d6b902b3863e3c2cd45",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/0e598fcd6de84d6b902b3863e3c2cd45/639075842237789970",
+      "upload_hash": "FCD3D3297756E7A2ACB25B504323417EC988DF1CCF004022BCFD5BD78EC2A80B",
+      "name": "판매ui-Photoroom",
+      "resource_guid": "0e598fcd6de84d6b902b3863e3c2cd45",
+      "resource_version": "699e61dfd454a67c03a570d1"
+    }
+  }
+}

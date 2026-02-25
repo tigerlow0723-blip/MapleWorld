@@ -314,20 +314,31 @@ script GameManager extends Component
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		
 		--
-		local startWeapon = self.dataManager:GetItemData(1)
-		if startWeapon == nil or startWeapon.type ~= "weapon" then
-			startWeapon = self.dataManager:GetItemData(1001)
-		end
-		if startWeapon == nil then
-			for _, itemData in pairs(self.dataManager.ItemTable) do
-				if itemData ~= nil and itemData.type == "weapon" then
-					startWeapon = itemData
-					break
+		log("[DEBUG-STARTITEM] StartItemTable exists=" .. tostring(self.dataManager.StartItemTable ~= nil) .. " count=" .. tostring(#(self.dataManager.StartItemTable or {})))
+		if self.dataManager.StartItemTable ~= nil and #self.dataManager.StartItemTable > 0 then
+			for i = 1, #self.dataManager.StartItemTable do
+				local entry = self.dataManager.StartItemTable[i]
+				if entry ~= nil and entry.itemId ~= nil then
+					log("[DEBUG-STARTITEM] Trying item id=" .. tostring(entry.itemId) .. " type=" .. type(entry.itemId))
+					local itemData = self.dataManager:GetItemData(entry.itemId)
+					log("[DEBUG-STARTITEM] GetItemData result=" .. tostring(itemData ~= nil))
+					if itemData ~= nil then
+						local giveCount = entry.count or 1
+						for c = 1, giveCount do
+							self.playerManager:AddItem(itemData)
+						end
+						log("[GameManager] Start item given: id=" .. tostring(entry.itemId) .. " count=" .. tostring(giveCount))
+					else
+						log("[WARNING] [GameManager] Start item not found in ItemTable: id=" .. tostring(entry.itemId))
+					end
 				end
 			end
-		end
-		if startWeapon ~= nil then
-			self.playerManager:AddItem(startWeapon)
+		else
+			local startWeapon = self.dataManager:GetItemData(1001)
+			if startWeapon ~= nil then
+				self.playerManager:AddItem(startWeapon)
+			end
+			log("[GameManager] No StartItemTable. Fallback to default weapon (1001).")
 		end
 		self.pendingRewards = {}
 		if self.itemDisplayArea ~= nil and self.itemDisplayArea.Entity ~= nil then
