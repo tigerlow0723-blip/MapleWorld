@@ -1019,6 +1019,24 @@
                 "EntityId": "90a7c34d-c761-44a8-bffb-07f814ac4113",
                 "Version2": false
               },
+              "uiStage5_4": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "4d874097-be0a-4f5c-9a38-2157db805b07",
+                "Version2": false
+              },
+              "uiStage5_Success": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "4dea7afd-bb3a-4eb3-9a3f-ffe655e81666",
+                "Version2": false
+              },
+              "uiStage5_Fail": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "8eb6d367-42ba-4da0-aeee-dccc6ab0379d",
+                "Version2": false
+              },
               "uiStage5_game": {
                 "tempEntityId": null,
                 "IsRelative": false,
