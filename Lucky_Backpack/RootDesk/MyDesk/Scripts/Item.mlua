@@ -359,7 +359,8 @@ script Item extends Component
 		
 		    self.itemId = tonumber(itemData.id) or 0
 		    self.itemName = itemData.name or ""
-		    self.itemType = itemData.type or ""
+		    self.itemType = string.lower(tostring(itemData.type or ""))
+		    self.itemType = string.gsub(self.itemType, "%s+", "")
 		    self.width = math.max(1, tonumber(itemData.width) or 1)
 		    self.height = math.max(1, tonumber(itemData.height) or 1)
 		    self.atk = tonumber(itemData.atk) or 0
@@ -379,6 +380,7 @@ script Item extends Component
 		    self.armorWeaponCost = tonumber(itemData.weaponCost) or 0
 		    self.armorHpRecoveryPercent = 0
 		    self.armorSynergyTarget = string.lower(tostring(itemData.armorSynergyTarget or "none"))
+		    self.armorSynergyTarget = string.gsub(self.armorSynergyTarget, "%s+", "")
 		    if self.armorSynergyTarget == "" then
 		        self.armorSynergyTarget = "none"
 		    end
@@ -392,7 +394,6 @@ script Item extends Component
 		        self.heldStages = 0
 		    end
 		    if self.itemType == "armor" then
-		        self:EnsureArmorRolls(itemData)
 		        self:ResetArmorActivationCount()
 		    else
 		        self.armorRemainingCount = 0
@@ -603,13 +604,13 @@ script Item extends Component
 	end
 
 	@ExecSpace("ClientOnly")
-	method void EnsureArmorRolls(table itemData)
-		    if self.itemType ~= "armor" then
-		        return
-		    end
-		    if self.armorRollInitialized == true then
-		        return
-		    end
+	method table RollArmorBuffsForUse(table itemData)
+		    local result = {}
+		    result.atkPercent = tonumber(itemData.armorAtkPercent) or tonumber(self.armorAtkPercent) or 0
+		    result.critRate = tonumber(itemData.armorCritRate) or tonumber(self.armorCritRate) or 0
+		    result.critDmg = tonumber(itemData.armorCritDmg) or tonumber(self.armorCritDmg) or 0
+		    result.weaponCost = tonumber(itemData.weaponCost) or tonumber(self.armorWeaponCost) or 0
+		    result.potionHpRecovery = tonumber(itemData.armorHpRecoveryPercent) or tonumber(self.armorHpRecoveryPercent) or 0
 		
 		    local minCritRate = tonumber(itemData.minCritRate) or 0
 		    local maxCritRate = tonumber(itemData.maxCritRate) or 0
@@ -620,21 +621,42 @@ script Item extends Component
 		    local minHpRecovery = tonumber(itemData.minHpRecovery) or 0
 		    local maxHpRecovery = tonumber(itemData.maxHpRecovery) or 0
 		
-		    self.armorCritRate = self:RollRangeInteger(minCritRate, maxCritRate, self.armorCritRate)
-		    self.armorCritDmg = self:RollRangeInteger(minCritDmg, maxCritDmg, self.armorCritDmg)
-		    self.armorWeaponCost = self:RollRangeInteger(minWeaponCost, maxWeaponCost, self.armorWeaponCost)
-		    self.armorHpRecoveryPercent = self:RollRangeInteger(minHpRecovery, maxHpRecovery, self.armorHpRecoveryPercent)
+		    result.critRate = self:RollRangeInteger(minCritRate, maxCritRate, result.critRate)
+		    result.critDmg = self:RollRangeInteger(minCritDmg, maxCritDmg, result.critDmg)
+		    result.weaponCost = self:RollRangeInteger(minWeaponCost, maxWeaponCost, result.weaponCost)
+		    result.potionHpRecovery = self:RollRangeInteger(minHpRecovery, maxHpRecovery, result.potionHpRecovery)
+		
+		    self.armorAtkPercent = tonumber(result.atkPercent) or 0
+		    self.armorCritRate = tonumber(result.critRate) or 0
+		    self.armorCritDmg = tonumber(result.critDmg) or 0
+		    self.armorWeaponCost = tonumber(result.weaponCost) or 0
+		    self.armorHpRecoveryPercent = tonumber(result.potionHpRecovery) or 0
 		    self.armorRollInitialized = true
+		
 		    local entityIdText = "unknown"
 		    if self.Entity ~= nil and self.Entity.Id ~= nil then
 		        entityIdText = tostring(self.Entity.Id)
 		    end
-		    log("[ArmorRoll] initialized itemId=" .. tostring(self.itemId)
+		    log("[ArmorRoll] per-use itemId=" .. tostring(self.itemId)
 		        .. " entityId=" .. entityIdText
-		        .. " critRate=" .. tostring(self.armorCritRate)
-		        .. " critDmg=" .. tostring(self.armorCritDmg)
+		        .. " atk%=" .. tostring(self.armorAtkPercent)
+		        .. " critRate%=" .. tostring(self.armorCritRate)
+		        .. " critDmg%=" .. tostring(self.armorCritDmg)
 		        .. " weaponCost=" .. tostring(self.armorWeaponCost)
 		        .. " potionHpRecovery%=" .. tostring(self.armorHpRecoveryPercent))
+		
+		    return result
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EnsureArmorRolls(table itemData)
+		    if self.itemType ~= "armor" then
+		        return
+		    end
+		    if self.armorRollInitialized == true then
+		        return
+		    end
+		    self:RollArmorBuffsForUse(itemData)
 	end
 
 	@ExecSpace("ClientOnly")
