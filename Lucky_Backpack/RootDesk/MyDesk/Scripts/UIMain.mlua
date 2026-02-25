@@ -49,6 +49,8 @@ script UIMain extends Component
 	property Entity uiStage5_4 = nil
 	property Entity uiStage5_Success = nil
 	property Entity uiStage5_Fail = nil
+	property Entity uiStage5_SuccessRoll = nil
+	property Entity uiStage5_FailRoll = nil
 	property Entity uiStage5_game = nil
 	property Entity btnPlayOddEven = nil
 	property Entity btnEnterShop = nil
@@ -228,10 +230,7 @@ script UIMain extends Component
 		end
 		
 		self.uiStage5_4 = _EntityService:GetEntityByPath("/ui/UIGroup/Stage_5_4")
-		if self.uiStage5_4 ~= nil then
-			self.uiStage5_Success = self.uiStage5_4:GetChildByName("성공")
-			self.uiStage5_Fail = self.uiStage5_4:GetChildByName("실패")
-		end
+		-- User binds uiStage5_Success, uiStage5_Fail, uiStage5_SuccessRoll, and uiStage5_FailRoll via property window
 
 		-- Find Stage_5_game via parent (GetEntityByPath cannot find disabled entities)
 		local uiGroupEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
@@ -881,13 +880,15 @@ script UIMain extends Component
                 if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
                 if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
                 if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
-                if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = (subState == "Result") end
-                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result") end
+                if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = (subState == "Result" or subState == "ResultRoll") end
+                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result" or subState == "ResultRoll") end
 
                 if subState == "Roll" then
                     self:UpdateStage5DiceRollVisual()
                 elseif subState == "Roll2" then
                     self:UpdateStage5DiceRoll2Visual()
+                elseif subState == "ResultRoll" then
+                    self:UpdateStage5SuccessFailRoll()
                 elseif subState == "Result" then
                     self:UpdateStage5DiceResult()
                 else
@@ -924,6 +925,12 @@ script UIMain extends Component
 		end
 		if self.uiStage5_Fail ~= nil then
 			self.uiStage5_Fail.Enable = false
+		end
+		if self.uiStage5_SuccessRoll ~= nil then
+			self.uiStage5_SuccessRoll.Enable = false
+		end
+		if self.uiStage5_FailRoll ~= nil then
+			self.uiStage5_FailRoll.Enable = false
 		end
 	end
 
@@ -1013,9 +1020,81 @@ script UIMain extends Component
 		if self.stage5DiceImageEntity2 ~= nil then
 			self.stage5DiceImageEntity2.Enable = false
 		end
+		
+		if self.uiStage5_Success ~= nil then
+			self.uiStage5_Success.Enable = false
+		end
+		if self.uiStage5_Fail ~= nil then
+			self.uiStage5_Fail.Enable = false
+		end
+		if self.uiStage5_SuccessRoll ~= nil then
+			self.uiStage5_SuccessRoll.Enable = false
+		end
+		if self.uiStage5_FailRoll ~= nil then
+			self.uiStage5_FailRoll.Enable = false
+		end
 	end
 
-		method void UpdateStage5DiceResult()
+	method void UpdateStage5SuccessFailRoll()
+		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
+			return
+		end
+		if self.uiStage5_Success ~= nil then
+			self.uiStage5_Success.Enable = false
+		end
+		if self.uiStage5_Fail ~= nil then
+			self.uiStage5_Fail.Enable = false
+		end
+		
+		local dm = nil
+		if self.gameManager ~= nil and self.gameManager.dataManager ~= nil then
+			dm = self.gameManager.dataManager
+		end
+		
+		if self.gameManager.miniGameManager.lastRoundWin == true then
+			if self.uiStage5_SuccessRoll ~= nil then
+				self.uiStage5_SuccessRoll.Enable = true
+				if dm ~= nil and dm.SuccessAnimRUID ~= nil and dm.SuccessAnimRUID ~= "" then
+					local gui = self.uiStage5_SuccessRoll.SpriteGUIRendererComponent
+					if gui ~= nil then
+						gui.ImageRUID = dm.SuccessAnimRUID
+						gui.PlayRate = 1
+					else
+						local sprite = self.uiStage5_SuccessRoll.SpriteRendererComponent
+						if sprite ~= nil then
+							sprite.SpriteRUID = dm.SuccessAnimRUID
+							sprite.PlayRate = 1
+						end
+					end
+				end
+			end
+			if self.uiStage5_FailRoll ~= nil then
+				self.uiStage5_FailRoll.Enable = false
+			end
+		else
+			if self.uiStage5_FailRoll ~= nil then
+				self.uiStage5_FailRoll.Enable = true
+				if dm ~= nil and dm.FailAnimRUID ~= nil and dm.FailAnimRUID ~= "" then
+					local gui = self.uiStage5_FailRoll.SpriteGUIRendererComponent
+					if gui ~= nil then
+						gui.ImageRUID = dm.FailAnimRUID
+						gui.PlayRate = 1
+					else
+						local sprite = self.uiStage5_FailRoll.SpriteRendererComponent
+						if sprite ~= nil then
+							sprite.SpriteRUID = dm.FailAnimRUID
+							sprite.PlayRate = 1
+						end
+					end
+				end
+			end
+			if self.uiStage5_SuccessRoll ~= nil then
+				self.uiStage5_SuccessRoll.Enable = false
+			end
+		end
+	end
+
+	method void UpdateStage5DiceResult()
 		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
 			return
 		end
@@ -1074,14 +1153,40 @@ script UIMain extends Component
 		if self.uiStage5_Fail ~= nil then
 			self.uiStage5_Fail.Enable = false
 		end
+		if self.uiStage5_SuccessRoll ~= nil then
+			self.uiStage5_SuccessRoll.Enable = false
+		end
+		if self.uiStage5_FailRoll ~= nil then
+			self.uiStage5_FailRoll.Enable = false
+		end
 
 		if self.gameManager.miniGameManager.lastRoundWin == true then
 			if self.uiStage5_Success ~= nil then
 				self.uiStage5_Success.Enable = true
+				local dm = nil
+				if self.gameManager ~= nil and self.gameManager.dataManager ~= nil then
+					dm = self.gameManager.dataManager
+				end
+				if dm ~= nil and dm.SuccessImgRUID ~= nil and dm.SuccessImgRUID ~= "" then
+					local gui = self.uiStage5_Success.SpriteGUIRendererComponent
+					if gui ~= nil then
+						gui.ImageRUID = dm.SuccessImgRUID
+					end
+				end
 			end
 		else
 			if self.uiStage5_Fail ~= nil then
 				self.uiStage5_Fail.Enable = true
+				local dm = nil
+				if self.gameManager ~= nil and self.gameManager.dataManager ~= nil then
+					dm = self.gameManager.dataManager
+				end
+				if dm ~= nil and dm.FailImgRUID ~= nil and dm.FailImgRUID ~= "" then
+					local gui = self.uiStage5_Fail.SpriteGUIRendererComponent
+					if gui ~= nil then
+						gui.ImageRUID = dm.FailImgRUID
+					end
+				end
 			end
 		end
 	end

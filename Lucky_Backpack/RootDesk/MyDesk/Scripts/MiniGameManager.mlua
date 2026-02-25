@@ -264,7 +264,7 @@ script MiniGameManager extends Component
 				end
 				
 				self.lastRoundWin = (self.lastChoice == self.pendingResultParity)
-				self.subState = "Result"
+				self.subState = "ResultRoll"
 				
 				local isDoubleOne = (self.lastDiceRoll == 1 and self.lastDiceRoll2 == 1)
 				local isDoubleSeven = (self.lastDiceRoll == 7 and self.lastDiceRoll2 == 7)
@@ -311,20 +311,31 @@ script MiniGameManager extends Component
 				end
 				
 				_TimerService:SetTimerOnce(function()
-					if self.isMiniGameActive ~= true then
+					if self.isMiniGameActive ~= true or self.subState ~= "ResultRoll" then
 						return
 					end
-
-					if self:GetOreCount() > 0 then
-						self.subState = "Play"
-					else
-						self.subState = "Shop"
-					end
-
+					
+					self.subState = "Result"
 					if self.uiMain ~= nil then
 						self.uiMain:UpdateUI()
 					end
-				end, sfDelay)
+					
+					_TimerService:SetTimerOnce(function()
+						if self.isMiniGameActive ~= true then
+							return
+						end
+
+						if self:GetOreCount() > 0 then
+							self.subState = "Play"
+						else
+							self.subState = "Shop"
+						end
+
+						if self.uiMain ~= nil then
+							self.uiMain:UpdateUI()
+						end
+					end, sfDelay)
+				end, 1.2) -- hardcoded animation delay for SuccessRoll/FailRoll; can be exposed to DataManager if needed
 			end, rollDelay)
 		end, rollDelay)
 	end

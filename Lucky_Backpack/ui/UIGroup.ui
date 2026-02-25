@@ -6496,7 +6496,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "54ddb99704ad49019d5a6b0d45226e8a"
+                "DataId": "6d5a507b49764376bc71df113c5d7cf2"
               },
               "OverrideSorting": false,
               "Enable": true
@@ -6578,8 +6578,169 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "ec808ad55fd04cc787d06f02db1a6c39"
+                "DataId": "50b5152f92cd473da0505c00063c4026"
               },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "230e1e39-6a4c-4ba1-b8c9-af3ad9cd5d00",
+        "path": "/ui/UIGroup/stage_5_4/stage5_success_img",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "stage5_success_img",
+          "path": "/ui/UIGroup/stage_5_4/stage5_success_img",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "230e1e39-6a4c-4ba1-b8c9-af3ad9cd5d00",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 350.174774,
+                "y": 595.6835
+              },
+              "OffsetMin": {
+                "x": -318.3906,
+                "y": 245.514709
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 668.565369,
+                "y": 350.168762
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 15.8921013,
+                "y": 420.5991
+              },
+              "Position": {
+                "x": 15.8921013,
+                "y": 420.5991,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "19229b4d51f540ada0df9dbcb6cedfeb"
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "1efea490-b319-41fd-89fa-59cf3ba7db0a",
+        "path": "/ui/UIGroup/stage_5_4/stage5_fail_img",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "stage5_fail_img",
+          "path": "/ui/UIGroup/stage_5_4/stage5_fail_img",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 3,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "1efea490-b319-41fd-89fa-59cf3ba7db0a",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -1716.17322,
+                "y": -1113.36829
+              },
+              "OffsetMin": {
+                "x": -1816.17322,
+                "y": -1213.36829
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 100.0,
+                "y": 100.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -1766.17322,
+                "y": -1163.36829
+              },
+              "Position": {
+                "x": -1766.17322,
+                "y": -1163.36829,
+                "z": 1947.1936
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
               "OverrideSorting": false,
               "Enable": true
             }

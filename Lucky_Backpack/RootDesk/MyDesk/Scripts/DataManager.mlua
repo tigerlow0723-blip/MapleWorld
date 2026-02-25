@@ -41,6 +41,11 @@ script DataManager extends Component
 	
 	property number DiceSuccessFailDelay = 1.2
 
+	property string SuccessAnimRUID = ""
+	property string FailAnimRUID = ""
+	property string SuccessImgRUID = ""
+	property string FailImgRUID = ""
+
 	property table StartItemTable = {}
 
 	property table SoundTable = {}
@@ -1026,6 +1031,31 @@ script DataManager extends Component
 					self.DiceSuccessFailDelay = sfDelay
 				else
 					self.DiceSuccessFailDelay = self.DiceResultDelay
+				end
+			end
+			
+			if self.SuccessAnimRUID == "" then
+				local val = self:GetCellString(ds, i, "success_anim_ruid", "")
+				if val ~= "" then
+					self.SuccessAnimRUID = val
+				end
+			end
+			if self.FailAnimRUID == "" then
+				local val = self:GetCellString(ds, i, "fail_anim_ruid", "")
+				if val ~= "" then
+					self.FailAnimRUID = val
+				end
+			end
+			if self.SuccessImgRUID == "" then
+				local val = self:GetCellString(ds, i, "success_img_ruid", "")
+				if val ~= "" then
+					self.SuccessImgRUID = val
+				end
+			end
+			if self.FailImgRUID == "" then
+				local val = self:GetCellString(ds, i, "fail_img_ruid", "")
+				if val ~= "" then
+					self.FailImgRUID = val
 				end
 			end
 		end

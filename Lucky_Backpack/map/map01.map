@@ -1028,10 +1028,22 @@
               "uiStage5_Success": {
                 "tempEntityId": null,
                 "IsRelative": false,
-                "EntityId": "4dea7afd-bb3a-4eb3-9a3f-ffe655e81666",
+                "EntityId": "230e1e39-6a4c-4ba1-b8c9-af3ad9cd5d00",
                 "Version2": false
               },
               "uiStage5_Fail": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "1efea490-b319-41fd-89fa-59cf3ba7db0a",
+                "Version2": false
+              },
+              "uiStage5_SuccessRoll": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "4dea7afd-bb3a-4eb3-9a3f-ffe655e81666",
+                "Version2": false
+              },
+              "uiStage5_FailRoll": {
                 "tempEntityId": null,
                 "IsRelative": false,
                 "EntityId": "8eb6d367-42ba-4da0-aeee-dccc6ab0379d",
