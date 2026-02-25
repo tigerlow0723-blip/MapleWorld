@@ -244,7 +244,9 @@ script MonsterManager extends Component
 		self:PlayEntityState(animTargetId, "HIT", 1.5)
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3004 or 3002)
+			local prefix = monster.isBoss and "boss_hit_" or "monster_hit_"
+			local t = prefix .. tostring(monster.id)
+			gameSystem.SoundManager:PlaySFXByTitle(t, 0)
 		end
 		
 		if monster.currentHP <= 0 then
@@ -551,7 +553,8 @@ script MonsterManager extends Component
 		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(3003)
+			local t = "boss_atk_" .. tostring(pattern.effectType)
+			gameSystem.SoundManager:PlaySFXByTitle(t, 0)
 		end
 	end
 
