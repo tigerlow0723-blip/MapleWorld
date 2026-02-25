@@ -62,7 +62,7 @@ script ShopUI extends Component
 
 	property integer porkPurchaseCount = 0
 
-	property integer porkItemId = 12
+	property integer porkItemId = 11
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -292,7 +292,7 @@ script ShopUI extends Component
 		                end
 		            end
 		        elseif itemType == "goods" then
-		            if itemId == 13 and self:CanOfferGoldOreItem() == false then
+		            if itemId == 12 and self:CanOfferGoldOreItem() == false then
 		                continue
 		            end
 		            if price > 0 then

@@ -905,9 +905,9 @@ script PlayerManager extends Component
 			return
 		end
 		
-		if typeId == 10 then
+		if typeId == 9 then
 			self.scrollNormal = (self.scrollNormal or 0) + amount
-		elseif typeId == 11 then
+		elseif typeId == 10 then
 			self.scrollGuaranteed = (self.scrollGuaranteed or 0) + amount
 		else
 			return
@@ -923,9 +923,9 @@ script PlayerManager extends Component
 		end
 		
 		local current = 0
-		if typeId == 10 then
+		if typeId == 9 then
 			current = self.scrollNormal or 0
-		elseif typeId == 11 then
+		elseif typeId == 10 then
 			current = self.scrollGuaranteed or 0
 		else
 			return false
@@ -936,7 +936,7 @@ script PlayerManager extends Component
 			return false
 		end
 		
-		if typeId == 10 then
+		if typeId == 9 then
 			self.scrollNormal = current - amount
 		else
 			self.scrollGuaranteed = current - amount

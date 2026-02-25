@@ -31,7 +31,7 @@ script MiniGameManager extends Component
 	
 	property number rollDisplayDuration = 1
 	
-	property integer POWER_ELIXIR_ITEM_ID = 6
+	property integer POWER_ELIXIR_ITEM_ID = 5
 
 	method void Init(any gMgr, any pMgr, any dMgr, any ui)
 		self.gameManager = gMgr
@@ -125,7 +125,7 @@ script MiniGameManager extends Component
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
 			for i = 1, #inv do
-				if inv[i].id == 13 then
+				if inv[i].id == 12 then
 					count = count + 1
 				end
 			end
@@ -138,7 +138,7 @@ script MiniGameManager extends Component
 		if self.playerManager ~= nil then
 			local inv = self.playerManager.inventory
 			for i = 1, #inv do
-				if inv[i].id == 14 then
+				if inv[i].id == 13 then
 					count = count + 1
 				end
 			end
@@ -190,7 +190,7 @@ script MiniGameManager extends Component
 			return
 		end
 
-		self:ConsumeItem(13, 1)
+		self:ConsumeItem(12, 1)
 
 		local dice = self:RollWeightedDice()
 		local dice2 = self:RollWeightedDice()
@@ -284,7 +284,7 @@ script MiniGameManager extends Component
 					end
 				elseif self.lastRoundWin == true then
 					log("[MiniGameManager-DEBUG] Odd/even result: WIN. dice1=" .. tostring(self.lastDiceRoll) .. " dice2=" .. tostring(self.lastDiceRoll2) .. " sum=" .. tostring(self.lastDiceRoll + self.lastDiceRoll2))
-					local itemData = self.dataManager:GetItemData(14)
+					local itemData = self.dataManager:GetItemData(13)
 					if itemData ~= nil then
 						self.playerManager:AddItem(itemData)
 					end
@@ -320,7 +320,7 @@ script MiniGameManager extends Component
 
 		local count = self:GetGoldBarCount()
 		if count > 0 then
-			self:ConsumeItem(14, count)
+			self:ConsumeItem(13, count)
 			local totalGold = count * self.GOLD_BAR_PRICE
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
 			log("[MiniGameManager] Gold bars sold. count=" .. tostring(count) .. " gain=" .. tostring(totalGold))

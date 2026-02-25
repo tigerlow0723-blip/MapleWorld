@@ -515,7 +515,20 @@ script InventoryUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method boolean IsInventoryUsableConsumable(integer itemId)
-		    return itemId == 2 or itemId == 3 or itemId == 4 or itemId == 5
+		    if itemId == nil or itemId <= 0 then
+		        return false
+		    end
+		
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem ~= nil and gameSystem.DataManager ~= nil then
+		        local itemData = gameSystem.DataManager:GetItemData(itemId)
+		        if itemData ~= nil then
+		            local itemType = string.lower(tostring(itemData.type or ""))
+		            return itemType == "potion" or itemType == "consumable"
+		        end
+		    end
+		
+		    return false
 	end
 
 	@ExecSpace("ClientOnly")
