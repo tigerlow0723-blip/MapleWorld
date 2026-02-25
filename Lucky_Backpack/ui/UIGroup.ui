@@ -10074,6 +10074,467 @@
         }
       },
       {
+        "id": "b93ff622-7219-4040-9abd-41ad802c5fc0",
+        "path": "/ui/UIGroup/ShopPanel/ShopNPC",
+        "componentNames": "MOD.Core.UITransformComponent",
+        "jsonString": {
+          "name": "ShopNPC",
+          "path": "/ui/UIGroup/ShopPanel/ShopNPC",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 5,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uiempty",
+            "sub_entity_id": null,
+            "root_entity_id": "b93ff622-7219-4040-9abd-41ad802c5fc0",
+            "replaced_model_id": null
+          },
+          "modelId": "uiempty",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 183.6689,
+                "y": -30.5656967
+              },
+              "OffsetMin": {
+                "x": 83.6689,
+                "y": -130.5657
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 100.0,
+                "y": 100.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 133.6689,
+                "y": -80.5657
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 133.6689,
+                "y": -80.5657,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "22ac9786-6d62-4d78-8cc0-73efd575da4f",
+        "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Legendary",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "NPC_Legendary",
+          "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Legendary",
+          "nameEditable": true,
+          "enable": false,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "22ac9786-6d62-4d78-8cc0-73efd575da4f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 132.033371,
+                "y": 62.6058
+              },
+              "OffsetMin": {
+                "x": -182.402573,
+                "y": -137.3942
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 314.435944,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -25.1846,
+                "y": -37.3942
+              },
+              "Position": {
+                "x": -25.1846,
+                "y": -37.3942,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "7a1b12c1e2cd47969a50ad438332dcc1"
+              },
+              "OverrideSorting": false,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "e0a8428c-73f3-4982-85c4-824b24a7c7cc",
+        "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Unique",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "NPC_Unique",
+          "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Unique",
+          "nameEditable": true,
+          "enable": false,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "22ac9786-6d62-4d78-8cc0-73efd575da4f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 81.686676,
+                "y": 68.4419
+              },
+              "OffsetMin": {
+                "x": -57.6622772,
+                "y": -131.5581
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 139.348953,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 12.0122,
+                "y": -31.5581
+              },
+              "Position": {
+                "x": 12.0122,
+                "y": -31.5581,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "d0c5677ca1144ab3b20895e126d7d341"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "6bfcfcb3-eba1-4044-b3a3-7705581ffc2d",
+        "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Epic",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "NPC_Epic",
+          "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Epic",
+          "nameEditable": true,
+          "enable": false,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "22ac9786-6d62-4d78-8cc0-73efd575da4f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 107.5171,
+                "y": 68.4419
+              },
+              "OffsetMin": {
+                "x": -92.4829,
+                "y": -131.5581
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 7.51709938,
+                "y": -31.5581
+              },
+              "Position": {
+                "x": 7.51709938,
+                "y": -31.5581,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "f2285f3c6206490d9f238a31cdfab6d1"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "5f43669e-324d-4f93-8230-d6deaa72c835",
+        "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Rare",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "NPC_Rare",
+          "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Rare",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 3,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "22ac9786-6d62-4d78-8cc0-73efd575da4f",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 107.5171,
+                "y": 68.4419
+              },
+              "OffsetMin": {
+                "x": -92.4829,
+                "y": -131.5581
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 7.5171,
+                "y": -31.5581
+              },
+              "Position": {
+                "x": 7.5171,
+                "y": -31.5581,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "634674b55e914ee089d70a7dab96020a"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
         "id": "7f4e40d6-76e3-4e1e-9f57-14561804460c",
         "path": "/ui/UIGroup/TargetIndicator",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
@@ -10530,7 +10991,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 19,
@@ -15058,12 +15519,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 983.0265,
-                "y": 545.6674
+                "x": 983.0262,
+                "y": 539.0555
               },
               "OffsetMin": {
-                "x": -975.889648,
-                "y": -544.6822
+                "x": -975.889954,
+                "y": -551.2941
               },
               "Pivot": {
                 "x": 0.5,
@@ -15076,12 +15537,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 3.5684,
-                "y": 0.492599964
+                "x": 3.5681,
+                "y": -6.1193
               },
               "Position": {
-                "x": 3.5684,
-                "y": 0.492599964,
+                "x": 3.5681,
+                "y": -6.1193,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -15254,7 +15715,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "07f032cfd5174103afad1a0110fcfe5d"
+                "DataId": "97702ed8f7f641e59dc5c1c5a040341d"
               },
               "OverrideSorting": false,
               "Color": {
@@ -15342,7 +15803,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "0f9cd54928b3454bb45d0a8f415f3dba"
+                "DataId": "673bb18e90cc4b56929d6296a5b84c0f"
               },
               "OverrideSorting": false,
               "Enable": true
