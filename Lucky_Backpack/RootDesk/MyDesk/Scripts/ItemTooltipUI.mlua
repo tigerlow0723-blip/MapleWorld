@@ -37,6 +37,8 @@ script ItemTooltipUI extends Component
 
 	property integer tooltipOffsetY = -24
 
+	property integer tooltipClampPadding = 8
+
 	property any dataManager = nil
 
 	property any tooltipPanel = nil
@@ -1162,10 +1164,37 @@ script ItemTooltipUI extends Component
 		end
 		
 		local localPos = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
-		panelUI.anchoredPosition = Vector2(
-			localPos.x + self.tooltipOffsetX,
-			localPos.y + self.tooltipOffsetY + self.tooltipDynamicYOffset
-		)
+		local targetX = localPos.x + self.tooltipOffsetX
+		local targetY = localPos.y + self.tooltipOffsetY + self.tooltipDynamicYOffset
+		
+		local parentSize = parentUI.RectSize
+		local panelSize = panelUI.RectSize
+		if parentSize ~= nil and panelSize ~= nil then
+			local halfParentW = (tonumber(parentSize.x) or 0) * 0.5
+			local halfParentH = (tonumber(parentSize.y) or 0) * 0.5
+			local halfPanelW = (tonumber(panelSize.x) or 0) * 0.5
+			local halfPanelH = (tonumber(panelSize.y) or 0) * 0.5
+			local pad = math.max(0, tonumber(self.tooltipClampPadding) or 0)
+			
+			local minX = -halfParentW + halfPanelW + pad
+			local maxX = halfParentW - halfPanelW - pad
+			local minY = -halfParentH + halfPanelH + pad
+			local maxY = halfParentH - halfPanelH - pad
+			
+			if minX > maxX then
+				targetX = 0
+			else
+				targetX = math.max(minX, math.min(maxX, targetX))
+			end
+			
+			if minY > maxY then
+				targetY = 0
+			else
+				targetY = math.max(minY, math.min(maxY, targetY))
+			end
+		end
+		
+		panelUI.anchoredPosition = Vector2(targetX, targetY)
 	end
 
 end

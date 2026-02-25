@@ -626,13 +626,12 @@ script PlayerManager extends Component
 				local itemType = string.lower(tostring(item.type or ""))
 				local isArmor = (itemType == "armor")
 				if isArmor then
+					-- Armor use-option values (atkPercent/critRate/critDmg/weaponCost) are
+					-- applied through BattleManager temp buffs only when "use" is triggered.
+					-- Do not treat them as always-on passive stats from inventory possession.
 					stats.itemHp += item.hp or 0
 					stats.itemHpPercent += item.hpPercent or 0
 					stats.itemAtk += item.atk or 0
-					stats.itemAtkPercent += item.atkPercent or 0
-					stats.itemAcc += item.accPercent or 0
-					stats.itemCritRate += item.critRate or 0
-					stats.itemCritDmg += item.critDmg or 0
 					stats.itemDef += item.def or 0
 				end
 			end

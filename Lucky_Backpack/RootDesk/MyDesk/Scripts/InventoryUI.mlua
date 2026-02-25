@@ -19,6 +19,8 @@ script InventoryUI extends Component
 
 	property table colorCannotPlace = {}
 
+	property table colorAdjacencySynergy = {}
+
 	property table cellEntities = {}
 
 	property table dragState = {}
@@ -67,6 +69,7 @@ script InventoryUI extends Component
 		    self.colorOccupied = {r = 0.7, g = 0.7, b = 0.7, a = 1.0}
 		    self.colorCanPlace = {r = 0.2, g = 0.8, b = 0.2, a = 0.8}
 		    self.colorCannotPlace = {r = 0.8, g = 0.2, b = 0.2, a = 0.8}
+		    self.colorAdjacencySynergy = {r = 0.84, g = 0.32, b = 1.0, a = 0.95}
 		
 		    self.dragState = {
 		        isDragging = false,
@@ -231,6 +234,256 @@ script InventoryUI extends Component
 		            end
 		        end
 		    end
+		
+		    self:ApplyActiveAdjacencySynergyHighlight(inventory)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table BuildPlacedShapeCells(any dataManager, table placedInfo, integer itemId)
+		    local shapeCells = nil
+		    if placedInfo ~= nil then
+		        shapeCells = placedInfo.shapeCells
+		    end
+		    if shapeCells ~= nil and #shapeCells > 0 then
+		        return shapeCells
+		    end
+		
+		    local width = 1
+		    local height = 1
+		    if dataManager ~= nil then
+		        local itemData = dataManager:GetItemData(itemId)
+		        if itemData ~= nil then
+		            width = math.max(1, tonumber(itemData.width) or 1)
+		            height = math.max(1, tonumber(itemData.height) or 1)
+		        end
+		    end
+		
+		    local fallback = {}
+		    for r = 0, height - 1 do
+		        for c = 0, width - 1 do
+		            fallback[#fallback + 1] = {row = r, col = c}
+		        end
+		    end
+		    return fallback
+	end
+
+	@ExecSpace("ClientOnly")
+	method void MarkPlacedCells(table outMap, any dataManager, table placedInfo, integer itemId, integer maxRow, integer maxCol)
+		    if outMap == nil or placedInfo == nil then
+		        return
+		    end
+		
+		    local baseRow = tonumber(placedInfo.row) or 0
+		    local baseCol = tonumber(placedInfo.col) or 0
+		    if baseRow <= 0 or baseCol <= 0 then
+		        return
+		    end
+		
+		    local shapeCells = self:BuildPlacedShapeCells(dataManager, placedInfo, itemId)
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell == nil then
+		            continue
+		        end
+		
+		        local absRow = baseRow + (tonumber(cell.row) or 0)
+		        local absCol = baseCol + (tonumber(cell.col) or 0)
+		        if absRow < 1 or absRow > maxRow or absCol < 1 or absCol > maxCol then
+		            continue
+		        end
+		
+		        if outMap[absRow] == nil then
+		            outMap[absRow] = {}
+		        end
+		        outMap[absRow][absCol] = true
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method table BuildActiveAdjacencySynergyCellMap(any inventory)
+		    local result = {}
+		    if inventory == nil or inventory.placedItems == nil then
+		        return result
+		    end
+		
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    local playerManager = nil
+		    local dataManager = nil
+		    if gameSystem ~= nil then
+		        playerManager = gameSystem.PlayerManager
+		        dataManager = gameSystem.DataManager
+		    end
+		
+		    if dataManager == nil then
+		        return result
+		    end
+		
+		    local maxRow = tonumber(inventory.maxHeight) or 6
+		    local maxCol = tonumber(inventory.maxWidth) or 6
+		    local itemDataCache = {}
+		
+		    local function getItemData(itemId)
+		        if itemId <= 0 then
+		            return nil
+		        end
+		        if itemDataCache[itemId] == nil then
+		            itemDataCache[itemId] = dataManager:GetItemData(itemId)
+		        end
+		        return itemDataCache[itemId]
+		    end
+		
+		    local function isWeaponItemId(itemId)
+		        local itemData = getItemData(itemId)
+		        if itemData == nil then
+		            return false
+		        end
+		        return string.lower(tostring(itemData.type or "")) == "weapon"
+		    end
+		
+		    local function isSynergyScrollItemId(itemId)
+		        if itemId <= 0 then
+		            return false
+		        end
+		        if playerManager ~= nil and playerManager.IsSynergyScrollId ~= nil then
+		            if playerManager:IsSynergyScrollId(itemId) == true then
+		                return true
+		            end
+		        end
+		
+		        local itemData = getItemData(itemId)
+		        if itemData == nil then
+		            return false
+		        end
+		        if string.lower(tostring(itemData.type or "")) ~= "atk_scroll" then
+		            return false
+		        end
+		        local minAtk = tonumber(itemData.minAtk) or 0
+		        local maxAtk = tonumber(itemData.maxAtk) or 0
+		        return (minAtk > 0 or maxAtk > 0)
+		    end
+		
+		    local function markNeighborAnchorOrCell(neighborRow, neighborCol)
+		        local anchorInfo = nil
+		        if inventory.GetPlacedItemAnchorAtCell ~= nil then
+		            anchorInfo = inventory:GetPlacedItemAnchorAtCell(neighborRow, neighborCol)
+		        end
+		
+		        local neighborItemId = 0
+		        if anchorInfo ~= nil then
+		            neighborItemId = tonumber(anchorInfo.itemId) or 0
+		        end
+		        if neighborItemId <= 0 then
+		            neighborItemId = tonumber(inventory:GetCellValue(neighborRow, neighborCol)) or 0
+		        end
+		
+		        if isSynergyScrollItemId(neighborItemId) == false then
+		            return nil
+		        end
+		
+		        if anchorInfo ~= nil and anchorInfo.key ~= nil then
+		            return inventory.placedItems[anchorInfo.key], neighborItemId
+		        end
+		        return {row = neighborRow, col = neighborCol, shapeCells = {{row = 0, col = 0}}}, neighborItemId
+		    end
+		
+		    for placedKey, placedInfo in pairs(inventory.placedItems) do
+		        if placedInfo == nil then
+		            continue
+		        end
+		
+		        local itemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		        if itemId <= 0 or isWeaponItemId(itemId) == false then
+		            continue
+		        end
+		
+		        local baseRow = tonumber(placedInfo.row) or 0
+		        local baseCol = tonumber(placedInfo.col) or 0
+		        if baseRow <= 0 or baseCol <= 0 then
+		            continue
+		        end
+		
+		        local shapeCells = self:BuildPlacedShapeCells(dataManager, placedInfo, itemId)
+		        for i = 1, #shapeCells do
+		            local cell = shapeCells[i]
+		            if cell == nil then
+		                continue
+		            end
+		
+		            local absRow = baseRow + (tonumber(cell.row) or 0)
+		            local absCol = baseCol + (tonumber(cell.col) or 0)
+		
+		            local neighborDirs = {
+		                {dr = 0, dc = -1},
+		                {dr = 0, dc = 1},
+		                {dr = -1, dc = 0},
+		                {dr = 1, dc = 0}
+		            }
+		
+		            for d = 1, #neighborDirs do
+		                local dir = neighborDirs[d]
+		                local nr = absRow + dir.dr
+		                local nc = absCol + dir.dc
+		                if nr < 1 or nr > maxRow or nc < 1 or nc > maxCol then
+		                    continue
+		                end
+		
+		                local neighborInfo, neighborItemId = markNeighborAnchorOrCell(nr, nc)
+		                if neighborInfo == nil or neighborItemId <= 0 then
+		                    continue
+		                end
+		
+		                self:MarkPlacedCells(result, dataManager, placedInfo, itemId, maxRow, maxCol)
+		                self:MarkPlacedCells(result, dataManager, neighborInfo, neighborItemId, maxRow, maxCol)
+		            end
+		        end
+		    end
+		
+		    return result
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyHighlightMapWithColor(table highlightMap, table color)
+		    if highlightMap == nil or color == nil then
+		        return
+		    end
+		
+		    for r = 1, 6 do
+		        local rowMap = highlightMap[r]
+		        if rowMap == nil or self.cellEntities[r] == nil then
+		            continue
+		        end
+		
+		        for c = 1, 6 do
+		            if rowMap[c] ~= true then
+		                continue
+		            end
+		            local cellEntity = self.cellEntities[r][c]
+		            if cellEntity == nil then
+		                continue
+		            end
+		            local renderer = cellEntity.SpriteGUIRendererComponent
+		            if renderer ~= nil then
+		                renderer.Color = Color(color.r, color.g, color.b, color.a)
+		            end
+		        end
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyActiveAdjacencySynergyHighlight(any inventory)
+		    if inventory == nil then
+		        return
+		    end
+		    if self.dragState ~= nil and self.dragState.isDragging == true then
+		        return
+		    end
+		
+		    local highlightMap = self:BuildActiveAdjacencySynergyCellMap(inventory)
+		    if highlightMap == nil then
+		        return
+		    end
+		
+		    self:ApplyHighlightMapWithColor(highlightMap, self.colorAdjacencySynergy)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -279,7 +532,7 @@ script InventoryUI extends Component
 		        displayArea:EnsureShapeHitCells(itemEntity, itemComp)
 		    end
 		    if displayArea.SetDisplayAreaHitMode ~= nil then
-		        displayArea:SetDisplayAreaHitMode(itemEntity, false)
+		        displayArea:SetDisplayAreaHitMode(itemEntity, true)
 		    end
 	end
 
@@ -293,11 +546,15 @@ script InventoryUI extends Component
 		        return
 		    end
 		
-		    local useDisplayAreaMode = false
-		    if parentEntity ~= nil and displayArea.Entity ~= nil and parentEntity == displayArea.Entity then
-		        useDisplayAreaMode = true
+		    local useShapeHitCell = false
+		    if parentEntity ~= nil then
+		        if parentEntity == self.Entity then
+		            useShapeHitCell = true
+		        elseif displayArea.Entity ~= nil and parentEntity == displayArea.Entity then
+		            useShapeHitCell = true
+		        end
 		    end
-		    displayArea:SetDisplayAreaHitMode(itemEntity, useDisplayAreaMode)
+		    displayArea:SetDisplayAreaHitMode(itemEntity, useShapeHitCell)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -383,6 +640,7 @@ script InventoryUI extends Component
 		        self:ApplyShapeRectSize(itemEntity, itemComp, shapeCells, itemComp.width, itemComp.height)
 		        self:SnapItemToGrid(itemEntity, row, col, itemComp.width, itemComp.height, shapeCells)
 		        self:BindTooltipEvents(itemEntity, itemComp)
+		        self:SyncShapeHitModeWithParent(itemEntity, self.Entity)
 		    end
 	end
 
@@ -866,7 +1124,7 @@ script InventoryUI extends Component
 		        end, self.tooltipHoverDelay)
 		        self.hoverTimerByItemId[itemId] = timerId
 		    end)
-
+		
 		    itemEntity:ConnectEvent(UITouchDownEvent, function(event)
 		        if self.dragState ~= nil and self.dragState.isDragging then
 		            return
