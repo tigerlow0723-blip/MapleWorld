@@ -516,9 +516,13 @@ script UIMain extends Component
 	method void UpdatePhasePanelVisibility(string phase)
 		self:ResolvePhasePanelEntities()
 		local isRewardChestPhase = self:IsRewardChestPhase(phase)
+		local isStageTransitioning = false
+		if self.gameManager ~= nil and self.gameManager.isStageTransitioning == true then
+			isStageTransitioning = true
+		end
 
 		if self.itemDisplayAreaEntity ~= nil then
-			if phase == "Battle" or isRewardChestPhase then
+			if phase == "Battle" or phase == "MiniGame" or isRewardChestPhase or isStageTransitioning then
 				self.itemDisplayAreaEntity:SetEnable(false)
 				self.itemDisplayAreaEntity:SetVisible(false)
 			elseif phase == "Preparation" or phase == "Shop" then
@@ -773,10 +777,15 @@ script UIMain extends Component
 		if self.gameManager ~= nil then
 			phase = self.gameManager.gamePhase
 		end
+		local isRewardChestPhase = self:IsRewardChestPhase(phase)
 		self:UpdatePhasePanelVisibility(phase)
 		
 		if self.btnBattleStart ~= nil then
-			self.btnBattleStart.Enable = (phase == "Preparation")
+			local canShowBattleStart = (phase == "Preparation" and isRewardChestPhase == false)
+			if canShowBattleStart and self.itemDisplayAreaEntity ~= nil then
+				canShowBattleStart = (self.itemDisplayAreaEntity.Enable == true)
+			end
+			self.btnBattleStart.Enable = canShowBattleStart
 		end
 		
 		if self.btnTurnEnd ~= nil then

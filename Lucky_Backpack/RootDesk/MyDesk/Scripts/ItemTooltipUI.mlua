@@ -769,11 +769,14 @@ script ItemTooltipUI extends Component
 			return
 		end
 		
-		local bonusValue = 0
 		local itemComp = self:FindTooltipItemComponent(itemId, screenPos)
-		if itemComp ~= nil then
-			bonusValue = math.max(0, tonumber(itemComp.bonusSynergyAtk) or 0)
+		-- Shop card tooltip is preview-only (no instantiated item component),
+		-- so don't render adjacency synergy text in that context.
+		if itemComp == nil then
+			return
 		end
+		
+		local bonusValue = math.max(0, tonumber(itemComp.bonusSynergyAtk) or 0)
 		
 		local currentText = tostring(self.statsText.TextComponent.Text or "")
 		if currentText ~= "" then

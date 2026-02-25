@@ -14,6 +14,8 @@ script ShopUI extends Component
 	property string itemListPath = "/ui/UIGroup/ShopPanel/ItemList"
 
 	property string itemCardTemplatePath = "/ui/UIGroup/ShopPanel/ItemCardTemplate"
+	property string tooltipPanelPath = "/ui/UIGroup/TooltipPanel"
+	property number tooltipHoverDelay = 1.0
 
 	property string currentShopTier = "Rare"
 
@@ -50,6 +52,11 @@ script ShopUI extends Component
 	property any itemListEntity = nil
 
 	property any itemCardTemplateEntity = nil
+	property any tooltipUI = nil
+	property integer tooltipHoverTimerId = 0
+	property integer tooltipHoverCardIndex = 0
+	property any tooltipMouseMoveHandler = nil
+	property any tooltipRightClickKeyHandler = nil
 
 	property integer goldOrePurchaseCount = 0
 
@@ -65,6 +72,13 @@ script ShopUI extends Component
 		    self:ResolveManagers()
 		    self:ResolveUIReferences()
 		    self:ConnectEvents()
+		    self:ConnectTooltipInputEvents()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		    self:DisconnectTooltipInputEvents()
+		    self:HideTooltip()
 	end
 
 	@ExecSpace("ClientOnly")
@@ -114,6 +128,7 @@ script ShopUI extends Component
 	method void OpenShop()
 		    self:ResolveManagers()
 		    self:ResolveUIReferences()
+		    self:HideTooltip()
 		
 		    self.Entity:SetEnable(true)
 		    self.Entity:SetVisible(true)
@@ -339,6 +354,7 @@ script ShopUI extends Component
 	@ExecSpace("ClientOnly")
 	method void RenderShopItems()
 		    self:ClearRenderedCards()
+		    self:HideTooltip()
 		    self.cardEntities = {}
 		
 		    if self.itemListEntity == nil or self.itemCardTemplateEntity == nil then
@@ -358,6 +374,7 @@ script ShopUI extends Component
 		                cardEntity:ConnectEvent(ButtonClickEvent, function(event)
 		                    self:OnClickCard(idx)
 		                end)
+		                self:BindCardTooltipEvents(cardEntity, idx)
 		
 		                self:RenderCard(cardEntity, itemData)
 		                table.insert(self.cardEntities, cardEntity)
@@ -370,6 +387,7 @@ script ShopUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void ClearRenderedCards()
+		    self:HideTooltip()
 		    if self.cardEntities == nil or type(self.cardEntities) ~= "table" then
 		        self.cardEntities = {}
 		        return
@@ -666,6 +684,7 @@ script ShopUI extends Component
 		    if itemData == nil then
 		        return
 		    end
+		    self:HideTooltip()
 		
 		    if self.playerManager == nil then
 		        return
@@ -765,12 +784,319 @@ script ShopUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void OnClickClose()
+		    self:HideTooltip()
 		    if self.gameManager ~= nil then
 		        self.gameManager:CloseShop()
 		    else
 		        self.Entity:SetEnable(false)
 		        self.Entity:SetVisible(false)
 		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsRightClick(any event)
+		if event == nil then
+			return false
+		end
+		if event.TouchId ~= nil and event.TouchId == -3 then
+			return true
+		end
+		
+		local button = event.Button
+		if button == nil then
+			button = event.button
+		end
+		if button ~= nil then
+			if button == 1 or button == 2 or button == -3 then
+				return true
+			end
+			local buttonText = string.lower(tostring(button))
+			if string.find(buttonText, "right", 1, true) ~= nil then
+				return true
+			end
+		end
+		
+		local actionType = event.ActionType
+		if actionType ~= nil then
+			local actionText = string.lower(tostring(actionType))
+			if string.find(actionText, "right", 1, true) ~= nil then
+				return true
+			end
+		end
+		
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BindCardTooltipEvents(Entity cardEntity, integer cardIndex)
+		-- Shop tooltip is handled by global cursor hit-test against card image bounds.
+		-- Keep this method for compatibility with RenderShopItems flow.
+		return
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer ResolveCardTooltipItemId(integer cardIndex)
+		if cardIndex <= 0 then
+			return 0
+		end
+		
+		local itemData = self.shopItems[cardIndex]
+		if itemData == nil then
+			return 0
+		end
+		
+		return tonumber(itemData.id) or 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearTooltipHoverTimer()
+		if self.tooltipHoverTimerId ~= nil and self.tooltipHoverTimerId > 0 then
+			_TimerService:ClearTimer(self.tooltipHoverTimerId)
+		end
+		self.tooltipHoverTimerId = 0
+		self.tooltipHoverCardIndex = 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ScheduleTooltipHover(integer cardIndex, Vector2 point)
+		self:ClearTooltipHoverTimer()
+		if cardIndex <= 0 then
+			return
+		end
+		
+		self.tooltipHoverCardIndex = cardIndex
+		local hoverPoint = point
+		self.tooltipHoverTimerId = _TimerService:SetTimerOnce(function()
+			self.tooltipHoverTimerId = 0
+			if self.tooltipHoverCardIndex ~= cardIndex then
+				return
+			end
+			
+			local cursorPos = _InputService:GetCursorPosition()
+			if self:ResolveHoveredShopCardIndex(cursorPos) ~= cardIndex then
+				return
+			end
+			
+			local itemId = self:ResolveCardTooltipItemId(cardIndex)
+			if itemId <= 0 then
+				self:HideTooltip()
+				return
+			end
+			
+			local showPoint = hoverPoint
+			if showPoint == nil then
+				showPoint = cursorPos
+			end
+			self:ShowTooltipForItem(itemId, showPoint)
+		end, self.tooltipHoverDelay)
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity GetCardTooltipHitEntity(integer cardIndex)
+		local cardEntity = self.cardEntities[cardIndex]
+		if cardEntity == nil or not isvalid(cardEntity) then
+			return nil
+		end
+		
+		local imgEntity = cardEntity:GetChildByName("Img", true)
+		if imgEntity ~= nil and isvalid(imgEntity) then
+			return imgEntity
+		end
+		return cardEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer ResolveHoveredShopCardIndex(Vector2 cursorPos)
+		if cursorPos == nil then
+			return 0
+		end
+		if self.cardEntities == nil or type(self.cardEntities) ~= "table" then
+			return 0
+		end
+		
+		for i = #self.cardEntities, 1, -1 do
+			local itemId = self:ResolveCardTooltipItemId(i)
+			if itemId <= 0 then
+				continue
+			end
+			
+			local hitEntity = self:GetCardTooltipHitEntity(i)
+			if hitEntity ~= nil and self:IsPointInsideEntityRect(hitEntity, cursorPos) then
+				return i
+			end
+		end
+		return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HandleTooltipHoverFromCursor(Vector2 cursorPos)
+		if cursorPos == nil then
+			return
+		end
+		
+		local cardIndex = self:ResolveHoveredShopCardIndex(cursorPos)
+		if cardIndex <= 0 then
+			self:ClearTooltipHoverTimer()
+			self:HideTooltip()
+			return
+		end
+		
+		self:ScheduleTooltipHover(cardIndex, cursorPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTooltipMouseMove(MouseMoveEvent event)
+		if self:IsShopTooltipActive() == false then
+			return
+		end
+		
+		if event ~= nil and event.MouseDelta ~= nil then
+			local delta = event.MouseDelta
+			if math.abs(delta.x) < 0.5 and math.abs(delta.y) < 0.5 then
+				return
+			end
+		end
+		
+		self:HideTooltip()
+		self:HandleTooltipHoverFromCursor(_InputService:GetCursorPosition())
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnTooltipRightClickKeyDown(KeyDownEvent event)
+		if self:IsShopTooltipActive() == false then
+			return
+		end
+		if event == nil then
+			return
+		end
+		
+		local key = event.key
+		if key ~= KeyboardKey.Mouse1 then
+			return
+		end
+		
+		local cursorPos = _InputService:GetCursorPosition()
+		local cardIndex = self:ResolveHoveredShopCardIndex(cursorPos)
+		if cardIndex <= 0 then
+			self:HideTooltip()
+			return
+		end
+		
+		self:ClearTooltipHoverTimer()
+		local itemId = self:ResolveCardTooltipItemId(cardIndex)
+		if itemId <= 0 then
+			self:HideTooltip()
+			return
+		end
+		
+		self:ShowTooltipForItem(itemId, cursorPos)
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsShopTooltipActive()
+		self:ResolveManagers()
+		if self.gameManager == nil then
+			return false
+		end
+		return self.gameManager.gamePhase == "Shop"
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ConnectTooltipInputEvents()
+		if self.tooltipMouseMoveHandler == nil then
+			self.tooltipMouseMoveHandler = _InputService:ConnectEvent(MouseMoveEvent, function(event)
+				self:OnTooltipMouseMove(event)
+			end)
+		end
+		if self.tooltipRightClickKeyHandler == nil then
+			self.tooltipRightClickKeyHandler = _InputService:ConnectEvent(KeyDownEvent, function(event)
+				self:OnTooltipRightClickKeyDown(event)
+			end)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void DisconnectTooltipInputEvents()
+		if self.tooltipMouseMoveHandler ~= nil then
+			_InputService:DisconnectEvent(MouseMoveEvent, self.tooltipMouseMoveHandler)
+			self.tooltipMouseMoveHandler = nil
+		end
+		if self.tooltipRightClickKeyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.tooltipRightClickKeyHandler)
+			self.tooltipRightClickKeyHandler = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Vector2 GetEventTouchPoint(any event)
+		if event ~= nil and event.TouchPoint ~= nil then
+			return event.TouchPoint
+		end
+		return _InputService:GetCursorPosition()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveTooltipUI()
+		if self.tooltipUI ~= nil then
+			return
+		end
+		local tooltipEntity = _EntityService:GetEntityByPath(self.tooltipPanelPath)
+		if tooltipEntity ~= nil and tooltipEntity.ItemTooltipUI ~= nil then
+			self.tooltipUI = tooltipEntity.ItemTooltipUI
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ShowTooltipForItem(integer itemId, Vector2 point)
+		if itemId <= 0 then
+			return
+		end
+		local showPoint = point
+		if showPoint == nil then
+			showPoint = _InputService:GetCursorPosition()
+		end
+		self:ResolveTooltipUI()
+		if self.tooltipUI == nil then
+			return
+		end
+		self.tooltipUI:HideTooltip()
+		self.tooltipUI:ShowTooltip(itemId, showPoint)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void HideTooltip()
+		self:ClearTooltipHoverTimer()
+		self:ResolveTooltipUI()
+		if self.tooltipUI ~= nil then
+			self.tooltipUI:HideTooltip()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsPointInsideEntityRect(Entity targetEntity, Vector2 touchPoint)
+		if targetEntity == nil or touchPoint == nil then
+			return false
+		end
+		
+		local targetUI = targetEntity.UITransformComponent
+		if targetUI == nil then
+			return false
+		end
+		local size = targetUI.RectSize
+		if size == nil then
+			return false
+		end
+		
+		local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, targetUI)
+		local halfW = size.x * 0.5
+		local halfH = size.y * 0.5
+		if localPos.x < -halfW or localPos.x > halfW then
+			return false
+		end
+		if localPos.y < -halfH or localPos.y > halfH then
+			return false
+		end
+		return true
 	end
 
 	@ExecSpace("ClientOnly")
