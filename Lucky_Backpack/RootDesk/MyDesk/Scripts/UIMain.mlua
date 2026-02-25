@@ -1,4 +1,4 @@
-ï»¿@Component
+@Component
 script UIMain extends Component
 
 	property Entity sliderHP = nil
@@ -39,6 +39,10 @@ script UIMain extends Component
 
 	property Entity txtStage = nil
 
+	property Entity txtPlayerCoin = nil
+	property Entity uiPlayerCoinPanel = nil
+	property string playerCoinTextPath = "/ui/UIGroup/PlayerCoin/TxtPlayerCoin"
+	property string playerCoinPanelPath = "/ui/UIGroup/PlayerCoin"
 	property Entity uiStage5_1 = nil
 	property Entity uiStage5_2 = nil
 	property Entity uiStage5_3 = nil
@@ -69,7 +73,11 @@ script UIMain extends Component
 	property Entity uiFail = nil
 	property Entity btnRetry = nil
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
+	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
 	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
+	property Entity scrollPanelEntity = nil
+	property Entity itemDisplayAreaEntity = nil
+	property Entity rewardPanelEntity = nil
 	property any gameManager = nil
 	property any battleManager = nil
 	property any playerManager = nil
@@ -111,7 +119,7 @@ script UIMain extends Component
 			self.uiFail.Enable = false
 		end
 		
-		self:UpdateUI() -- ?ï¿½ë‡ï¿½???ï¿½ï¿½?ï¿½?UI åª›ê¹†??(ï§ë‚†?????ï¿½ìŒ??
+		self:UpdateUI() -- ??ˆê?????????UI ê°±ì??(ëª…ì??????½ì??
         log("[UIMain] UI initialized")
 	end
 
@@ -224,6 +232,20 @@ script UIMain extends Component
 				self.stage5DiceRollEntity2 = self.uiStage5_game:GetChildByName("DiceRoll2")
 			end
 		end
+
+		self:ResolvePlayerCoinUI()
+	end
+
+	method void ResolvePlayerCoinUI()
+		if self.uiPlayerCoinPanel == nil then
+			self.uiPlayerCoinPanel = _EntityService:GetEntityByPath(self.playerCoinPanelPath)
+		end
+		if self.txtPlayerCoin == nil then
+			self.txtPlayerCoin = _EntityService:GetEntityByPath(self.playerCoinTextPath)
+			if self.txtPlayerCoin == nil and self.uiPlayerCoinPanel ~= nil then
+				self.txtPlayerCoin = self.uiPlayerCoinPanel:GetChildByName("TxtPlayerCoin", true)
+			end
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -302,7 +324,7 @@ script UIMain extends Component
 			end)
 		end
 		
-		-- ???ï¿½ë‚…ï¿½?è¸°ê¾ª??
+		-- ????…ë??ë²„í??
 		if self.btnTurnEnd ~= nil then
 			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function() 
 				if self.gameManager == nil or self.gameManager.gamePhase ~= "Battle" then
@@ -313,7 +335,7 @@ script UIMain extends Component
 			end)
 		end
 		
-		-- ??ï¿½ï¿½?????ï¿½ìŒ??è¸°ê¾ª??
+		-- ??????????½ì??ë²„í??
 		if self.btnBattleStart ~= nil then
 			self.btnBattleStart:ConnectEvent("ButtonClickEvent", function()
 				if self.gameManager ~= nil and self.gameManager.gamePhase == "Preparation" then
@@ -328,7 +350,7 @@ script UIMain extends Component
 		end
 		
 		-- ==========================================
-		-- èª˜ëªƒ?ï¿½å¯ƒ??ï¿½ï¿½ è¸°ê¾ª????ï¿½ìˆï¿½???ï¿½ìˆï¿½????ï¿½ì„ï¿½?
+		-- ë¯¸ë??ê²???? ë²„í?????½ë?????½ë??????½ê??
 		-- ==========================================
 		if self.btnPlayOddEven ~= nil then
 			self.btnPlayOddEven:ConnectEvent("ButtonClickEvent", function()
@@ -413,6 +435,76 @@ script UIMain extends Component
 		end
 	end
 
+	method void ResolvePhasePanelEntities()
+		if self.scrollPanelEntity == nil then
+			self.scrollPanelEntity = _EntityService:GetEntityByPath(self.scrollPanelPath)
+		end
+		if self.itemDisplayAreaEntity == nil then
+			self.itemDisplayAreaEntity = _EntityService:GetEntityByPath(self.itemDisplayAreaPath)
+		end
+		if self.rewardPanelEntity == nil then
+			self.rewardPanelEntity = _EntityService:GetEntityByPath(self.rewardPanelPath)
+			if self.rewardPanelEntity == nil and self.rewardUI ~= nil then
+				if self.rewardUI.rewardPanelEntity ~= nil then
+					self.rewardPanelEntity = self.rewardUI.rewardPanelEntity
+				elseif self.rewardUI.Entity ~= nil then
+					self.rewardPanelEntity = self.rewardUI.Entity
+				end
+			end
+		end
+	end
+
+	method boolean IsRewardChestPhase(string phase)
+		if phase ~= "Preparation" then
+			return false
+		end
+
+		local rewardPanelOpen = false
+		local rewardPanel = self.rewardPanelEntity
+		if rewardPanel == nil and self.rewardUI ~= nil then
+			if self.rewardUI.rewardPanelEntity ~= nil then
+				rewardPanel = self.rewardUI.rewardPanelEntity
+			elseif self.rewardUI.Entity ~= nil then
+				rewardPanel = self.rewardUI.Entity
+			end
+			self.rewardPanelEntity = rewardPanel
+		end
+		if rewardPanel ~= nil and rewardPanel.Enable == true then
+			rewardPanelOpen = true
+		end
+
+		local rewardChestActive = false
+		if self.gameManager ~= nil and self.gameManager.rewardChestEntity ~= nil and self.gameManager.rewardChestEntity.Enable == true then
+			rewardChestActive = true
+		end
+
+		return rewardPanelOpen or rewardChestActive
+	end
+
+	method void UpdatePhasePanelVisibility(string phase)
+		self:ResolvePhasePanelEntities()
+		local isRewardChestPhase = self:IsRewardChestPhase(phase)
+
+		if self.itemDisplayAreaEntity ~= nil then
+			if phase == "Battle" or isRewardChestPhase then
+				self.itemDisplayAreaEntity:SetEnable(false)
+				self.itemDisplayAreaEntity:SetVisible(false)
+			elseif phase == "Preparation" or phase == "Shop" then
+				self.itemDisplayAreaEntity:SetEnable(true)
+				self.itemDisplayAreaEntity:SetVisible(true)
+			end
+		end
+
+		if self.scrollPanelEntity ~= nil then
+			if phase == "Battle" then
+				self.scrollPanelEntity:SetEnable(false)
+				self.scrollPanelEntity:SetVisible(false)
+			elseif phase == "Preparation" or phase == "Shop" then
+				self.scrollPanelEntity:SetEnable(true)
+				self.scrollPanelEntity:SetVisible(true)
+			end
+		end
+	end
 	method void ShowMainMenu()
 		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
 		if mainGroup ~= nil then
@@ -474,7 +566,7 @@ script UIMain extends Component
 		
 		self:RefreshScrollInventoryUI()
 		
-		-- ??ï¿½ì™??åª›ëº¤??åª›ê¹†??(ï§ÑŠë’ª??ï¿½ì™?? äºŒì„ï¿½????ï¿½ï¿½????ï¿½ì™??åª›Â€ è«›ë¶¾??????????ï¿½ìŒ????ï¿½ì™??
+		-- ???½ï??ê°•ì??ê°±ì??(ëª¬ìŠ¤???½ï?? ì£½ê????????????½ï??ê°€ ë°”ë???????????½ì?????½ï??
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 			local canShowTarget = false
 			if self.gameManager ~= nil and self.gameManager.gamePhase == "Battle" and self.targetMonsterIdx ~= nil and self.targetMonsterIdx > 0 then
@@ -488,14 +580,14 @@ script UIMain extends Component
 			end
 		end
 		
-		-- 1. HP å¯ƒëš¯?ï¿½ï§? ??ï¿½ìˆ???ï¿½ï¿½???
+		-- 1. HP ê²Œì??ì§? ???½ë????????
 		if self.sliderHP ~= nil then
 			local maxHP = self.playerManager.maxHP
 			local ratio = 0
 			if maxHP > 0 then
 				ratio = self.playerManager.currentHP / maxHP
 			end
-			-- Entity??ï¿½ìŒï¿½?SliderComponent ï§¡ì– ï¿½??????ï¿½ìŒ??
+			-- Entity???½ì??SliderComponent ì°¾ì????????½ì??
 			local slider = self.sliderHP.SliderComponent
 			if slider ~= nil then slider.Value = ratio end
 		end
@@ -509,7 +601,7 @@ script UIMain extends Component
 		-- 1.5. Monster HP Bars (Cloned Sliders mapped to World Space)
 		self:UpdateMonsterHPBars()
 		
-		-- 2. Cost å¯ƒëš¯?ï¿½ï§? ??ï¿½ìˆ???ï¿½ï¿½???
+		-- 2. Cost ê²Œì??ì§? ???½ë????????
 		if self.sliderCost ~= nil then
 			local maxCost = self.playerManager.maxCost
 			local ratio = 0
@@ -525,8 +617,19 @@ script UIMain extends Component
 				txt.Text = math.ceil(self.playerManager.currentCost) .. "/" .. math.ceil(self.playerManager.maxCost)
 			end
 		end
-		
-		-- 3. ??ï¿½ï¿½????ï¿½ì™?? ??ï¿½ìŒ??(TextComponentåª›Â€ ??ï¿½ìˆ????ï¿½ï¿½????ï¿½ìˆ?ï¿½å ?åª›Â€??
+
+		self:ResolvePlayerCoinUI()
+		if self.uiPlayerCoinPanel ~= nil then
+			self.uiPlayerCoinPanel:SetEnable(true)
+			self.uiPlayerCoinPanel:SetVisible(true)
+		end
+		if self.txtPlayerCoin ~= nil then
+			local coinText = self.txtPlayerCoin.TextComponent
+			if coinText ~= nil then
+				coinText.Text = tostring(self.playerManager.gold or 0)
+			end
+		end
+		-- 3. ?????????½ï?? ???½ì??(TextComponentê°€ ???½ë???????????½ë??ï¿?ê°€??
 		if self.txtStage ~= nil and self.battleManager ~= nil then
 			local txt = self.txtStage.TextComponent
 			if txt ~= nil then
@@ -534,14 +637,14 @@ script UIMain extends Component
 			end
 		end
 		
-		-- 3.5 è¹‚ëŒ??ï§£ï¿½??ï¿½å ???ï¿½ìˆ???ï¿½ï¿½???
+		-- 3.5 ë³´ì??ì²????ï¿????½ë????????
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 			local monsterMgr = self.battleManager.monsterManager
 			if monsterMgr.isBossBattle and self.uiBossInfoGroup ~= nil then
 				self.uiBossInfoGroup.Enable = true
 				-- Removed self:SetBossSkillUIEnable(true) here: skills should stay hidden until used
 				
-				-- è¹‚ëŒ???ï¿½ÑŠë’ª??ï¿½ìŒï¿½??è¹‚ëŒ????ï¿½ï¿½????ï§¡ì–˜ï¿½?
+				-- ë³´ì????¬ìŠ¤???½ì???ë³´ì??????????ì°¾ê??
 				local boss = nil
 				for i = 1, #monsterMgr.monsterList do
 					local m = monsterMgr.monsterList[i]
@@ -629,11 +732,12 @@ script UIMain extends Component
 			self:SetBossSkillUIEnable(false)
 		end
 		
-		-- Button åª›Â€??ï¿½ìŒï¿½???ï¿½ìŒï¿½?(Preparation vs Battle)
+		-- Button ê°€???½ì?????½ì??(Preparation vs Battle)
 		local phase = "None"
 		if self.gameManager ~= nil then
 			phase = self.gameManager.gamePhase
 		end
+		self:UpdatePhasePanelVisibility(phase)
 		
 		if self.btnBattleStart ~= nil then
 			self.btnBattleStart.Enable = (phase == "Preparation")
@@ -689,7 +793,7 @@ script UIMain extends Component
 			if self.uiBossTurn ~= nil then self.uiBossTurn.Enable = false end
 		end
 		
-		-- 4. èª˜ëªƒ?ï¿½å¯ƒ??ï¿½ï¿½ ??ï¿½ìˆ??ï§ë¶¾??åª›Â€??ï¿½ìŒï¿½???ï¿½ìŒï¿½?
+		-- 4. ë¯¸ë??ê²???? ???½ë??ë©”ë??ê°€???½ì?????½ì??
         if phase == "MiniGame" then
             -- Find Stage_5_game via GetChildByName (GetEntityByPath cannot find disabled entities)
             if self.uiStage5_game == nil then
@@ -855,11 +959,11 @@ script UIMain extends Component
 		end
 	end
 	method void OnClickMonster(integer monsterIndex)
-		-- ??ï¿½ì™????ï¿½ìŒ??
+		-- ???½ï?????½ì??
 		self.targetMonsterIdx = monsterIndex
-		log("[UI] ??ï¿½ì™????ï¿½ìŒ??? ï§ÑŠë’ª??" .. tostring(monsterIndex))
+		log("[UI] ???½ï?????½ì??? ëª¬ìŠ¤??" .. tostring(monsterIndex))
 		
-		-- ??ï¿½ì™????ï¿½ìŒ????ï¿½ì„ï¿½????ï¿½ì„??åª›ê¹†??
+		-- ???½ï?????½ì?????½ê??????½ê??ê°±ì??
 		if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 			self.battleManager.monsterManager:UpdateTargetHighlight(self.targetMonsterIdx)
 		end
@@ -997,7 +1101,7 @@ script UIMain extends Component
 	end
 
 	method void UpdateBossSkillUI(string selectedType, number duration)
-		-- æ¹²ê³—??????ï¿½ìˆ???ï¿½â‘¥??(??ï¿½ìŒ??å¯ƒìŒ??
+		-- ê¸°ì???????½ë????¨ì??(???½ì??ê²½ì??
 		if self.shieldTimer ~= nil then
 			_TimerService:ClearTimer(self.shieldTimer)
 			self.shieldTimer = nil
@@ -1035,7 +1139,7 @@ script UIMain extends Component
 			end
 		end
 		
-		-- ??ï¿½ìˆï¿½???ï¿½ï¿½?ï¿½???ï¿½ìˆ??ï§£ì„??(1.53????ï¿½ìŒ????è«›ì„????ï¿½ï¿½????ï¿½ìˆï¿½???ï¿½ï¿½???
+		-- ???½ë????????????½ë??ì²˜ë??(1.53?????½ì????ë°˜ë???????????½ë?????????
 		if selectedType == "shield" then
 			if self.uiBossSkill3 ~= nil then
 				self.uiBossSkill3.Enable = true
@@ -1061,7 +1165,7 @@ script UIMain extends Component
 		else
 			if self.uiBossSkill3 ~= nil then self.uiBossSkill3.Enable = false end
 			
-			-- ??ï¿½ìˆ????ï¿½ï¿½?ï¿½???ï¿½ìŒ????ï¿½ìŒï¿½??è¹‚ëŒ???ï¿½ì„ï¿½???ï¿½ìˆë±¶åª›? ??ï¿½ìŒï¿½??ï¿½ìˆ?ï¿½å ???ï¿½ìˆï¿½???ï¿½ì™?? ??ï¿½ï¿½????ï¿½ì™?? ??ï¿½ì™?? ??ï¿½ìŒ??
+			-- ???½ë????????????½ì?????½ì???ë³´ì????½ê?????½ë“œê°? ???½ì????½ë??ï¿????½ë?????½ï?? ?????????½ï?? ???½ï?? ???½ì??
 			local hasShield = false
 			if self.battleManager ~= nil and self.battleManager.monsterManager ~= nil then
 				local monsterMgr = self.battleManager.monsterManager
@@ -1077,7 +1181,7 @@ script UIMain extends Component
 				if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
 			end
 
-			-- ??ï¿½ìˆë±¶åª›? ??ï¿½ìˆ????ï¿½ìˆï¿½???ï¿½ï¿½?ï¿½?????ï¿½ìŒ????ï¿½ìŒ???????ï¿½ìˆ?ï¿½ï§???ï¿½ìˆï¿½?ï§£ì„??(??ï¿½ï¿½?ï¿½????ï¿½ìŒ???duration ??ï¿½ìŒ??
+			-- ???½ë“œê°? ???½ë?????½ë??????????????½ì?????½ì????????½ë??ì§????½ë??ì²˜ë??(???????????½ì???duration ???½ì??
 			local hideOtherSkillFunc = function()
 				self.shieldTimer = nil
 				local entities = {self.uiBossSkill1, self.uiBossSkill2, self.uiBossSkill4}
@@ -1147,22 +1251,3 @@ script UIMain extends Component
 	end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

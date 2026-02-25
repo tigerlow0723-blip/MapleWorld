@@ -88,6 +88,7 @@ script Item extends Component
 	property string inventoryUIPath = ""
 
 	property table spawnPosition = {}
+	property boolean isDisplayAreaManuallyPositioned = false
 
 	property any dataManager = nil
 
@@ -485,34 +486,7 @@ script Item extends Component
 		        self.width = math.max(1, maxWidth)
 		    end
 		
-		    local shapeCells = self:GetShapeCells()
-		    if shapeCells ~= nil and #shapeCells > 0 then
-		        local minRow = 999
-		        local maxRow = -999
-		        local minCol = 999
-		        local maxCol = -999
-		        for i = 1, #shapeCells do
-		            local cell = shapeCells[i]
-		            if cell ~= nil then
-		                local row = cell.row or 0
-		                local col = cell.col or 0
-		                if row < minRow then minRow = row end
-		                if row > maxRow then maxRow = row end
-		                if col < minCol then minCol = col end
-		                if col > maxCol then maxCol = col end
-		            end
-		        end
-		        if minRow <= maxRow and minCol <= maxCol then
-		            self.displayBoundsCols = maxCol - minCol + 1
-		            self.displayBoundsRows = maxRow - minRow + 1
-		        end
-		    end
-		    if self.displayBoundsCols <= 0 then
-		        self.displayBoundsCols = math.max(1, self.width)
-		    end
-		    if self.displayBoundsRows <= 0 then
-		        self.displayBoundsRows = math.max(1, self.height)
-		    end
+		    self:UpdateDisplayBoundsFromShapeCells(self:GetShapeCells())
 	end
 
 	@ExecSpace("ClientOnly")

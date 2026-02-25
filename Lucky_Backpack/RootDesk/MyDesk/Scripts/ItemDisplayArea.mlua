@@ -391,12 +391,19 @@ script ItemDisplayArea extends Component
 		local displayBoundsW = displayCols * cellSizeX
 		local displayBoundsH = displayRows * cellSizeY
 		local itemUI = itemEntity.UITransformComponent
-		if itemUI ~= nil then
-			itemUI.RectSize = Vector2(math.max(2, displayBoundsW), math.max(2, displayBoundsH))
-		end
 		local itemRotation = 0
 		if itemUI ~= nil and itemUI.ZRotation ~= nil then
 			itemRotation = tonumber(itemUI.ZRotation) or 0
+		end
+		local rectW = displayBoundsW
+		local rectH = displayBoundsH
+		local quarterTurns = math.floor((math.abs(itemRotation) + 45) / 90)
+		if quarterTurns % 2 == 1 then
+			rectW = displayBoundsH
+			rectH = displayBoundsW
+		end
+		if itemUI ~= nil then
+			itemUI.RectSize = Vector2(math.max(2, rectW), math.max(2, rectH))
 		end
 		local compensationRad = (-itemRotation) * (math.pi / 180.0)
 		local compensationCos = math.cos(compensationRad)
@@ -782,6 +789,7 @@ script ItemDisplayArea extends Component
 				itemComp.inventoryUIPath = self.resolvedInventoryUIPath
 			end
 			itemComp:InitFromTable(itemId)
+			itemComp.isDisplayAreaManuallyPositioned = false
 			self:EnsureShapeHitCells(itemEntity, itemComp)
 			self:SetDisplayAreaHitMode(itemEntity, true)
 		
@@ -815,8 +823,17 @@ script ItemDisplayArea extends Component
 
 	@ExecSpace("ClientOnly")
 	method void ArrangeItems()
-		local itemCount = #self.spawnedItems
-		if itemCount <= 0 then
+		local autoArrangeCount = 0
+		for i, itemEntity in ipairs(self.spawnedItems) do
+			if itemEntity ~= nil and isvalid(itemEntity) then
+				local itemComp = itemEntity.Item
+				if itemComp == nil or itemComp.isDisplayAreaManuallyPositioned ~= true then
+					autoArrangeCount += 1
+				end
+			end
+		end
+		
+		if autoArrangeCount <= 0 then
 			return
 		end
 		
@@ -828,19 +845,25 @@ script ItemDisplayArea extends Component
 			panelWidth = tonumber(self.Entity.UITransformComponent.RectSize.x) or 0
 		end
 		
-		if itemCount > 1 and panelWidth > 0 then
+		if autoArrangeCount > 1 and panelWidth > 0 then
 			local maxUsableWidth = panelWidth * 0.8
-			local maxSpacingByPanel = maxUsableWidth / (itemCount - 1)
+			local maxSpacingByPanel = maxUsableWidth / (autoArrangeCount - 1)
 			if horizontalSpacing > maxSpacingByPanel then
 				horizontalSpacing = maxSpacingByPanel
 			end
 		end
 		
-		local totalWidth = (itemCount - 1) * horizontalSpacing
+		local totalWidth = (autoArrangeCount - 1) * horizontalSpacing
 		local startX = -totalWidth * 0.5
 		
+		local autoIndex = 0
 		for i, itemEntity in ipairs(self.spawnedItems) do
 			if itemEntity == nil or not isvalid(itemEntity) then
+				continue
+			end
+
+			local itemComp = itemEntity.Item
+			if itemComp ~= nil and itemComp.isDisplayAreaManuallyPositioned == true then
 				continue
 			end
 		
@@ -849,19 +872,19 @@ script ItemDisplayArea extends Component
 				continue
 			end
 		
-			local index = i - 1
-			local posX = startX + (index * horizontalSpacing)
+			local posX = startX + (autoIndex * horizontalSpacing)
 			local posY = zigzagOffsetY
-			if index % 2 == 0 then
+			if autoIndex % 2 == 0 then
 				posY = -zigzagOffsetY
 			end
 		
 			uiTransform.anchoredPosition = Vector2(posX, posY)
 		
-			local itemComp = itemEntity.Item
 			if itemComp ~= nil then
 				itemComp.spawnPosition = {x = posX, y = posY}
 			end
+			
+			autoIndex += 1
 		end
 	end
 
@@ -929,6 +952,7 @@ script ItemDisplayArea extends Component
 		
 		if itemComp ~= nil then
 			itemComp:ClearGridPosition()
+			itemComp.isDisplayAreaManuallyPositioned = true
 			self:SetDisplayAreaHitMode(itemEntity, true)
 		end
 		

@@ -336,7 +336,15 @@ script InventoryUI extends Component
 		
 		    local boundsW = displayCols * cellW
 		    local boundsH = displayRows * cellH
-		    itemUI.RectSize = Vector2(math.max(2, boundsW), math.max(2, boundsH))
+		    local rectW = boundsW
+		    local rectH = boundsH
+		    local rotation = tonumber(itemUI.ZRotation) or 0
+		    local quarterTurns = math.floor((math.abs(rotation) + 45) / 90)
+		    if quarterTurns % 2 == 1 then
+		        rectW = boundsH
+		        rectH = boundsW
+		    end
+		    itemUI.RectSize = Vector2(math.max(2, rectW), math.max(2, rectH))
 	end
 
 	@ExecSpace("ClientOnly")
