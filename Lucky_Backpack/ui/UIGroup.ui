@@ -4043,7 +4043,7 @@
           "name": "ItemDisplayArea",
           "path": "/ui/UIGroup/ItemDisplayArea",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 5,
@@ -4071,30 +4071,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 317.433319,
-                "y": 381.646057
+                "x": 238.090973,
+                "y": 381.646149
               },
               "OffsetMin": {
-                "x": -429.4833,
-                "y": 82.24196
+                "x": -429.483368,
+                "y": 82.2420654
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 746.9166,
+                "x": 667.574341,
                 "y": 299.404083
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -56.025,
-                "y": 231.944
+                "x": -95.6962,
+                "y": 231.9441
               },
               "Position": {
-                "x": -56.025,
-                "y": 231.944,
+                "x": -95.6962,
+                "y": 231.9441,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -8250,12 +8250,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": -600.3818,
-                "y": 10.9977989
+                "x": 297.6308,
+                "y": 150.0
               },
               "OffsetMin": {
-                "x": -700.3818,
-                "y": -89.0022
+                "x": 197.6308,
+                "y": 50.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -8268,12 +8268,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -650.3818,
-                "y": -39.0022
+                "x": 247.6308,
+                "y": 100.0
               },
               "Position": {
-                "x": -650.3818,
-                "y": -39.0022,
+                "x": 247.6308,
+                "y": 100.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10570,20 +10570,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 132.033371,
-                "y": 62.6058
+                "x": 122.378235,
+                "y": 49.3234673
               },
               "OffsetMin": {
-                "x": -182.402573,
-                "y": -137.3942
+                "x": -162.000031,
+                "y": -131.55806
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 314.435944,
-                "y": 200.0
+                "x": 284.378265,
+                "y": 180.881531
               },
               "UIMode": 1,
               "UIScale": {
@@ -10593,12 +10593,12 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -25.1846,
-                "y": -37.3942
+                "x": -19.8109,
+                "y": -41.1173
               },
               "Position": {
-                "x": -25.1846,
-                "y": -37.3942,
+                "x": -19.8109,
+                "y": -41.1173,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10662,20 +10662,20 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 81.686676,
-                "y": 68.4419
+                "x": 62.0122,
+                "y": 12.6058006
               },
               "OffsetMin": {
-                "x": -57.6622772,
-                "y": -131.5581
+                "x": -37.9878,
+                "y": -137.3942
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 139.348953,
-                "y": 200.0
+                "x": 100.0,
+                "y": 150.0
               },
               "UIMode": 1,
               "UIScale": {
@@ -10686,11 +10686,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 12.0122,
-                "y": -31.5581
+                "y": -62.3942
               },
               "Position": {
                 "x": 12.0122,
-                "y": -31.5581,
+                "y": -62.3942,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -10820,7 +10820,7 @@
           "name": "NPC_Rare",
           "path": "/ui/UIGroup/ShopPanel/ShopNPC/NPC_Rare",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 3,
@@ -10848,11 +10848,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 107.5171,
+                "x": 107.517143,
                 "y": 68.4419
               },
               "OffsetMin": {
-                "x": -92.4829,
+                "x": -154.778946,
                 "y": -131.5581
               },
               "Pivot": {
@@ -10860,7 +10860,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 200.0,
+                "x": 262.296082,
                 "y": 200.0
               },
               "UIMode": 1,
@@ -10871,11 +10871,11 @@
               },
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 7.5171,
+                "x": -23.6309,
                 "y": -31.5581
               },
               "Position": {
-                "x": 7.5171,
+                "x": -23.6309,
                 "y": -31.5581,
                 "z": 0.0
               },
@@ -10913,7 +10913,7 @@
           "name": "ShopGradeUI",
           "path": "/ui/UIGroup/ShopPanel/ShopGradeUI",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 5,
@@ -10942,11 +10942,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 677.5596,
-                "y": 450.0
+                "y": 475.0
               },
               "OffsetMin": {
                 "x": 427.55957,
-                "y": 350.0
+                "y": 395.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -10954,17 +10954,17 @@
               },
               "RectSize": {
                 "x": 250.0,
-                "y": 100.0
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 552.5596,
-                "y": 400.0
+                "y": 435.0
               },
               "Position": {
                 "x": 552.5596,
-                "y": 400.0,
+                "y": 435.0,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -11024,11 +11024,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 125.0,
-                "y": 50.0
+                "y": 40.0
               },
               "OffsetMin": {
                 "x": -125.0,
-                "y": -50.0
+                "y": -40.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -11036,7 +11036,7 @@
               },
               "RectSize": {
                 "x": 250.0,
-                "y": 100.0
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -11106,11 +11106,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 125.0,
-                "y": 50.0
+                "y": 40.0
               },
               "OffsetMin": {
                 "x": -125.0,
-                "y": -50.0
+                "y": -40.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -11118,7 +11118,7 @@
               },
               "RectSize": {
                 "x": 250.0,
-                "y": 100.0
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -11189,11 +11189,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 125.0,
-                "y": 50.0
+                "y": 40.0
               },
               "OffsetMin": {
                 "x": -125.0,
-                "y": -50.0
+                "y": -40.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -11201,7 +11201,7 @@
               },
               "RectSize": {
                 "x": 250.0,
-                "y": 100.0
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -11272,11 +11272,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 125.0,
-                "y": 50.0
+                "y": 40.0
               },
               "OffsetMin": {
                 "x": -125.0,
-                "y": -50.0
+                "y": -40.0
               },
               "Pivot": {
                 "x": 0.5,
@@ -11284,7 +11284,7 @@
               },
               "RectSize": {
                 "x": 250.0,
-                "y": 100.0
+                "y": 80.0
               },
               "UIMode": 1,
               "UIVersion": 2,
@@ -11775,7 +11775,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 20,
@@ -16930,7 +16930,7 @@
           "name": "stageFade",
           "path": "/ui/UIGroup/stageFade",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": false,
           "localize": true,
           "displayOrder": 29,
@@ -16958,12 +16958,12 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 983.0262,
-                "y": 539.0555
+                "x": 976.5702,
+                "y": 546.1628
               },
               "OffsetMin": {
-                "x": -975.889954,
-                "y": -551.2941
+                "x": -982.345947,
+                "y": -544.1868
               },
               "Pivot": {
                 "x": 0.5,
@@ -16976,12 +16976,12 @@
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 3.5681,
-                "y": -6.1193
+                "x": -2.8879,
+                "y": 0.9879999
               },
               "Position": {
-                "x": 3.5681,
-                "y": -6.1193,
+                "x": -2.8879,
+                "y": 0.9879999,
                 "z": 0.0
               },
               "QuaternionRotation": {
