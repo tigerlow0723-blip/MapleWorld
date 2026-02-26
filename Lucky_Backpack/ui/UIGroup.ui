@@ -6434,7 +6434,7 @@
           "name": "stage_5_4",
           "path": "/ui/UIGroup/stage_5_4",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 14,
