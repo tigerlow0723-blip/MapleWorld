@@ -31,6 +31,16 @@ script UIMain extends Component
 
 	property any skill1Timer = nil
 
+	property Entity uiBossSkill2DotFx = nil
+
+	property table uiBossSkill2DotFxStackImages = {}
+
+	property integer bossPoisonFxTimerId = 0
+
+	property number bossPoisonFxElapsed = 0
+
+	property number bossPoisonFxTick = 0.08
+
 	property number bossSkill1ParentDuration = 0.6
 
 	property number bossSkill1ParentDurationOverride = -1
@@ -211,6 +221,7 @@ script UIMain extends Component
 		
 		self:ConnectEvents()
 		self:ResetBossSkillUI() -- Ensure boss skills are hidden at the very beginning
+		self:StopBossPoisonDotFX()
 		self:HideStage5DiceVisual()
 		
 		if self.uiClear ~= nil then
@@ -815,6 +826,239 @@ script UIMain extends Component
 		end
 	end
 
+	method Entity EnsureBossSkill2DotFxEntity()
+		if self.uiBossSkill2DotFx ~= nil and _EntityService:IsValid(self.uiBossSkill2DotFx) then
+			return self.uiBossSkill2DotFx
+		end
+		
+		if self.uiBossSkill2 == nil then
+			return nil
+		end
+		
+		local parent = self.uiBossSkill2.Parent
+		if parent == nil then
+			return nil
+		end
+		
+		local existing = parent:GetChildByName("boss_skill_2_dotfx", true)
+		if existing ~= nil then
+			if self.uiBossSkill2DotFx ~= existing then
+				self.uiBossSkill2DotFxStackImages = {}
+			end
+			self.uiBossSkill2DotFx = existing
+			return existing
+		end
+		
+		local fx = self.uiBossSkill2:Clone("boss_skill_2_dotfx")
+		if fx == nil then
+			return nil
+		end
+		
+		parent:AttachChild(fx)
+		fx:SetEnable(false)
+		fx:SetVisible(false)
+		
+		local renderer = fx.SpriteGUIRendererComponent
+		if renderer ~= nil then
+			renderer.RaycastTarget = false
+		end
+		
+		self.uiBossSkill2DotFx = fx
+		self.uiBossSkill2DotFxStackImages = {}
+		return fx
+	end
+
+	method table ResolveBossSkill2DotFxStackImages()
+		local valid = true
+		if self.uiBossSkill2DotFxStackImages == nil or #self.uiBossSkill2DotFxStackImages < 3 then
+			valid = false
+		else
+			for i = 1, #self.uiBossSkill2DotFxStackImages do
+				local ent = self.uiBossSkill2DotFxStackImages[i]
+				if ent == nil or _EntityService:IsValid(ent) ~= true then
+					valid = false
+					break
+				end
+			end
+		end
+		if valid then
+			return self.uiBossSkill2DotFxStackImages
+		end
+		
+		self.uiBossSkill2DotFxStackImages = {}
+		local fx = self:EnsureBossSkill2DotFxEntity()
+		if fx == nil then
+			return self.uiBossSkill2DotFxStackImages
+		end
+		
+		local children = fx.Children
+		if children == nil then
+			return self.uiBossSkill2DotFxStackImages
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.SpriteGUIRendererComponent ~= nil then
+				local name = string.lower(tostring(child.Name or ""))
+				local idx = 0
+				if string.find(name, "3") ~= nil then
+					idx = 3
+				elseif string.find(name, "2") ~= nil then
+					idx = 2
+				elseif string.find(name, "1") ~= nil then
+					idx = 1
+				end
+				if idx >= 1 and idx <= 3 and self.uiBossSkill2DotFxStackImages[idx] == nil then
+					self.uiBossSkill2DotFxStackImages[idx] = child
+				end
+			end
+		end
+		
+		local fallbackIndex = 1
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.SpriteGUIRendererComponent ~= nil then
+				local already = false
+				for j = 1, 3 do
+					if self.uiBossSkill2DotFxStackImages[j] == child then
+						already = true
+						break
+					end
+				end
+				if not already then
+					while fallbackIndex <= 3 and self.uiBossSkill2DotFxStackImages[fallbackIndex] ~= nil do
+						fallbackIndex += 1
+					end
+					if fallbackIndex > 3 then
+						break
+					end
+					self.uiBossSkill2DotFxStackImages[fallbackIndex] = child
+				end
+			end
+		end
+		
+		return self.uiBossSkill2DotFxStackImages
+	end
+
+	method void UpdateBossPoisonStackImage(integer stackCount)
+		local images = self:ResolveBossSkill2DotFxStackImages()
+		for i = 1, #images do
+			local ent = images[i]
+			if ent ~= nil and _EntityService:IsValid(ent) then
+				ent:SetEnable(false)
+				ent:SetVisible(false)
+			end
+		end
+		
+		if stackCount == nil or stackCount <= 0 then
+			return
+		end
+		
+		local idx = math.floor(stackCount)
+		if idx < 1 then idx = 1 end
+		if idx > 3 then idx = 3 end
+		local target = images[idx]
+		if target ~= nil and _EntityService:IsValid(target) then
+			target:SetEnable(true)
+			target:SetVisible(true)
+		end
+	end
+
+	method integer GetBossPoisonDotStackCount()
+		if self.battleManager == nil then
+			return 0
+		end
+		
+		local monsterMgr = self.battleManager.monsterManager
+		if monsterMgr == nil or monsterMgr.isBossBattle ~= true then
+			return 0
+		end
+		
+		local dots = self.battleManager.playerDotEffects
+		if dots == nil then
+			return 0
+		end
+		
+		local stackCount = 0
+		for i = 1, #dots do
+			local dot = dots[i]
+			if dot ~= nil and (tonumber(dot.remainTurn) or 0) > 0 then
+				local status = tostring(dot.status or "")
+				status = string.gsub(status, "^%s+", "")
+				status = string.gsub(status, "%s+$", "")
+				status = string.lower(status)
+				if status == "poison" and (tonumber(dot.dmgPercent) or 0) > 0 then
+					stackCount += 1
+				end
+			end
+		end
+		
+		return stackCount
+	end
+
+	method boolean HasBossPoisonDotOnPlayer()
+		return self:GetBossPoisonDotStackCount() > 0
+	end
+
+	method void ClearBossPoisonFxTimer()
+		if self.bossPoisonFxTimerId ~= nil and self.bossPoisonFxTimerId > 0 then
+			_TimerService:ClearTimer(self.bossPoisonFxTimerId)
+		end
+		self.bossPoisonFxTimerId = 0
+	end
+
+	method void StopBossPoisonDotFX()
+		self:ClearBossPoisonFxTimer()
+		self.bossPoisonFxElapsed = 0
+		self:UpdateBossPoisonStackImage(0)
+		
+		if self.uiBossSkill2DotFx ~= nil and _EntityService:IsValid(self.uiBossSkill2DotFx) then
+			self.uiBossSkill2DotFx:SetEnable(false)
+			self.uiBossSkill2DotFx:SetVisible(false)
+		end
+	end
+
+	method void TickBossPoisonDotFX()
+		self.bossPoisonFxTimerId = 0
+		local stackCount = self:GetBossPoisonDotStackCount()
+		
+		if stackCount <= 0 then
+			self:StopBossPoisonDotFX()
+			return
+		end
+		
+		local fx = self:EnsureBossSkill2DotFxEntity()
+		if fx == nil then
+			return
+		end
+		
+		fx:SetEnable(true)
+		fx:SetVisible(true)
+		self:UpdateBossPoisonStackImage(stackCount)
+		
+		self.bossPoisonFxElapsed += self.bossPoisonFxTick
+		
+		local nextTick = self.bossPoisonFxTick
+		if nextTick == nil or nextTick <= 0 then
+			nextTick = 0.08
+		end
+		self.bossPoisonFxTimerId = _TimerService:SetTimerOnce(function()
+			self:TickBossPoisonDotFX()
+		end, nextTick)
+	end
+
+	method void RefreshBossPoisonDotFX()
+		local stackCount = self:GetBossPoisonDotStackCount()
+		if stackCount > 0 then
+			self:UpdateBossPoisonStackImage(stackCount)
+			if self.bossPoisonFxTimerId == nil or self.bossPoisonFxTimerId <= 0 then
+				self:TickBossPoisonDotFX()
+			end
+		else
+			self:StopBossPoisonDotFX()
+		end
+	end
+
 	method void UpdateUI()
 		if self.playerManager == nil then return end
 		
@@ -991,6 +1235,8 @@ script UIMain extends Component
 		end
 		
 		-- Button 가???��?????��??(Preparation vs Battle)
+		self:RefreshBossPoisonDotFX()
+		
 		local phase = "None"
 		if self.gameManager ~= nil then
 			phase = self.gameManager.gamePhase
@@ -1869,6 +2115,8 @@ script UIMain extends Component
 		if self.uiBossSkill1Sub ~= nil then
 			self.uiBossSkill1Sub.Enable = false
 		end
+		
+		self:RefreshBossPoisonDotFX()
 	end
 
 	method void SetBossSkillUIEnable(boolean enable)
