@@ -1102,7 +1102,6 @@ script BattleManager extends Component
 				if hitIndex < hitCount then
 					self.monsterTurnTimerId = _TimerService:SetTimerOnce(hitFunc, 0.12)
 				else
-					self:RestoreNormalMonsterIdleState(action)
 					if onDone ~= nil then
 						onDone()
 					end
@@ -1120,8 +1119,7 @@ script BattleManager extends Component
 			self.playerManager:TakeDamage(effectValue)
 		end
 		
-		self:RestoreNormalMonsterIdleState(action)
-		
+		-- Do not force STAND here; forced idle can cut attack animations.
 		self:RefreshUI()
 		if self.playerManager.isDead == true then
 			self:EndBattle("Defeat")
