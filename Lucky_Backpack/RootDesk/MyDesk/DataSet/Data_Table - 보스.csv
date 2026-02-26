@@ -1,2 +1,2 @@
 ﻿boss_id,hp_phase1,hp_phase2,hp_phase3,model_phase1,model_phase2,model_phase3,deathDelayPhase1,deathDelayPhase2,deathDelayPhase3
-B_01,500,500,500,model://maplestorymonster$71d0660f9c7f476492a0d4118ffa40a9,model://maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc,model://maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc,0.5,1.2,1.2
+B_01,5000,5000,5000,model://maplestorymonster$71d0660f9c7f476492a0d4118ffa40a9,model://maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc,model://maplestorymonster$cf1a8ed249ff4d2abf682759dac603cc,0.5,1.2,1.2
