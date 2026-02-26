@@ -553,7 +553,7 @@ script PlayerManager extends Component
 		self.dataManager = dataMgr
 		self.level = 1
 		self.isDead = false
-		self.gold = 0
+		self.gold = 200
 		self.scrollNormal = 0
 		self.scrollGuaranteed = 0
 		self.inventory = {}
