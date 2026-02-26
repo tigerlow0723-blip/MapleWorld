@@ -244,41 +244,29 @@ script Inventory extends Component
 
 	method boolean RemoveItemAt(integer itemId, integer row, integer col, integer w, integer h)
 		    local found = self:FindPlacedItemEntryAt(itemId, row, col)
-		    local info = nil
-		    if found ~= nil then
-		        info = found.info
-		    end
-		    local shapeCells = nil
-		    if info ~= nil then
-		        shapeCells = info.shapeCells
+		    if found == nil or found.info == nil then
+		        log_warning("[Inventory] RemoveItemAt failed: item " .. tostring(itemId) .. " at (" .. tostring(row) .. "," .. tostring(col) .. ")")
+		        return false
 		    end
 		
-		    if shapeCells ~= nil and #shapeCells > 0 then
-		        for i = 1, #shapeCells do
-		            local cell = shapeCells[i]
-		            if cell ~= nil then
-		                local r = row + cell.row
-		                local c = col + cell.col
-		                if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
-		                    self.grid[r][c] = 1
-		                end
-		            end
-		        end
-		    else
-		        for dr = 0, h - 1 do
-		            for dc = 0, w - 1 do
-		                local r = row + dr
-		                local c = col + dc
-		                if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
-		                    self.grid[r][c] = 1
-		                end
+		    local info = found.info
+		    local shapeCells = info.shapeCells
+		    if shapeCells == nil then
+		        shapeCells = {}
+		    end
+		
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local r = row + cell.row
+		            local c = col + cell.col
+		            if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
+		                self.grid[r][c] = 1
 		            end
 		        end
 		    end
 		
-		    if found ~= nil then
-		        self.placedItems[found.key] = nil
-		    end
+		    self.placedItems[found.key] = nil
 		
 		    self.gridVersion += 1
 		    log("[Inventory] Removed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
