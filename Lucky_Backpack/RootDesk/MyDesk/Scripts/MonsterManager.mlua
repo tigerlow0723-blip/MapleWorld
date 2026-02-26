@@ -60,6 +60,8 @@ script MonsterManager extends Component
 	property boolean isPhaseTransitioning = false
 	
 	property boolean isDyingAnimating = false
+	
+	property table stateTokenByEntity = {}
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
@@ -73,6 +75,7 @@ script MonsterManager extends Component
 		self.pendingSpawnEntranceCount = 0
 		self.isPhaseTransitioning = false
 		self.isDyingAnimating = false
+		self.stateTokenByEntity = {}
 		
 		local spawnInfo = dataMgr:GetSpawnInfo(stageId)
 		if spawnInfo == nil then
@@ -177,6 +180,7 @@ script MonsterManager extends Component
 		self.pendingSpawnEntranceCount = 0
 		self.isPhaseTransitioning = false
 		self.isDyingAnimating = false
+		self.stateTokenByEntity = {}
 		
 		local basicData = dataMgr:GetBossBasicData(bossId)
 		if basicData == nil then
@@ -436,6 +440,7 @@ script MonsterManager extends Component
 			hitComp:OnHit(targetEntity, math.ceil(damage), critical, "ATTACK", 1)
 		end
 	end
+	
 	method void MonsterBasicAttack(integer index)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
@@ -452,7 +457,15 @@ script MonsterManager extends Component
 		
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
-		self:PlayEntityState(animTargetId, "ATTACK1", 0)
+		local attackDelay = tonumber(monster.attackDelay) or 0
+		if attackDelay < 0 then
+			attackDelay = 0
+		end
+		local animDuration = attackDelay
+		if animDuration <= 0 then
+			animDuration = 0.01
+		end
+		self:PlayEntityState(animTargetId, "ATTACK1", animDuration)
 	end
 	method void MonsterSkillAttack(integer index)
 		local monster = self.monsterList[index]
@@ -494,11 +507,23 @@ script MonsterManager extends Component
 		else
 			self.lastStatus = monster.status
 		end
-	end
+		end
 		
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
-		self:PlayEntityState(animTargetId, "SKILL1", 0)
+		local attackDelay = tonumber(monster.attackDelay) or 0
+		if attackDelay < 0 then
+			attackDelay = 0
+		end
+		local extraMultiTail = 0
+		if self.lastStatus == "multi" and self.lastHitCount ~= nil and self.lastHitCount > 1 then
+			extraMultiTail = (self.lastHitCount - 1) * 0.12
+		end
+		local animDuration = attackDelay + extraMultiTail
+		if animDuration <= 0 then
+			animDuration = 0.01
+		end
+		self:PlayEntityState(animTargetId, "SKILL1", animDuration)
 	end
 	method void MonsterAction(integer index)
 		local monster = self.monsterList[index]
@@ -711,6 +736,7 @@ script MonsterManager extends Component
 		self.pendingSpawnEntranceCount = 0
 		self.isPhaseTransitioning = false
 		self.isDyingAnimating = false
+		self.stateTokenByEntity = {}
 	end
 
 	method void SpawnVisual(table monster, integer index, boolean isBoss, integer totalCount)
@@ -1006,6 +1032,13 @@ script MonsterManager extends Component
 		local entity = _EntityService:GetEntity(entityId)
 		if entity == nil then return end
 		
+		if self.stateTokenByEntity == nil then
+			self.stateTokenByEntity = {}
+		end
+		local entityKey = tostring(entityId)
+		local stateToken = (tonumber(self.stateTokenByEntity[entityKey]) or 0) + 1
+		self.stateTokenByEntity[entityKey] = stateToken
+		
 		local stateAnim = entity.StateAnimationComponent
 		local spriteRenderer = entity.SpriteRendererComponent
 		
@@ -1080,8 +1113,15 @@ script MonsterManager extends Component
 		end
 		
 		if duration > 0 and stateName ~= "DIE" then
+			local capturedToken = stateToken
+			local capturedEntityKey = entityKey
 			_TimerService:SetTimerOnce(function()
 				pcall(function()
+					local latestToken = tonumber(self.stateTokenByEntity[capturedEntityKey]) or 0
+					if latestToken ~= capturedToken then
+						return
+					end
+					
 					local aliveEntity = _EntityService:GetEntity(entityId)
 					if aliveEntity == nil then return end
 					local aliveStateAnim = aliveEntity.StateAnimationComponent
