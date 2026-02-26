@@ -13,7 +13,7 @@ script RewardManager extends Component
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
-		log("[RewardManager] 초기화 완료")
+		log("[RewardManager] Initialized")
 	end
 
 	method void SetManagers(any dataMgr, any playerMgr, any itemMgr)
@@ -23,15 +23,12 @@ script RewardManager extends Component
 	end
 
 	method void GenerateRewards(integer stageId, any dataMgr)
-		local dropCount = _UtilLogic:RandomIntegerRange(3, 5)
-		if dropCount == nil then
-			dropCount = math.random(3, 5)
-		end
-		log("[RewardManager] 보상 아이템 " .. tostring(dropCount) .. "개 생성")
+		local dropCount = math.random(3, 5)
+		log("[RewardManager] GenerateRewards dropCount=" .. tostring(dropCount))
 		
 		self.droppedItems = self.itemManager:GenerateDropItems(stageId, dropCount, dataMgr)
 		
-		log("[RewardManager] 바닥에 " .. tostring(#self.droppedItems) .. "개 아이템 생성됨")
+		log("[RewardManager] droppedItems count=" .. tostring(#self.droppedItems))
 	end
 
 end
