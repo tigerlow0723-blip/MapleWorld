@@ -6,6 +6,11 @@ script ShopUI extends Component
 	property string playerGoldTextPath = "/ui/UIGroup/PlayerCoin/TxtPlayerCoin"
 
 	property string shopTierTextPath = "/ui/UIGroup/ShopPanel/TxtShopTier"
+	property string shopGradeUIPath = "/ui/UIGroup/ShopPanel/ShopGradeUI"
+	property string shopGradeUIRarePath = "/ui/UIGroup/ShopPanel/ShopGradeUI/ShopGradeUI_Rare"
+	property string shopGradeUIEpicPath = "/ui/UIGroup/ShopPanel/ShopGradeUI/ShopGradeUI_Epic"
+	property string shopGradeUIUniquePath = "/ui/UIGroup/ShopPanel/ShopGradeUI/ShopGradeUI_Unique"
+	property string shopGradeUILegendaryPath = "/ui/UIGroup/ShopPanel/ShopGradeUI/ShopGradeUI_Legendary"
 
 	property string sellAreaPath = "/ui/UIGroup/ShopPanel/SellArea"
 
@@ -53,6 +58,11 @@ script ShopUI extends Component
 	property any sellAreaEntity = nil
 
 	property any shopTierTextEntity = nil
+	property any shopGradeUIEntity = nil
+	property any shopGradeUIRareEntity = nil
+	property any shopGradeUIEpicEntity = nil
+	property any shopGradeUIUniqueEntity = nil
+	property any shopGradeUILegendaryEntity = nil
 
 	property any itemListEntity = nil
 
@@ -112,6 +122,11 @@ script ShopUI extends Component
 		    self.playerGoldText = _EntityService:GetEntityByPath(self.playerGoldTextPath)
 		    self.sellAreaEntity = _EntityService:GetEntityByPath(self.sellAreaPath)
 		    self.shopTierTextEntity = _EntityService:GetEntityByPath(self.shopTierTextPath)
+		    self.shopGradeUIEntity = _EntityService:GetEntityByPath(self.shopGradeUIPath)
+		    self.shopGradeUIRareEntity = _EntityService:GetEntityByPath(self.shopGradeUIRarePath)
+		    self.shopGradeUIEpicEntity = _EntityService:GetEntityByPath(self.shopGradeUIEpicPath)
+		    self.shopGradeUIUniqueEntity = _EntityService:GetEntityByPath(self.shopGradeUIUniquePath)
+		    self.shopGradeUILegendaryEntity = _EntityService:GetEntityByPath(self.shopGradeUILegendaryPath)
 		    self.shopNPCEntity = _EntityService:GetEntityByPath(self.shopNPCPath)
 		    self.shopNPCRareEntity = _EntityService:GetEntityByPath(self.shopNPCRarePath)
 		    self.shopNPCEpicEntity = _EntityService:GetEntityByPath(self.shopNPCEpicPath)
@@ -131,6 +146,23 @@ script ShopUI extends Component
 		
 		    if self.shopNPCEntity == nil and self.Entity ~= nil then
 		        self.shopNPCEntity = self.Entity:GetChildByName("ShopNPC", true)
+		    end
+		    if self.shopGradeUIEntity == nil and self.Entity ~= nil then
+		        self.shopGradeUIEntity = self.Entity:GetChildByName("ShopGradeUI", true)
+		    end
+		    if self.shopGradeUIEntity ~= nil then
+		        if self.shopGradeUIRareEntity == nil then
+		            self.shopGradeUIRareEntity = self.shopGradeUIEntity:GetChildByName("ShopGradeUI_Rare", true)
+		        end
+		        if self.shopGradeUIEpicEntity == nil then
+		            self.shopGradeUIEpicEntity = self.shopGradeUIEntity:GetChildByName("ShopGradeUI_Epic", true)
+		        end
+		        if self.shopGradeUIUniqueEntity == nil then
+		            self.shopGradeUIUniqueEntity = self.shopGradeUIEntity:GetChildByName("ShopGradeUI_Unique", true)
+		        end
+		        if self.shopGradeUILegendaryEntity == nil then
+		            self.shopGradeUILegendaryEntity = self.shopGradeUIEntity:GetChildByName("ShopGradeUI_Legendary", true)
+		        end
 		    end
 		    if self.shopNPCEntity ~= nil then
 		        if self.shopNPCRareEntity == nil then
@@ -378,28 +410,63 @@ script ShopUI extends Component
 		    if self.shopTierTextEntity == nil then
 		        self.shopTierTextEntity = _EntityService:GetEntityByPath(self.shopTierTextPath)
 		    end
-		
-		    if self.shopTierTextEntity ~= nil and self.shopTierTextEntity.TextComponent ~= nil then
-		        local displayName = ""
-		        local fontColor = Color(1, 1, 1, 1)
-		        if self.currentShopTier == "Rare" then
-		            displayName = "Rare Shop"
-		            fontColor = Color(0.1, 0.5, 1.0, 1)
-		        elseif self.currentShopTier == "Epic" then
-		            displayName = "Epic Shop"
-		            fontColor = Color(0.6, 0.2, 0.8, 1)
-		        elseif self.currentShopTier == "Unique" then
-		            displayName = "Unique Shop"
-		            fontColor = Color(1.0, 0.8, 0.1, 1)
-		        elseif self.currentShopTier == "Legendary" then
-		            displayName = "Legendary Shop"
-		            fontColor = Color(0.2, 0.8, 0.2, 1)
-		        end
-		        self.shopTierTextEntity.TextComponent.Text = displayName
-		        self.shopTierTextEntity.TextComponent.FontColor = fontColor
+		    if self.shopTierTextEntity ~= nil then
+		        self.shopTierTextEntity:SetEnable(false)
+		        self.shopTierTextEntity:SetVisible(false)
+		    end
+		    self:UpdateShopGradeImage()
+		    self:UpdateShopNPCImage()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveShopGradeTierEntity()
+		    if self.currentShopTier == "Rare" then
+		        return self.shopGradeUIRareEntity
+		    elseif self.currentShopTier == "Epic" then
+		        return self.shopGradeUIEpicEntity
+		    elseif self.currentShopTier == "Unique" then
+		        return self.shopGradeUIUniqueEntity
+		    elseif self.currentShopTier == "Legendary" then
+		        return self.shopGradeUILegendaryEntity
+		    end
+		    return self.shopGradeUIRareEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateShopGradeImage()
+		    if self.shopGradeUIEntity == nil
+		        or self.shopGradeUIRareEntity == nil
+		        or self.shopGradeUIEpicEntity == nil
+		        or self.shopGradeUIUniqueEntity == nil
+		        or self.shopGradeUILegendaryEntity == nil then
+		        self:ResolveUIReferences()
+		    end
+		    if self.shopGradeUIEntity == nil then
+		        return
 		    end
 		
-		    self:UpdateShopNPCImage()
+		    self.shopGradeUIEntity:SetEnable(true)
+		    self.shopGradeUIEntity:SetVisible(true)
+		
+		    local targetEntity = self:ResolveShopGradeTierEntity()
+		    if targetEntity ~= nil then
+		        targetEntity:SetEnable(true)
+		        targetEntity:SetVisible(true)
+		    end
+		
+		    local allTiers = {
+		        self.shopGradeUIRareEntity,
+		        self.shopGradeUIEpicEntity,
+		        self.shopGradeUIUniqueEntity,
+		        self.shopGradeUILegendaryEntity
+		    }
+		    for i = 1, #allTiers do
+		        local gradeEntity = allTiers[i]
+		        if gradeEntity ~= nil and gradeEntity ~= targetEntity then
+		            gradeEntity:SetEnable(false)
+		            gradeEntity:SetVisible(false)
+		        end
+		    end
 	end
 
 	@ExecSpace("ClientOnly")
