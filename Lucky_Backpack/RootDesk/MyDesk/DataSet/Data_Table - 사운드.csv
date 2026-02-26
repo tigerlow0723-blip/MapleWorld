@@ -18,10 +18,11 @@
 2005,SFX,use_potion,0a143cc3b50843f7919ba87484d6ca6e,,FALSE,물약 사용 사운드
 3001,SFX,monster_atk_default,daf324c852d540f6a4ebc1c3dfcb8f0f,,FALSE,기본 몬스터 공격 사운드
 4001,SFX,chest_open,d40f5ebbf76048a0961bd947f9fcf727,,FALSE,보상 상자 오픈 사운드
-4002,SFX,item_drop_inventory,043041aa562f43e0b36af92c7bad239d,,FALSE,가방에 아이템 넣을 때 사운드
+4002,SFX,item_drop_inventory,0467a9d8aca04072bdefd96b24a1eef6,,FALSE,가방에 아이템 넣을 때 사운드
 4003,SFX,scroll_success,c638b287d5de4200aa9d2aca9593d76d,,FALSE,주문서 성공 사운드
 4004,SFX,scroll_fail,8425d159eea041e090eaea610b4a1add,,FALSE,주문서 실패 사운드
 4005,SFX,dice_roll,38aff2f3f67f413e90ecf128573a8431,,FALSE,주사위 굴리는 사운드
+4006,SFX,armor_click,e042b053f7b147f3be847d213a53299f,,FALSE,방어구 클릭 사운드
 5001,SFX,turn_end,12256e27193d43f690965a2da71eab83,,FALSE,정비턴 끝/상점 닫기/자동판매 사운드
 5002,SFX,shop_trade,21600ec9d3a04cfeb69c6fe0c50e197c,,FALSE,상점 사고 팔 때 사운드
 5003,SFX,shop_eat,508dab88de1749328cbdd7b83254691e,,FALSE,상점 돼지고기 먹는 사운드
