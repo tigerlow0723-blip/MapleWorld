@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://491216ecc14b4b9ab553fc1d3501937a",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/491216ecc14b4b9ab553fc1d3501937a/639071869967318379",
+      "upload_hash": "F87DFFBA840B9FE6D199DE481F98AB1B6CB667A1B35AFB4B30A520337C2CBEBB",
+      "name": "석궁",
+      "resource_guid": "491216ecc14b4b9ab553fc1d3501937a",
+      "resource_version": "699852347e4aa1a64b5000f5"
+    }
+  }
+}

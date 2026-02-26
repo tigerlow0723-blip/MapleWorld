@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://79fd66f45ef64a21a1485b4f37874912",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/79fd66f45ef64a21a1485b4f37874912/639071869969939955",
+      "upload_hash": "AB9EFC1DCD434C9FD7315E04E94B0E720975784367DD0215C3002FC04E63F741",
+      "name": "쟈드",
+      "resource_guid": "79fd66f45ef64a21a1485b4f37874912",
+      "resource_version": "699852352f2996a26f21a509"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://190acd33601d48afb1294764103dceaa",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/190acd33601d48afb1294764103dceaa/639071869954568116",
+      "upload_hash": "5D2669EC5F9FC2327C83D3ED9FBEEBB134387986D51F167203899D83AEB9E95A",
+      "name": "딸기맛 소프트 완드",
+      "resource_guid": "190acd33601d48afb1294764103dceaa",
+      "resource_version": "699852331b381b5204e97d61"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://ee4f2ed7fba84fb7b742b9650ae28cff",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/ee4f2ed7fba84fb7b742b9650ae28cff/639074220581824752",
+      "upload_hash": "D4C136968E8963B49B358530EAC1C04D9649F150703B3D7253DC6A357E3230C2",
+      "name": "Enchant.Success.4",
+      "resource_guid": "ee4f2ed7fba84fb7b742b9650ae28cff",
+      "resource_version": "699be86a7e4aa1a64b500a59"
+    }
+  }
+}

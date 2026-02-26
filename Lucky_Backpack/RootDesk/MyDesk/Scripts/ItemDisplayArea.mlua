@@ -1,0 +1,1093 @@
+@Component
+script ItemDisplayArea extends Component
+
+	property string inventoryUIPath = ""
+
+	property integer slotSize = 80
+
+	property integer verticalSpacing = 100
+
+	property integer horizontalOffset = 40
+
+	property table spawnedItems = {}
+
+	property string itemTemplatePath = ""
+
+	property any inventoryUI = nil
+
+	property string resolvedInventoryUIPath = ""
+
+	property string shapeHitCellTemplatePath = "/ui/UIGroup/ScrollPanel/ScrollNormal/Cell"
+
+	property integer shapeHitCellPadding = 2
+
+	property any hoveredHitItemEntity = nil
+
+	property any displayAreaRightClickKeyHandler = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		self.Entity:SetEnable(false)
+		self.Entity:SetVisible(false)
+		self:ResolveInventoryUI()
+		
+		local children = self.Entity.Children
+		if children ~= nil then
+			for i = 1, #children do
+				local child = children[i]
+				if child.Item ~= nil and child.Name ~= "ItemTemplate" then
+					child:SetEnable(false)
+				end
+			end
+		end
+		
+		if self.displayAreaRightClickKeyHandler == nil then
+			self.displayAreaRightClickKeyHandler = _InputService:ConnectEvent(KeyDownEvent, function(event)
+				self:OnDisplayAreaRightClickKeyDown(event)
+			end)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		if self.displayAreaRightClickKeyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.displayAreaRightClickKeyHandler)
+			self.displayAreaRightClickKeyHandler = nil
+		end
+		self.hoveredHitItemEntity = nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveInventoryUI()
+		if self.inventoryUI ~= nil then
+			return
+		end
+		
+		local inventoryEntity = nil
+		if self.inventoryUIPath ~= nil and self.inventoryUIPath ~= "" then
+			inventoryEntity = _EntityService:GetEntityByPath(self.inventoryUIPath)
+		end
+		
+		if inventoryEntity == nil then
+			local groupEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
+			if groupEntity ~= nil then
+				inventoryEntity = groupEntity:GetChildByName("ScrollNormal", true)
+			end
+		end
+		
+		if inventoryEntity ~= nil then
+			self.inventoryUI = inventoryEntity.InventoryUI
+			self.resolvedInventoryUIPath = inventoryEntity.Path or ""
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BindTooltipEvents(Entity itemEntity, Component itemComp)
+		if itemEntity == nil or itemComp == nil then
+			return
+		end
+		
+		self:ResolveInventoryUI()
+		if self.inventoryUI ~= nil and self.inventoryUI.BindTooltipEvents ~= nil then
+			self.inventoryUI:BindTooltipEvents(itemEntity, itemComp)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity ResolveShapeHitCellTemplate()
+		self:ResolveInventoryUI()
+		if self.inventoryUI ~= nil and self.inventoryUI.cellEntities ~= nil and self.inventoryUI.cellEntities[1] ~= nil then
+			local firstCell = self.inventoryUI.cellEntities[1][1]
+			if firstCell ~= nil then
+				return firstCell
+			end
+		end
+		
+		if self.shapeHitCellTemplatePath ~= nil and self.shapeHitCellTemplatePath ~= "" then
+			local byPath = _EntityService:GetEntityByPath(self.shapeHitCellTemplatePath)
+			if byPath ~= nil then
+				return byPath
+			end
+		end
+		return _EntityService:GetEntityByPath("/ui/UIGroup/ScrollPanel/ScrollNormal/Cell")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearShapeHitCells(Entity itemEntity)
+		if itemEntity == nil then
+			return
+		end
+		local children = itemEntity.Children
+		if children == nil then
+			return
+		end
+		for i = #children, 1, -1 do
+			local child = children[i]
+			if child ~= nil and isvalid(child) then
+				local childName = child.Name or ""
+				if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+					child:Destroy()
+				end
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean HasShapeHitCells(Entity itemEntity)
+		if itemEntity == nil then
+			return false
+		end
+		local children = itemEntity.Children
+		if children == nil then
+			return false
+		end
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil then
+				local childName = child.Name or ""
+				if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer CountShapeHitCells(Entity itemEntity)
+		if itemEntity == nil then
+			return 0
+		end
+		local children = itemEntity.Children
+		if children == nil then
+			return 0
+		end
+		local count = 0
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil then
+				local childName = child.Name or ""
+				if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+					count += 1
+				end
+			end
+		end
+		return count
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsRightClick(any event)
+		self:ResolveInventoryUI()
+		if self.inventoryUI ~= nil and self.inventoryUI.IsRightClick ~= nil then
+			return self.inventoryUI:IsRightClick(event)
+		end
+		
+		if event == nil then
+			return false
+		end
+		if event.TouchId ~= nil and event.TouchId == -3 then
+			return true
+		end
+		
+		local button = event.Button
+		if button == nil then button = event.button end
+		if button ~= nil then
+			if button == 1 or button == 2 or button == -3 then
+				return true
+			end
+			local buttonText = string.lower(tostring(button))
+			if string.find(buttonText, "right", 1, true) ~= nil then
+				return true
+			end
+		end
+		
+		local actionType = event.ActionType
+		if actionType ~= nil then
+			local actionText = string.lower(tostring(actionType))
+			if string.find(actionText, "right", 1, true) ~= nil then
+				return true
+			end
+		end
+		if _InputService:IsKeyPressed(KeyboardKey.Mouse1) == true then
+			return true
+		end
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean CanStartDragFromInput(any event)
+		if self:IsRightClick(event) == true then
+			return false
+		end
+		
+		if event ~= nil and event.TouchId ~= nil then
+			local touchId = tonumber(event.TouchId)
+			if touchId ~= nil and touchId >= 0 then
+				return true
+			end
+		end
+		
+		if _InputService:IsKeyPressed(KeyboardKey.Mouse0) == true then
+			return true
+		end
+		
+		return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity FindDisplayAreaItemAtScreenPos(Vector2 screenPos)
+		if screenPos == nil then
+			return nil
+		end
+		
+		if self.spawnedItems ~= nil then
+			for i = #self.spawnedItems, 1, -1 do
+				local itemEntity = self.spawnedItems[i]
+				if itemEntity ~= nil and isvalid(itemEntity) and itemEntity.Parent == self.Entity and itemEntity.Item ~= nil then
+					local itemComp = itemEntity.Item
+					if itemComp ~= nil and itemComp.IsTouchPointOnOccupiedShapeCell ~= nil then
+						if itemComp:IsTouchPointOnOccupiedShapeCell(screenPos) == true then
+							return itemEntity
+						end
+					end
+				end
+			end
+		end
+		
+		local children = self.Entity.Children
+		if children ~= nil then
+			for i = #children, 1, -1 do
+				local itemEntity = children[i]
+				if itemEntity ~= nil and isvalid(itemEntity) and itemEntity.Item ~= nil then
+					local itemComp = itemEntity.Item
+					if itemComp ~= nil and itemComp.IsTouchPointOnOccupiedShapeCell ~= nil then
+						if itemComp:IsTouchPointOnOccupiedShapeCell(screenPos) == true then
+							return itemEntity
+						end
+					end
+				end
+			end
+		end
+		
+		return nil
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnDisplayAreaRightClickKeyDown(KeyDownEvent event)
+		if event == nil then
+			return
+		end
+		if event.key ~= KeyboardKey.Mouse1 then
+			return
+		end
+		
+		self:ResolveInventoryUI()
+		if self.inventoryUI ~= nil and self.inventoryUI.dragState ~= nil and self.inventoryUI.dragState.isDragging == true then
+			return
+		end
+		
+		local cursorPos = _InputService:GetCursorPosition()
+		local hovered = self:FindDisplayAreaItemAtScreenPos(cursorPos)
+		if hovered == nil or not isvalid(hovered) then
+			self.hoveredHitItemEntity = nil
+			if self.inventoryUI ~= nil and self.inventoryUI.HideTooltip ~= nil then
+				self.inventoryUI:HideTooltip()
+			end
+			return
+		end
+		
+		self.hoveredHitItemEntity = hovered
+		self:TryShowTooltipFromHitCell(hovered, nil)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void TryShowTooltipFromHitCell(Entity itemEntity, any event)
+		if itemEntity == nil or not isvalid(itemEntity) then
+			return
+		end
+		local itemComp = itemEntity.Item
+		if itemComp == nil then
+			return
+		end
+		
+		self:ResolveInventoryUI()
+		if self.inventoryUI == nil or self.inventoryUI.ShowTooltipForItem == nil then
+			return
+		end
+		
+		local itemId = itemComp.itemId or 0
+		if itemId <= 0 then
+			return
+		end
+		
+		local point = nil
+		if event ~= nil then
+			point = event.TouchPoint
+		end
+		if point == nil then
+			point = _InputService:GetCursorPosition()
+		end
+		
+		if self.inventoryUI.ClearTooltipTimer ~= nil then
+			self.inventoryUI:ClearTooltipTimer(itemId)
+		end
+		self.inventoryUI:ShowTooltipForItem(itemId, point)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void TryStartDragFromHitCell(Entity itemEntity, any event)
+		if itemEntity == nil or not isvalid(itemEntity) then
+			return
+		end
+		if self:IsRightClick(event) == true then
+			self:TryShowTooltipFromHitCell(itemEntity, event)
+			return
+		end
+		if self:CanStartDragFromInput(event) == false then
+			return
+		end
+		self:ResolveInventoryUI()
+		if self.inventoryUI ~= nil and self.inventoryUI.StartDrag ~= nil then
+			self.inventoryUI:StartDrag(itemEntity, event)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer BuildShapeHitCells(Entity itemEntity, Component itemComp)
+		if itemEntity == nil or itemComp == nil then
+			return 0
+		end
+		
+		self:ClearShapeHitCells(itemEntity)
+		
+		local template = self:ResolveShapeHitCellTemplate()
+		if template == nil then
+			return 0
+		end
+		self:ResolveInventoryUI()
+		local cellSizeX = self.slotSize
+		local cellSizeY = self.slotSize
+		if self.inventoryUI ~= nil and self.inventoryUI.cellSize ~= nil and self.inventoryUI.cellSize > 0 then
+			cellSizeX = self.inventoryUI.cellSize
+			cellSizeY = self.inventoryUI.cellSize
+			if self.inventoryUI.GetGridCellSpacing ~= nil then
+				local spacing = self.inventoryUI:GetGridCellSpacing()
+				if spacing ~= nil then
+					if spacing.x ~= nil and spacing.x > 0 then
+						cellSizeX = spacing.x
+					end
+					if spacing.y ~= nil and spacing.y > 0 then
+						cellSizeY = spacing.y
+					end
+				end
+			end
+		elseif template.UITransformComponent ~= nil and template.UITransformComponent.RectSize ~= nil then
+			local tRect = template.UITransformComponent.RectSize
+			if tRect.x ~= nil and tRect.x > 0 then
+				cellSizeX = tRect.x
+			end
+			if tRect.y ~= nil and tRect.y > 0 then
+				cellSizeY = tRect.y
+			end
+		end
+		if cellSizeX <= 0 then cellSizeX = 1 end
+		if cellSizeY <= 0 then cellSizeY = 1 end
+		local pad = self.shapeHitCellPadding
+		if pad < 0 then pad = 0 end
+		
+		local shapeCells = itemComp:GetShapeCells()
+		if shapeCells == nil then
+			return 0
+		end
+		if #shapeCells <= 0 then
+			return 0
+		end
+		
+		local minRow = 999
+		local maxRow = -999
+		local minCol = 999
+		local maxCol = -999
+		for i = 1, #shapeCells do
+			local cell = shapeCells[i]
+			if cell ~= nil then
+				local row = cell.row or 0
+				local col = cell.col or 0
+				if row < minRow then minRow = row end
+				if row > maxRow then maxRow = row end
+				if col < minCol then minCol = col end
+				if col > maxCol then maxCol = col end
+			end
+		end
+		if minRow > maxRow or minCol > maxCol then
+			return 0
+		end
+		
+		local shapeBoundsW = (maxCol - minCol + 1) * cellSizeX
+		local shapeBoundsH = (maxRow - minRow + 1) * cellSizeY
+		local displayCols = maxCol - minCol + 1
+		local displayRows = maxRow - minRow + 1
+		if itemComp.displayBoundsCols ~= nil and itemComp.displayBoundsCols > 0 then
+			displayCols = itemComp.displayBoundsCols
+		end
+		if itemComp.displayBoundsRows ~= nil and itemComp.displayBoundsRows > 0 then
+			displayRows = itemComp.displayBoundsRows
+		end
+		local displayBoundsW = displayCols * cellSizeX
+		local displayBoundsH = displayRows * cellSizeY
+		local itemUI = itemEntity.UITransformComponent
+		local itemRotation = 0
+		if itemUI ~= nil and itemUI.ZRotation ~= nil then
+			itemRotation = tonumber(itemUI.ZRotation) or 0
+		end
+		local rectW = displayBoundsW
+		local rectH = displayBoundsH
+		local quarterTurns = math.floor((math.abs(itemRotation) + 45) / 90)
+		if quarterTurns % 2 == 1 then
+			rectW = displayBoundsH
+			rectH = displayBoundsW
+		end
+		if itemUI ~= nil then
+			itemUI.RectSize = Vector2(math.max(2, rectW), math.max(2, rectH))
+		end
+		local compensationRad = (-itemRotation) * (math.pi / 180.0)
+		local compensationCos = math.cos(compensationRad)
+		local compensationSin = math.sin(compensationRad)
+		
+		local createdCount = 0
+		local cellAlpha = 0.02
+		local cellColor = Color(1, 1, 1, cellAlpha)
+		for i = 1, #shapeCells do
+			local cell = shapeCells[i]
+			if cell ~= nil then
+				local row = (cell.row or 0)
+				local col = (cell.col or 0)
+				local hitCell = template:Clone("ShapeHitCell_" .. tostring(i))
+				if hitCell ~= nil then
+					itemEntity:AttachChild(hitCell)
+					hitCell:SetEnable(true)
+					hitCell:SetVisible(true)
+					if hitCell.UITouchReceiveComponent == nil then
+						hitCell:AddComponent("MOD.Core.UITouchReceiveComponent")
+					end
+					local hitTouch = hitCell.UITouchReceiveComponent
+					if hitTouch ~= nil then
+						hitTouch.Enable = true
+					end
+					
+					local hitUI = hitCell.UITransformComponent
+					if hitUI ~= nil then
+						hitUI.AnchorsMin = Vector2(0.5, 0.5)
+						hitUI.AnchorsMax = Vector2(0.5, 0.5)
+						hitUI.Pivot = Vector2(0.5, 0.5)
+						local targetX = (-shapeBoundsW * 0.5) + (((col - minCol) + 0.5) * cellSizeX)
+						local targetY = (shapeBoundsH * 0.5) - (((row - minRow) + 0.5) * cellSizeY)
+						-- Keep hit-cell world centers aligned with rotated shape logic.
+						local localX = targetX * compensationCos - targetY * compensationSin
+						local localY = targetX * compensationSin + targetY * compensationCos
+						hitUI.anchoredPosition = Vector2(localX, localY)
+						hitUI.RectSize = Vector2(math.max(2, cellSizeX - pad), math.max(2, cellSizeY - pad))
+					end
+					
+					local hitRenderer = hitCell.SpriteGUIRendererComponent
+					if hitRenderer ~= nil then
+						hitRenderer.Color = cellColor
+						hitRenderer.RaycastTarget = true
+					end
+					
+					self:BindTooltipEvents(hitCell, itemComp)
+					hitCell:ConnectEvent(UITouchEnterEvent, function(event)
+						self.hoveredHitItemEntity = itemEntity
+					end)
+					hitCell:ConnectEvent(UITouchExitEvent, function(event)
+						if self.hoveredHitItemEntity == itemEntity then
+							self.hoveredHitItemEntity = nil
+						end
+					end)
+					hitCell:ConnectEvent(UITouchDownEvent, function(event)
+						self:TryStartDragFromHitCell(itemEntity, event)
+					end)
+					hitCell:ConnectEvent(UITouchUpEvent, function(event)
+						self:TryStartDragFromHitCell(itemEntity, event)
+					end)
+					hitCell:ConnectEvent("PointerClickEvent", function(event)
+						self:TryStartDragFromHitCell(itemEntity, event)
+					end)
+					createdCount += 1
+				end
+			end
+		end
+		return createdCount
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer EnsureShapeHitCells(Entity itemEntity, Component itemComp)
+		if itemEntity == nil or itemComp == nil then
+			return 0
+		end
+		if self:HasShapeHitCells(itemEntity) then
+			return self:CountShapeHitCells(itemEntity)
+		end
+		return self:BuildShapeHitCells(itemEntity, itemComp)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SetDisplayAreaHitMode(Entity itemEntity, boolean useShapeHitCell)
+		if itemEntity == nil or not isvalid(itemEntity) then
+			return
+		end
+		
+		local shapeCellFound = false
+		local cellAlpha = 0.02
+		local visibleColor = Color(1, 1, 1, cellAlpha)
+		local children = itemEntity.Children
+		if children ~= nil then
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and isvalid(child) then
+					local childName = child.Name or ""
+					if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+						shapeCellFound = true
+						child:SetEnable(useShapeHitCell)
+						child:SetVisible(useShapeHitCell)
+						local hitTouch = child.UITouchReceiveComponent
+						if hitTouch ~= nil then
+							hitTouch.Enable = useShapeHitCell
+						end
+						local hitRenderer = child.SpriteGUIRendererComponent
+						if hitRenderer ~= nil then
+							if useShapeHitCell == true then
+								hitRenderer.Color = visibleColor
+							else
+								hitRenderer.Color = Color(1, 1, 1, 0)
+							end
+							hitRenderer.RaycastTarget = useShapeHitCell
+						end
+					end
+				end
+			end
+		end
+		
+		local renderer = itemEntity.SpriteGUIRendererComponent
+		if renderer ~= nil then
+			if useShapeHitCell == true and shapeCellFound == true then
+				renderer.RaycastTarget = false
+			else
+				renderer.RaycastTarget = true
+			end
+		end
+		local itemTouch = itemEntity.UITouchReceiveComponent
+		if itemTouch ~= nil then
+			if useShapeHitCell == true and shapeCellFound == true then
+				itemTouch.Enable = false
+			else
+				itemTouch.Enable = true
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearAllItems()
+		self:ResolveInventoryUI()
+		for i = #self.spawnedItems, 1, -1 do
+			local itemEntity = self.spawnedItems[i]
+			if itemEntity ~= nil and isvalid(itemEntity) then
+				if self.inventoryUI ~= nil and self.inventoryUI.ClearTooltipTimer ~= nil and itemEntity.Item ~= nil then
+					self.inventoryUI:ClearTooltipTimer(itemEntity.Item.itemId)
+				end
+				if itemEntity.Parent == self.Entity then
+					itemEntity:Destroy()
+				end
+			end
+			table.remove(self.spawnedItems, i)
+		end
+		
+		if self.inventoryUI ~= nil and self.inventoryUI.HideTooltip ~= nil then
+			self.inventoryUI:HideTooltip()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void GenerateTutorialItems()
+		self:ClearAllItems()
+		local tutorialIds = {1, 2, 3, 4, 5}
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local dataManager = nil
+		if gameSystem ~= nil then
+			dataManager = gameSystem.DataManager
+		end
+		
+		if dataManager ~= nil then
+			local firstItem = dataManager:GetItemData(1)
+			if firstItem == nil or firstItem.type ~= "weapon" then
+				tutorialIds = {1001, 1002, 1003, 1004, 1005}
+			end
+		end
+		
+		for i = 1, #tutorialIds do
+			self:CreateItemEntity(tutorialIds[i], i - 1)
+		end
+		self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void GenerateRandomItems()
+		self:ClearAllItems()
+		
+		local expandItemIds = {}
+		local normalItemIds = {}
+		local function hasValidSprite(itemData)
+			if itemData == nil then
+				return false
+			end
+			local ruid = itemData.imageRUID
+			if ruid == nil or ruid == "" then
+				ruid = itemData.spriteRUID
+			end
+			if ruid == nil or ruid == "" or ruid == "NONE" then
+				return false
+			end
+			return true
+		end
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local dataManager = nil
+		if gameSystem ~= nil then
+			dataManager = gameSystem.DataManager
+		end
+		
+		if dataManager ~= nil then
+			for itemId, itemData in pairs(dataManager.ItemTable) do
+				if itemData ~= nil then
+					local itemType = itemData.type or ""
+					local itemName = itemData.name or ""
+					if itemType == "expand" then
+						if hasValidSprite(itemData) then
+							expandItemIds[#expandItemIds + 1] = itemId
+						end
+					else
+						local isGoldOre = false
+						if string.find(itemName, "금의 원석", 1, true) ~= nil then
+							isGoldOre = true
+						end
+						if string.find(itemName, "금괴", 1, true) ~= nil then
+							isGoldOre = true
+						end
+						if isGoldOre == false and hasValidSprite(itemData) then
+							if itemType == "weapon" then
+								local weaponGrade = itemData.grade or ""
+								if weaponGrade == "Rare" then
+									normalItemIds[#normalItemIds + 1] = itemId
+								end
+							else
+								normalItemIds[#normalItemIds + 1] = itemId
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		if #expandItemIds == 0 then
+			log_warning("[ItemDisplayArea] No expand item found in item table.")
+			log_warning("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=none type=expand count=0 reason=expand_pool_empty")
+			return
+		end
+		
+		local spawnItemIds = {}
+		
+		local expandCount = math.random(1, 3)
+		for i = 1, expandCount do
+			local pick = math.random(1, #expandItemIds)
+			local selectedId = expandItemIds[pick]
+			spawnItemIds[#spawnItemIds + 1] = selectedId
+		end
+		
+		local normalPickCount = 3
+		if normalPickCount > #normalItemIds then
+			normalPickCount = #normalItemIds
+		end
+		
+		for i = 1, normalPickCount do
+			local randomIndex = math.random(1, #normalItemIds)
+			local itemId = normalItemIds[randomIndex]
+			local selectedId = itemId
+			local selectedData = nil
+			local roll = 0
+			local rulePath = "pool_pick"
+			local baseType = "unknown"
+			local baseGrade = "None"
+			local resultGrade = "Unknown"
+			if dataManager ~= nil then
+				selectedData = dataManager:GetItemData(itemId)
+			end
+			if selectedData ~= nil then
+				baseType = selectedData.type or "unknown"
+				baseGrade = selectedData.grade or "None"
+				resultGrade = baseGrade
+			end
+		
+			if selectedData ~= nil and selectedData.type == "weapon" and selectedData.grade == "Rare" then
+				roll = math.random(1, 100)
+				if roll >= 71 and roll <= 95 then
+					local epicId = tonumber(selectedData.nextUpgradeId) or 0
+					if epicId > 0 then
+						selectedId = epicId
+						rulePath = "weapon_rare_to_epic"
+						resultGrade = "Epic"
+					else
+						rulePath = "weapon_rare_to_epic_fallback_rare"
+						resultGrade = "Rare"
+					end
+				elseif roll >= 96 and roll <= 100 then
+					local epicId = tonumber(selectedData.nextUpgradeId) or 0
+					if epicId > 0 and dataManager ~= nil then
+						local epicData = dataManager:GetItemData(epicId)
+						if epicData ~= nil then
+							local uniqueId = tonumber(epicData.nextUpgradeId) or 0
+							if uniqueId > 0 then
+								selectedId = uniqueId
+								rulePath = "weapon_rare_to_unique"
+								resultGrade = "Unique"
+							else
+								rulePath = "weapon_rare_to_unique_fallback_rare"
+								resultGrade = "Rare"
+							end
+						else
+							rulePath = "weapon_rare_to_unique_fallback_rare"
+							resultGrade = "Rare"
+						end
+					else
+						rulePath = "weapon_rare_to_unique_fallback_rare"
+						resultGrade = "Rare"
+					end
+				else
+					rulePath = "weapon_rare_keep"
+					resultGrade = "Rare"
+				end
+			else
+				rulePath = "non_rare_or_non_weapon"
+			end
+		
+			spawnItemIds[#spawnItemIds + 1] = selectedId
+			local resultName = "unknown"
+			if dataManager ~= nil then
+				local resultData = dataManager:GetItemData(selectedId)
+				if resultData ~= nil then
+					resultName = resultData.name or "unknown"
+					if resultData.grade ~= nil and resultData.grade ~= "" then
+						resultGrade = resultData.grade
+					end
+				end
+			end
+			log("[RewardRoll][ItemDisplayArea] index=" .. tostring(i - 1) .. " base_id=" .. tostring(itemId) .. " base_type=" .. tostring(baseType) .. " base_grade=" .. tostring(baseGrade) .. " roll=" .. tostring(roll) .. " result_id=" .. tostring(selectedId) .. " result_name=" .. tostring(resultName) .. " result_grade=" .. tostring(resultGrade) .. " rule=" .. tostring(rulePath))
+			table.remove(normalItemIds, randomIndex)
+		end
+		
+		log("[RewardLog][ItemDisplayArea] reward_selected index=-1 id=-1 name=reward_selected type=mixed count=" .. tostring(#spawnItemIds) .. " expand_count=" .. tostring(expandCount))
+		for i = 1, #spawnItemIds do
+			local plannedId = spawnItemIds[i]
+			local plannedData = nil
+			if dataManager ~= nil and dataManager.ItemTable ~= nil then
+				plannedData = dataManager.ItemTable[plannedId]
+			end
+			local plannedName = "unknown"
+			local plannedType = "unknown"
+			if plannedData ~= nil then
+				plannedName = plannedData.name or plannedName
+				plannedType = plannedData.type or plannedType
+			end
+			log("[RewardLog][ItemDisplayArea] reward_selected_item index=" .. tostring(i - 1) .. " id=" .. tostring(plannedId) .. " name=" .. tostring(plannedName) .. " type=" .. tostring(plannedType))
+		end
+		
+		for i = 1, #spawnItemIds do
+			self:CreateItemEntity(spawnItemIds[i], i - 1)
+		end
+		
+		self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method Entity CreateItemEntity(integer itemId, integer index)
+		local templateEntity = _EntityService:GetEntityByPath(self.itemTemplatePath)
+		if templateEntity == nil then
+			log_warning("[ItemDisplayArea] Item template not found: " .. self.itemTemplatePath)
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=template_missing")
+			return nil
+		end
+		
+		local itemEntity = templateEntity:Clone("RewardItem_" .. index)
+		if itemEntity == nil then
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=clone_failed")
+			return nil
+		end
+		
+		self.Entity:AttachChild(itemEntity)
+		itemEntity:SetEnable(true)
+		itemEntity:SetVisible(true)
+		
+		local itemComp = itemEntity.Item
+		if itemComp ~= nil then
+			itemComp.itemId = itemId
+			itemComp.inventoryUIPath = self.inventoryUIPath
+			if itemComp.inventoryUIPath == nil or itemComp.inventoryUIPath == "" then
+				self:ResolveInventoryUI()
+				itemComp.inventoryUIPath = self.resolvedInventoryUIPath
+			end
+			itemComp:InitFromTable(itemId)
+			itemComp.isDisplayAreaManuallyPositioned = false
+			self:EnsureShapeHitCells(itemEntity, itemComp)
+			self:SetDisplayAreaHitMode(itemEntity, true)
+		
+			local itemName = itemComp.itemName or "unknown"
+			local itemType = itemComp.itemType or "unknown"
+			local spriteValid = false
+			if itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+				spriteValid = true
+			end
+		
+			local renderer = itemEntity.SpriteGUIRendererComponent
+			if renderer ~= nil then
+				renderer.Color = Color(1, 1, 1, 1)
+				if itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+					renderer.ImageRUID = itemComp.spriteRUID
+				else
+					log_warning("[ItemDisplayArea] Missing spriteRUID for itemId=" .. tostring(itemId))
+					log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=" .. tostring(itemName) .. " type=" .. tostring(itemType) .. " reason=sprite_missing")
+					itemEntity:Destroy()
+					return nil
+				end
+			end
+			-- Success path is intentionally quiet to keep reward logs one-shot per chest.
+		else
+			log_warning("[RewardLog][ItemDisplayArea] spawn_failed index=" .. tostring(index) .. " id=" .. tostring(itemId) .. " name=unknown type=unknown reason=item_component_missing")
+		end
+		
+		table.insert(self.spawnedItems, itemEntity)
+		return itemEntity
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ArrangeItems()
+		local autoArrangeCount = 0
+		for i, itemEntity in ipairs(self.spawnedItems) do
+			if itemEntity ~= nil and isvalid(itemEntity) then
+				local itemComp = itemEntity.Item
+				if itemComp == nil or itemComp.isDisplayAreaManuallyPositioned ~= true then
+					autoArrangeCount += 1
+				end
+			end
+		end
+		
+		if autoArrangeCount <= 0 then
+			return
+		end
+		
+		-- Horizontal zigzag layout: start from left-bottom and move to the right.
+		local horizontalSpacing = self.verticalSpacing + 20
+		local zigzagOffsetY = self.horizontalOffset + 10
+		local panelWidth = 0
+		if self.Entity ~= nil and self.Entity.UITransformComponent ~= nil then
+			panelWidth = tonumber(self.Entity.UITransformComponent.RectSize.x) or 0
+		end
+		
+		if autoArrangeCount > 1 and panelWidth > 0 then
+			local maxUsableWidth = panelWidth * 0.8
+			local maxSpacingByPanel = maxUsableWidth / (autoArrangeCount - 1)
+			if horizontalSpacing > maxSpacingByPanel then
+				horizontalSpacing = maxSpacingByPanel
+			end
+		end
+		
+		local totalWidth = (autoArrangeCount - 1) * horizontalSpacing
+		local startX = -totalWidth * 0.5
+		
+		local autoIndex = 0
+		for i, itemEntity in ipairs(self.spawnedItems) do
+			if itemEntity == nil or not isvalid(itemEntity) then
+				continue
+			end
+
+			local itemComp = itemEntity.Item
+			if itemComp ~= nil and itemComp.isDisplayAreaManuallyPositioned == true then
+				continue
+			end
+		
+			local uiTransform = itemEntity.UITransformComponent
+			if uiTransform == nil then
+				continue
+			end
+		
+			local posX = startX + (autoIndex * horizontalSpacing)
+			local posY = zigzagOffsetY
+			if autoIndex % 2 == 0 then
+				posY = -zigzagOffsetY
+			end
+		
+			uiTransform.anchoredPosition = Vector2(posX, posY)
+		
+			if itemComp ~= nil then
+				itemComp.spawnPosition = {x = posX, y = posY}
+			end
+			
+			autoIndex += 1
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void DisplayItems(table itemDataList)
+		self:ClearAllItems()
+		self.Entity:SetEnable(true)
+		self.Entity:SetVisible(true)
+		local summary = ""
+		
+		for i = 1, #itemDataList do
+			if itemDataList[i] ~= nil and itemDataList[i].id ~= nil then
+				local itemName = itemDataList[i].name or "unknown"
+				local itemType = itemDataList[i].type or "unknown"
+				if i > 1 then
+					summary = summary .. " | "
+				end
+				summary = summary .. "index=" .. tostring(i - 1) .. ",id=" .. tostring(itemDataList[i].id) .. ",name=" .. tostring(itemName) .. ",type=" .. tostring(itemType)
+				self:CreateItemEntity(itemDataList[i].id, i - 1)
+			end
+		end
+		log("[RewardLog][ItemDisplayArea] display_items index=-1 id=-1 name=display_items type=mixed count=" .. tostring(#itemDataList) .. " items=" .. summary)
+		
+		self:ArrangeItems()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RemoveItem(Entity itemEntity)
+		for i = #self.spawnedItems, 1, -1 do
+			if self.spawnedItems[i] == itemEntity then
+				table.remove(self.spawnedItems, i)
+				return
+			end
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void AddReturnedItem(Entity itemEntity, Vector2 dropPosition)
+		if itemEntity == nil or not isvalid(itemEntity) then
+			return
+		end
+		
+		self.Entity:SetEnable(true)
+		self.Entity:SetVisible(true)
+		
+		if itemEntity.Parent ~= self.Entity then
+			self.Entity:AttachChild(itemEntity)
+		end
+		
+		local itemComp = itemEntity.Item
+		if itemComp ~= nil and (itemComp.inventoryUIPath == nil or itemComp.inventoryUIPath == "") then
+			self:ResolveInventoryUI()
+			itemComp.inventoryUIPath = self.resolvedInventoryUIPath
+		end
+		
+		local uiTransform = itemEntity.UITransformComponent
+		local areaUI = self.Entity.UITransformComponent
+		if uiTransform ~= nil and areaUI ~= nil and dropPosition ~= nil then
+			local localPos = _UILogic:ScreenToLocalUIPosition(dropPosition, areaUI)
+			uiTransform.anchoredPosition = localPos
+			if itemComp ~= nil then
+				itemComp.spawnPosition = {x = localPos.x, y = localPos.y}
+			end
+		end
+		
+		if itemComp ~= nil then
+			itemComp:ClearGridPosition()
+			itemComp.isDisplayAreaManuallyPositioned = true
+			self:SetDisplayAreaHitMode(itemEntity, true)
+		end
+		
+		itemEntity:SetEnable(true)
+		itemEntity:SetVisible(true)
+		
+		local exists = false
+		for i = 1, #self.spawnedItems do
+			if self.spawnedItems[i] == itemEntity then
+				exists = true
+				break
+			end
+		end
+		if exists == false then
+			table.insert(self.spawnedItems, itemEntity)
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void SellRemainingItems()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		local playerManager = nil
+		local dataManager = nil
+		if gameSystem ~= nil then
+			playerManager = gameSystem.PlayerManager
+			dataManager = gameSystem.DataManager
+		end
+		
+		local soldCount = 0
+		local soldGold = 0
+		local movedScrollCount = 0
+		self:ResolveInventoryUI()
+		for i = #self.spawnedItems, 1, -1 do
+			local itemEntity = self.spawnedItems[i]
+			if itemEntity ~= nil and isvalid(itemEntity) then
+				if self.inventoryUI ~= nil and self.inventoryUI.ClearTooltipTimer ~= nil and itemEntity.Item ~= nil then
+					self.inventoryUI:ClearTooltipTimer(itemEntity.Item.itemId)
+				end
+				local shouldSell = false
+				local soldItemId = 0
+				if itemEntity.Parent == self.Entity then
+					local itemComp = itemEntity.Item
+					if itemComp == nil or itemComp:IsPlaced() == false then
+						shouldSell = true
+						if itemComp ~= nil then
+							soldItemId = itemComp.itemId or 0
+						end
+					end
+				end
+		
+				if shouldSell then
+					local soldItemType = ""
+					if itemEntity.Item ~= nil then
+						soldItemType = string.lower(tostring(itemEntity.Item.itemType or ""))
+					end
+					local moveToScrollInventory = (soldItemType == "grade_scroll")
+					if playerManager ~= nil and moveToScrollInventory then
+						playerManager:AddScroll(soldItemId, 1)
+						movedScrollCount += 1
+					else
+						soldCount += 1
+						local sellPrice = 50
+						if dataManager ~= nil and dataManager.GetItemData ~= nil and soldItemId > 0 then
+							local itemData = dataManager:GetItemData(soldItemId)
+							if itemData ~= nil then
+								local parsed = tonumber(itemData.sellPrice) or tonumber(itemData.sell_price) or 0
+								if parsed > 0 then
+									sellPrice = math.floor(parsed)
+								end
+							end
+						end
+						if sellPrice <= 0 then
+							sellPrice = 50
+						end
+						soldGold += sellPrice
+					end
+					itemEntity:Destroy()
+				end
+			end
+			table.remove(self.spawnedItems, i)
+		end
+		self.spawnedItems = {}
+		
+		local totalGold = soldGold
+		if totalGold > 0 and playerManager ~= nil then
+			playerManager:AddGold(totalGold)
+		end
+		log("[ItemDisplayArea] Auto-sell completed. SoldCount=" .. tostring(soldCount) .. " Gold=" .. tostring(totalGold) .. " MovedScrollCount=" .. tostring(movedScrollCount))
+		if totalGold > 0 then
+			if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(5001) end
+		end
+	end
+
+end

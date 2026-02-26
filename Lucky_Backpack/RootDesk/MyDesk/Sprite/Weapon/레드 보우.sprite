@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://9878a2f3d6714c21a61f84941215c3c6",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/9878a2f3d6714c21a61f84941215c3c6/639071869954085996",
+      "upload_hash": "5DB4246DED144B7A8C82D1AACCCA4758C1BB6D1CDE3A7B020A6FF4BD8BA7694D",
+      "name": "레드 보우",
+      "resource_guid": "9878a2f3d6714c21a61f84941215c3c6",
+      "resource_version": "699852335e4a0a42e7573f45"
+    }
+  }
+}

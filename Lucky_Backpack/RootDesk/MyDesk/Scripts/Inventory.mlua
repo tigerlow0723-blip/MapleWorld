@@ -1,0 +1,442 @@
+@Component
+script Inventory extends Component
+
+	property table grid = {}
+
+	property integer currentWidth = 3
+
+	property integer currentHeight = 3
+
+	property integer maxWidth = 6
+
+	property integer maxHeight = 6
+
+	property table placedItems = {}
+
+	property integer placedItemSeq = 0
+
+	property integer gridVersion = 0
+
+	method void OnBeginPlay()
+		    self:InitGrid()
+	end
+
+	method void InitGrid()
+		    local offsetRow = math.floor((self.maxHeight - self.currentHeight) / 2)
+		    local offsetCol = math.floor((self.maxWidth - self.currentWidth) / 2)
+		
+		    self.grid = {}
+		    for r = 1, self.maxHeight do
+		        self.grid[r] = {}
+		        for c = 1, self.maxWidth do
+		            self.grid[r][c] = 0
+		        end
+		    end
+		
+		    for r = 1, self.maxHeight do
+		        for c = 1, self.maxWidth do
+		            if r > offsetRow and r <= offsetRow + self.currentHeight and c > offsetCol and c <= offsetCol + self.currentWidth then
+		                self.grid[r][c] = 1
+		            end
+		        end
+		    end
+		
+		    self:UpdateExpandableCells()
+		
+		    self.placedItems = {}
+		    self.placedItemSeq = 0
+		    self.gridVersion += 1
+		    log("[Inventory] Grid initialized: " .. self.currentWidth .. "x" .. self.currentHeight)
+	end
+
+	method string MakePlacedItemKey(integer itemId)
+		    local key = ""
+		    while true do
+		        self.placedItemSeq += 1
+		        key = tostring(itemId) .. "#" .. tostring(self.placedItemSeq)
+		        if self.placedItems[key] == nil then
+		            break
+		        end
+		    end
+		    return key
+	end
+
+	method table FindPlacedItemEntry(integer itemId)
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo ~= nil then
+		            local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		            if placedItemId == itemId then
+		                return {key = placedKey, info = placedInfo}
+		            end
+		        end
+		    end
+		    return nil
+	end
+
+	method table FindPlacedItemEntryAt(integer itemId, integer row, integer col)
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo ~= nil then
+		            local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		            local placedRow = tonumber(placedInfo.row) or 0
+		            local placedCol = tonumber(placedInfo.col) or 0
+		            local idMatch = (itemId <= 0) or (placedItemId == itemId)
+		            if idMatch and placedRow == row and placedCol == col then
+		                return {key = placedKey, info = placedInfo}
+		            end
+		        end
+		    end
+		    return nil
+	end
+
+	method void UpdateExpandableCells()
+		    for r = 1, self.maxHeight do
+		        for c = 1, self.maxWidth do
+		            if self.grid[r][c] == 0 and self:HasAdjacentActiveCell(r, c) then
+		                self.grid[r][c] = -1
+		            end
+		        end
+		    end
+	end
+
+	method boolean HasAdjacentActiveCell(integer row, integer col)
+		    local directions = {
+		        {-1, 0},
+		        {1, 0},
+		        {0, -1},
+		        {0, 1}
+		    }
+		
+		    for _, dir in ipairs(directions) do
+		        local nr = row + dir[1]
+		        local nc = col + dir[2]
+		        if nr >= 1 and nr <= self.maxHeight and nc >= 1 and nc <= self.maxWidth then
+		            if self.grid[nr][nc] >= 1 then
+		                return true
+		            end
+		        end
+		    end
+		
+		    return false
+	end
+
+	method boolean ActivateCell(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return false
+		    end
+		
+		    if self.grid[row][col] ~= -1 then
+		        return false
+		    end
+		
+		    self.grid[row][col] = 1
+		    self:UpdateExpandableCells()
+		    self.gridVersion += 1
+		    return true
+	end
+
+	method boolean IsCellActive(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return false
+		    end
+		    return self.grid[row][col] ~= 0
+	end
+
+	method boolean IsCellEmpty(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return false
+		    end
+		    return self.grid[row][col] == 1
+	end
+
+	method boolean CanPlace(integer row, integer col, table shapeCells)
+		    if shapeCells == nil or #shapeCells == 0 then
+		        return false
+		    end
+		
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local absR = row + cell.row
+		            local absC = col + cell.col
+		            if absR < 1 or absR > self.maxHeight or absC < 1 or absC > self.maxWidth then
+		                return false
+		            end
+		            if self.grid[absR][absC] ~= 1 then
+		                return false
+		            end
+		        end
+		    end
+		
+		    return true
+	end
+
+	method boolean PlaceItem(integer row, integer col, integer itemId, table shapeCells)
+		    if not self:CanPlace(row, col, shapeCells) then
+		        log_warning("[Inventory] Cannot place item " .. itemId .. " at (" .. row .. "," .. col .. ")")
+		        return false
+		    end
+		
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local absR = row + cell.row
+		            local absC = col + cell.col
+		            self.grid[absR][absC] = itemId
+		        end
+		    end
+		
+		    local placedShapeCells = {}
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            placedShapeCells[#placedShapeCells + 1] = {row = cell.row, col = cell.col}
+		        end
+		    end
+		
+		    local placedKey = self:MakePlacedItemKey(itemId)
+		    self.placedItems[placedKey] = {
+		        key = placedKey,
+		        itemId = itemId,
+		        row = row,
+		        col = col,
+		        shapeCells = placedShapeCells
+		    }
+		
+		    self.gridVersion += 1
+		    log("[Inventory] Placed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
+		    return true
+	end
+
+	method boolean RemoveItem(integer itemId)
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found == nil then
+		        log_warning("[Inventory] Item " .. itemId .. " not found in inventory")
+		        return false
+		    end
+		
+		    local info = found.info
+		    if info == nil then
+		        log_warning("[Inventory] Item " .. itemId .. " not found in inventory")
+		        return false
+		    end
+		
+		    local shapeCells = info.shapeCells
+		    if shapeCells == nil then
+		        shapeCells = {}
+		    end
+		
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local absR = info.row + cell.row
+		            local absC = info.col + cell.col
+		            if absR >= 1 and absR <= self.maxHeight and absC >= 1 and absC <= self.maxWidth then
+		                self.grid[absR][absC] = 1
+		            end
+		        end
+		    end
+		
+		    self.placedItems[found.key] = nil
+		    self.gridVersion += 1
+		    log("[Inventory] Removed item " .. itemId)
+		    return true
+	end
+
+	method boolean RemoveItemAt(integer itemId, integer row, integer col, integer w, integer h)
+		    local found = self:FindPlacedItemEntryAt(itemId, row, col)
+		    if found == nil or found.info == nil then
+		        log_warning("[Inventory] RemoveItemAt failed: item " .. tostring(itemId) .. " at (" .. tostring(row) .. "," .. tostring(col) .. ")")
+		        return false
+		    end
+		
+		    local info = found.info
+		    local shapeCells = info.shapeCells
+		    if shapeCells == nil then
+		        shapeCells = {}
+		    end
+		
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local r = row + cell.row
+		            local c = col + cell.col
+		            if r >= 1 and r <= self.maxHeight and c >= 1 and c <= self.maxWidth then
+		                self.grid[r][c] = 1
+		            end
+		        end
+		    end
+		
+		    self.placedItems[found.key] = nil
+		
+		    self.gridVersion += 1
+		    log("[Inventory] Removed item " .. itemId .. " at (" .. row .. "," .. col .. ")")
+		    return true
+	end
+
+	method boolean ConsumeItem(integer itemId, integer row, integer col, integer w, integer h)
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found ~= nil and found.info ~= nil then
+		        if row > 0 and col > 0 then
+		            return self:RemoveItemAt(itemId, row, col, w, h)
+		        end
+		        return self:RemoveItem(itemId)
+		    end
+		
+		    log("[Inventory] Consumed item " .. itemId)
+		    return true
+	end
+
+	method boolean ExpandGrid()
+		    if self.currentWidth >= self.maxWidth and self.currentHeight >= self.maxHeight then
+		        log_warning("[Inventory] Grid already at max size")
+		        return false
+		    end
+		
+		    local directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
+		
+		    for r = 1, self.maxHeight do
+		        for c = 1, self.maxWidth do
+		            if self.grid[r][c] == 0 then
+		                for _, dir in ipairs(directions) do
+		                    local nr = r + dir[1]
+		                    local nc = c + dir[2]
+		                    if nr >= 1 and nr <= self.maxHeight and nc >= 1 and nc <= self.maxWidth then
+		                        if self.grid[nr][nc] ~= 0 then
+		                            self.grid[r][c] = 1
+		                            self.gridVersion += 1
+		                            log("[Inventory] Expanded grid: activated cell (" .. r .. "," .. c .. ")")
+		                            return true
+		                        end
+		                    end
+		                end
+		            end
+		        end
+		    end
+		
+		    return false
+	end
+
+	method table GetGrid()
+		    return self.grid
+	end
+
+	method integer GetCellValue(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return 0
+		    end
+		    return self.grid[row][col]
+	end
+
+	method integer GetPlacedItemIdAtCell(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return 0
+		    end
+		
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo ~= nil then
+		            local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		            if placedItemId <= 0 then
+		                continue
+		            end
+		
+		            local baseRow = tonumber(placedInfo.row) or 0
+		            local baseCol = tonumber(placedInfo.col) or 0
+		            local shapeCells = placedInfo.shapeCells
+		
+		            if shapeCells ~= nil and #shapeCells > 0 then
+		                for i = 1, #shapeCells do
+		                    local cell = shapeCells[i]
+		                    if cell ~= nil then
+		                        local absRow = baseRow + (tonumber(cell.row) or 0)
+		                        local absCol = baseCol + (tonumber(cell.col) or 0)
+		                        if absRow == row and absCol == col then
+		                            return placedItemId
+		                        end
+		                    end
+		                end
+		            elseif baseRow == row and baseCol == col then
+		                return placedItemId
+		            end
+		        end
+		    end
+		
+		    return 0
+	end
+
+	method table GetPlacedItemAnchorAtCell(integer row, integer col)
+		    if row < 1 or row > self.maxHeight or col < 1 or col > self.maxWidth then
+		        return nil
+		    end
+		
+		    for placedKey, placedInfo in pairs(self.placedItems) do
+		        if placedInfo == nil then
+		            continue
+		        end
+		
+		        local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+		        if placedItemId <= 0 then
+		            continue
+		        end
+		
+		        local baseRow = tonumber(placedInfo.row) or 0
+		        local baseCol = tonumber(placedInfo.col) or 0
+		        local shapeCells = placedInfo.shapeCells
+		
+		        if shapeCells ~= nil and #shapeCells > 0 then
+		            for i = 1, #shapeCells do
+		                local cell = shapeCells[i]
+		                if cell ~= nil then
+		                    local absRow = baseRow + (tonumber(cell.row) or 0)
+		                    local absCol = baseCol + (tonumber(cell.col) or 0)
+		                    if absRow == row and absCol == col then
+		                        return {
+		                            key = placedKey,
+		                            itemId = placedItemId,
+		                            row = baseRow,
+		                            col = baseCol
+		                        }
+		                    end
+		                end
+		            end
+		        elseif baseRow == row and baseCol == col then
+		            return {
+		                key = placedKey,
+		                itemId = placedItemId,
+		                row = baseRow,
+		                col = baseCol
+		            }
+		        end
+		    end
+		
+		    return nil
+	end
+
+	method table GetPlacedItemInfo(integer itemId)
+		    local found = self:FindPlacedItemEntry(itemId)
+		    if found ~= nil then
+		        return found.info
+		    end
+		    return nil
+	end
+
+	method table GetPlacedItemInfoAt(integer itemId, integer row, integer col)
+		    local found = self:FindPlacedItemEntryAt(itemId, row, col)
+		    if found ~= nil then
+		        return found.info
+		    end
+		    return nil
+	end
+
+	method table GetAllItemIds()
+		    local result = {}
+		    for placedKey, info in pairs(self.placedItems) do
+		        if info ~= nil and info.itemId ~= nil then
+		            result[#result + 1] = tonumber(info.itemId) or tonumber(placedKey) or 0
+		        elseif tonumber(placedKey) ~= nil then
+		            result[#result + 1] = tonumber(placedKey)
+		        end
+		    end
+		    return result
+	end
+
+end

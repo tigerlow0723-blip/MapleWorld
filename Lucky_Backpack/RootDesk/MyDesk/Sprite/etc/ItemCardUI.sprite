@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://691ca26fa0df43d885924fb001d818f5",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/691ca26fa0df43d885924fb001d818f5/639073440491535263",
+      "upload_hash": "300EC6A2BDA6A96280BAFB2E87F413BEF25CD5608665495AE1454CAA16197DD3",
+      "name": "ItemCardUI",
+      "resource_guid": "691ca26fa0df43d885924fb001d818f5",
+      "resource_version": "699ab7b13201639d5a98ef9b"
+    }
+  }
+}

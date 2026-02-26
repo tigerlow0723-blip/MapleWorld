@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://08fd977549904e3e94588e1d6d2c0284",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/08fd977549904e3e94588e1d6d2c0284/639075842237739071",
+      "upload_hash": "A5FCA7791ECA156BAF42D104F49336B41A133153CC1B9BB966D2A1D7F9D8D415",
+      "name": "두손 검 라 투핸더 수정",
+      "resource_guid": "08fd977549904e3e94588e1d6d2c0284",
+      "resource_version": "699e61df030c0823a5d862b7"
+    }
+  }
+}

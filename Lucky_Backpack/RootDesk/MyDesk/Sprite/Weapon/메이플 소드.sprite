@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://4e7686952fa74a5caf6fb68ca3b21e97",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/4e7686952fa74a5caf6fb68ca3b21e97/639071869954800290",
+      "upload_hash": "2D954A0B00D91412BBAF2CE5A4DFB6867263F179FA0FE633302B6F02FD406992",
+      "name": "메이플 소드",
+      "resource_guid": "4e7686952fa74a5caf6fb68ca3b21e97",
+      "resource_version": "69985233c20404cce164a680"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://e3e74897bfc54ceba1cef1df54a9c562",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/e3e74897bfc54ceba1cef1df54a9c562/639074219961718789",
+      "upload_hash": "EB68A9A9230A4BFEAB70159A1312C15C9F29E9AB08C53A28A68BCA0574BF65CB",
+      "name": "스태프 레어-나무 스태프",
+      "resource_guid": "e3e74897bfc54ceba1cef1df54a9c562",
+      "resource_version": "699be82c0313ec79a42c48a4"
+    }
+  }
+}

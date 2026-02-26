@@ -1,0 +1,4 @@
+@Event
+script InventoryChangedEvent extends EventType
+
+end

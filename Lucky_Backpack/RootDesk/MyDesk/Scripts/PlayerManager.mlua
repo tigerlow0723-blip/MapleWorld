@@ -1,0 +1,1260 @@
+@Component
+script PlayerManager extends Component
+
+	property string classId = "War"
+
+	property integer level = 1
+
+	property number currentHP = 0
+
+	property number maxHP = 0
+
+	property number currentCost = 0
+
+	property number maxCost = 0
+
+	property number baseATK = 0
+
+	property number baseACC = 0
+
+	property number baseCritRate = 0
+
+	property number baseCritDmg = 0
+
+	property number atk = 0
+
+	property number acc = 0
+
+	property number critRate = 0
+
+	property number critDmg = 0
+
+	property integer gold = 0
+
+	property integer scrollNormal = 0
+
+	property integer scrollGuaranteed = 0
+
+	property table inventory = {}
+
+	property table buffList = {}
+
+	property boolean isDead = false
+
+	property string skillName = ""
+
+	property any dataManager = nil
+
+	property any inventoryComp = nil
+
+	property boolean synergyDebugLogEnabled = true
+
+	property string lastSynergyDebugSnapshot = ""
+
+	property integer lastInventoryCount = 0
+
+	property boolean isInitializingItems = false
+
+	method any ResolveInventoryComp()
+		if self.inventoryComp ~= nil then
+			return self.inventoryComp
+		end
+		
+		self.inventoryComp = self.Entity.Inventory
+		if self.inventoryComp ~= nil then
+			return self.inventoryComp
+		end
+		
+		local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if invUIEntity ~= nil then
+			self.inventoryComp = invUIEntity.Inventory
+		end
+		
+		return self.inventoryComp
+	end
+
+	method void ResolveDataManager()
+		if self.dataManager ~= nil then
+			return
+		end
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			self.dataManager = gameSystem.DataManager
+		end
+	end
+
+	method table GetSynergyScrollAtkRange(integer itemId)
+		local result = {isSynergy = false, minAtk = 0, maxAtk = 0}
+		if itemId == nil or itemId <= 0 then
+			return result
+		end
+		self:ResolveDataManager()
+		if self.dataManager == nil then
+			return result
+		end
+		local itemData = self.dataManager:GetItemData(itemId)
+		if itemData == nil then
+			return result
+		end
+		local itemType = string.lower(tostring(itemData.type or ""))
+		if itemType ~= "atk_scroll" then
+			return result
+		end
+		local minAtk = tonumber(itemData.minAtk) or 0
+		local maxAtk = tonumber(itemData.maxAtk) or 0
+		if minAtk <= 0 and maxAtk <= 0 then
+			return result
+		end
+		result.isSynergy = true
+		result.minAtk = minAtk
+		result.maxAtk = maxAtk
+		return result
+	end
+
+	method boolean IsSynergyScrollId(integer itemId)
+		local range = self:GetSynergyScrollAtkRange(itemId)
+		return range.isSynergy == true
+	end
+
+	method integer RollSynergyAtkByScrollId(integer itemId)
+		local range = self:GetSynergyScrollAtkRange(itemId)
+		if range.isSynergy ~= true then
+			return 0
+		end
+		local minVal = tonumber(range.minAtk) or 0
+		local maxVal = tonumber(range.maxAtk) or 0
+		if minVal > maxVal then
+			local tmp = minVal
+			minVal = maxVal
+			maxVal = tmp
+		end
+		if minVal <= 0 and maxVal <= 0 then
+			return 0
+		end
+		if minVal <= 0 then
+			minVal = 1
+		end
+		if maxVal <= 0 then
+			maxVal = minVal
+		end
+		if minVal == maxVal then
+			return minVal
+		end
+		return math.random(minVal, maxVal)
+	end
+
+	method any GetItemComponentById(integer itemId)
+		if itemId == nil or itemId <= 0 then
+			return nil
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil then
+			return nil
+		end
+		
+		local targetName = "InventoryItem_" .. tostring(itemId)
+		local targetEntity = inventoryPanel:GetChildByName(targetName, true)
+		if targetEntity ~= nil and targetEntity.Item ~= nil then
+			return targetEntity.Item
+		end
+		
+		local children = inventoryPanel.Children
+		if children == nil then
+			return nil
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil and child.Item.itemId == itemId then
+				return child.Item
+			end
+		end
+		
+		return nil
+	end
+
+	method boolean DoesItemOccupyCell(any itemComp, integer row, integer col)
+		if itemComp == nil then
+			return false
+		end
+		
+		local baseRow = tonumber(itemComp.gridRow) or -1
+		local baseCol = tonumber(itemComp.gridCol) or -1
+		if baseRow <= 0 or baseCol <= 0 then
+			return false
+		end
+		
+		local shapeCells = itemComp:GetShapeCells()
+		if shapeCells ~= nil and #shapeCells > 0 then
+			for i = 1, #shapeCells do
+				local cell = shapeCells[i]
+				if cell ~= nil then
+					local absRow = baseRow + (tonumber(cell.row) or 0)
+					local absCol = baseCol + (tonumber(cell.col) or 0)
+					if absRow == row and absCol == col then
+						return true
+					end
+				end
+			end
+			return false
+		end
+		
+		local width = math.max(1, tonumber(itemComp.width) or 1)
+		local height = math.max(1, tonumber(itemComp.height) or 1)
+		for r = 0, height - 1 do
+			for c = 0, width - 1 do
+				if baseRow + r == row and baseCol + c == col then
+					return true
+				end
+			end
+		end
+		
+		return false
+	end
+
+	method any GetItemComponentAtGridCell(integer row, integer col)
+		if row <= 0 or col <= 0 then
+			return nil
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil then
+			return nil
+		end
+		
+		local inventoryComp = inventoryPanel.Inventory
+		local anchorInfo = nil
+		if inventoryComp ~= nil and inventoryComp.GetPlacedItemAnchorAtCell ~= nil then
+			anchorInfo = inventoryComp:GetPlacedItemAnchorAtCell(row, col)
+		end
+		local anchorItemId = 0
+		local anchorRow = 0
+		local anchorCol = 0
+		if anchorInfo ~= nil then
+			anchorItemId = tonumber(anchorInfo.itemId) or 0
+			anchorRow = tonumber(anchorInfo.row) or 0
+			anchorCol = tonumber(anchorInfo.col) or 0
+		end
+		
+		local children = inventoryPanel.Children
+		if children == nil then
+			return nil
+		end
+		
+		if anchorItemId > 0 and anchorRow > 0 and anchorCol > 0 then
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local itemComp = child.Item
+					local itemId = tonumber(itemComp.itemId) or 0
+					local compRow = tonumber(itemComp.gridRow) or 0
+					local compCol = tonumber(itemComp.gridCol) or 0
+					if itemId == anchorItemId and compRow == anchorRow and compCol == anchorCol then
+						return itemComp
+					end
+				end
+			end
+		end
+		
+		for i = 1, #children do
+			local child = children[i]
+			if child ~= nil and child.Item ~= nil then
+				local itemComp = child.Item
+				local itemId = tonumber(itemComp.itemId) or 0
+				if anchorItemId > 0 and itemId ~= anchorItemId then
+					continue
+				end
+				if self:DoesItemOccupyCell(itemComp, row, col) == true then
+					return itemComp
+				end
+			end
+		end
+		
+		if anchorItemId > 0 then
+			local fallbackComp = nil
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local itemComp = child.Item
+					local itemId = tonumber(itemComp.itemId) or 0
+					if itemId == anchorItemId then
+						if fallbackComp == nil then
+							fallbackComp = itemComp
+						else
+							fallbackComp = nil
+							break
+						end
+					end
+				end
+			end
+			if fallbackComp ~= nil then
+				if anchorRow > 0 and anchorCol > 0 and fallbackComp.SetGridPosition ~= nil then
+					fallbackComp:SetGridPosition(anchorRow, anchorCol)
+				end
+				return fallbackComp
+			end
+		end
+		
+		return nil
+	end
+
+	method string BuildSynergyScrollKey(any scrollComp, integer fallbackItemId, integer row, integer col)
+		if scrollComp ~= nil and scrollComp.Entity ~= nil then
+			local entityId = scrollComp.Entity.Id
+			if entityId ~= nil then
+				return "entity:" .. tostring(entityId)
+			end
+			local entityPath = tostring(scrollComp.Entity.Path or "")
+			if entityPath ~= "" then
+				return "path:" .. entityPath
+			end
+		end
+		return "cell:" .. tostring(row) .. ":" .. tostring(col) .. ":" .. tostring(fallbackItemId)
+	end
+
+	method integer ResolveSynergyBonusAtkFromComponent(any scrollComp, integer fallbackItemId)
+		local itemId = fallbackItemId or 0
+		if scrollComp ~= nil and scrollComp.itemId ~= nil then
+			itemId = tonumber(scrollComp.itemId) or itemId
+		end
+		if self:IsSynergyScrollId(itemId) == false then
+			return 0
+		end
+		
+		local bonusValue = 0
+		if scrollComp ~= nil then
+			bonusValue = math.max(0, tonumber(scrollComp.bonusSynergyAtk) or 0)
+		end
+		
+		if bonusValue <= 0 then
+			bonusValue = self:RollSynergyAtkByScrollId(itemId)
+			if scrollComp ~= nil then
+				scrollComp.bonusSynergyAtk = bonusValue
+			end
+		end
+		
+		return bonusValue
+	end
+
+	method integer ResolveSynergyBonusAtk(integer itemId)
+		local scrollComp = self:GetItemComponentById(itemId)
+		return self:ResolveSynergyBonusAtkFromComponent(scrollComp, itemId)
+	end
+
+	method integer CalcWeaponSynergyAtk()
+		self.inventoryComp = self:ResolveInventoryComp()
+		if self.inventoryComp == nil then
+			return 0
+		end
+		if self.inventoryComp.placedItems == nil or self.inventoryComp.grid == nil then
+			return 0
+		end
+		
+		local totalBonus = 0
+		local debugEntries = {}
+		local grid = self.inventoryComp.grid
+		local maxRow = self.inventoryComp.maxHeight or #grid
+		local maxCol = self.inventoryComp.maxWidth or 0
+		if maxCol <= 0 and grid[1] ~= nil then
+			maxCol = #grid[1]
+		end
+		
+		for placedKey, placedInfo in pairs(self.inventoryComp.placedItems) do
+			if placedInfo == nil then
+				continue
+			end
+			local placedItemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+			if placedItemId <= 0 then
+				continue
+			end
+			
+			local itemData = nil
+			if self.dataManager ~= nil then
+				itemData = self.dataManager:GetItemData(placedItemId)
+			end
+			if itemData == nil then
+				continue
+			end
+			if string.lower(tostring(itemData.type or "")) ~= "weapon" then
+				continue
+			end
+			
+			local shapeCells = placedInfo.shapeCells
+			if shapeCells == nil or #shapeCells == 0 then
+				shapeCells = {}
+				local width = math.max(1, tonumber(itemData.width) or 1)
+				local height = math.max(1, tonumber(itemData.height) or 1)
+				for r = 0, height - 1 do
+					for c = 0, width - 1 do
+						shapeCells[#shapeCells + 1] = {row = r, col = c}
+					end
+				end
+			end
+			
+			local baseRow = tonumber(placedInfo.row) or 0
+			local baseCol = tonumber(placedInfo.col) or 0
+			local usedScrollKeys = {}
+			
+			for i = 1, #shapeCells do
+				local cell = shapeCells[i]
+				if cell == nil then
+					continue
+				end
+				
+				local absRow = baseRow + (tonumber(cell.row) or 0)
+				local absCol = baseCol + (tonumber(cell.col) or 0)
+				
+				local function processNeighbor(neighborRow, neighborCol, sideName)
+					if neighborRow < 1 or neighborRow > maxRow or neighborCol < 1 or neighborCol > maxCol then
+						return
+					end
+					
+					local rowData = grid[neighborRow]
+					if rowData == nil then
+						return
+					end
+					
+					local neighborId = tonumber(rowData[neighborCol]) or 0
+					if self:IsSynergyScrollId(neighborId) == false then
+						return
+					end
+					
+					local neighborComp = self:GetItemComponentAtGridCell(neighborRow, neighborCol)
+					local scrollKey = self:BuildSynergyScrollKey(neighborComp, neighborId, neighborRow, neighborCol)
+					if usedScrollKeys[scrollKey] == true then
+						return
+					end
+					
+					usedScrollKeys[scrollKey] = true
+					local bonusValue = self:ResolveSynergyBonusAtkFromComponent(neighborComp, neighborId)
+					totalBonus += bonusValue
+					debugEntries[#debugEntries + 1] = "weapon=" .. tostring(placedItemId) .. " side=" .. sideName .. " scroll=" .. tostring(neighborId) .. " bonus=+" .. tostring(bonusValue) .. " cell=(" .. tostring(neighborRow) .. "," .. tostring(neighborCol) .. ") key=" .. scrollKey
+				end
+				
+				processNeighbor(absRow, absCol - 1, "left")
+				processNeighbor(absRow, absCol + 1, "right")
+				processNeighbor(absRow - 1, absCol, "up")
+				processNeighbor(absRow + 1, absCol, "down")
+			end
+		end
+		
+		if self.synergyDebugLogEnabled == true then
+			local snapshot = "total=" .. tostring(totalBonus)
+			if #debugEntries > 0 then
+				snapshot = snapshot .. " | " .. table.concat(debugEntries, " ; ")
+			else
+				snapshot = snapshot .. " | no_adjacent_synergy_scroll"
+			end
+			
+			if snapshot ~= self.lastSynergyDebugSnapshot then
+				self.lastSynergyDebugSnapshot = snapshot
+				log("[SynergyDebug] " .. snapshot)
+			end
+		end
+		
+		return totalBonus
+	end
+
+	method void OnBeginPlay()
+		self.inventoryComp = self:ResolveInventoryComp()
+		if self.inventoryComp == nil then
+			log_warning("[PlayerManager] Inventory component not found.")
+		end
+		log("[PlayerManager] Init Start")
+	end
+
+	method Entity ResolveEventBroadcasterEntity()
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem ~= nil then
+			return gameSystem
+		end
+		return self.Entity
+	end
+
+	method void EmitPlayerStatChangedEvent()
+		local broadcaster = self:ResolveEventBroadcasterEntity()
+		if broadcaster == nil then
+			return
+		end
+		broadcaster:SendEvent(PlayerStatChangedEvent())
+		-- Fallback immediate refresh in case event timing/receiver order delays UI updates.
+		if broadcaster.UIMain ~= nil then
+			broadcaster.UIMain:UpdateUI()
+		end
+	end
+
+	method void SyncInventoryFromGrid()
+		self.inventoryComp = self:ResolveInventoryComp()
+		if self.inventoryComp == nil then
+			return
+		end
+		local prevCurrentHP = tonumber(self.currentHP) or 0
+		local prevMaxHP = tonumber(self.maxHP) or 0
+		self.inventory = {}
+		for placedKey, placedInfo in pairs(self.inventoryComp.placedItems) do
+			if placedInfo == nil then
+				continue
+			end
+			local itemId = tonumber(placedInfo.itemId) or tonumber(placedKey) or 0
+			if itemId <= 0 then
+				continue
+			end
+			local itemData = self.dataManager:GetItemData(itemId)
+			if itemData ~= nil then
+				self.inventory[#self.inventory + 1] = itemData
+			end
+		end
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel ~= nil and inventoryPanel.Children ~= nil then
+			local children = inventoryPanel.Children
+			for i = 1, #children do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					local comp = child.Item
+					if self:IsSynergyScrollId(tonumber(comp.itemId) or 0) == true then
+						self:ResolveSynergyBonusAtkFromComponent(comp, tonumber(comp.itemId) or 0)
+					end
+				end
+			end
+		end
+		
+		self:RecalcAllStats()
+		-- Trigger adjacency synergy scan right after placement changes.
+		self:CalcWeaponSynergyAtk()
+		-- Clamp currentHP when maxHP changes.
+		if self.currentHP > self.maxHP then
+			self.currentHP = self.maxHP
+		end
+		local nextCurrentHP = tonumber(self.currentHP) or 0
+		local nextMaxHP = tonumber(self.maxHP) or 0
+		if prevCurrentHP ~= nextCurrentHP or prevMaxHP ~= nextMaxHP then
+			log("[HPChange][InventorySync] currentHP " .. tostring(prevCurrentHP) .. " -> " .. tostring(nextCurrentHP)
+				.. ", maxHP " .. tostring(prevMaxHP) .. " -> " .. tostring(nextMaxHP)
+				.. ", inventoryCount=" .. tostring(#self.inventory))
+		end
+		
+		-- Play item drop sound if an item was added to the inventory
+		if #self.inventory > self.lastInventoryCount and self.isInitializingItems == false then
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem and gameSystem.SoundManager then
+				gameSystem.SoundManager:PlaySFX(4002)
+			end
+		end
+		self.lastInventoryCount = #self.inventory
+		
+		-- Ensure HP/Cost UI refreshes immediately for every inventory sync path (drag, reward, auto-add).
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method void InitPlayer(string selectedClassId, any dataMgr)
+		self.classId = selectedClassId
+		self.dataManager = dataMgr
+		self.level = 1
+		self.isDead = false
+		self.gold = 200
+		self.scrollNormal = 0
+		self.scrollGuaranteed = 0
+		self.inventory = {}
+		self.lastInventoryCount = 0
+		self.buffList = {}
+		
+		self.inventoryComp = self:ResolveInventoryComp()
+		
+		if self.inventoryComp ~= nil then
+			self.inventoryComp:InitGrid()
+		end
+		
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		if baseStat == nil then
+			log_error("[PlayerManager] No base stat data: " .. self.classId)
+			return
+		end
+		
+		self.baseATK = baseStat.atk
+		self.baseACC = baseStat.acc
+		self.baseCritRate = baseStat.critRate
+		self.baseCritDmg = baseStat.critDmg
+		--
+		
+		--
+		self.atk = self.baseATK
+		self.acc = self.baseACC
+		self.critRate = self.baseCritRate
+		self.critDmg = self.baseCritDmg
+		
+		self.skillName = baseStat.skill
+		
+		--
+		self:RecalcAllStats()
+		
+		self.currentHP = self.maxHP
+		self.currentCost = self.maxCost
+		
+		log("[PlayerManager] Player Init Complete (Class: " .. self.classId .. ")")
+	end
+
+	method void RecalcAllStats()
+		local prevMaxHP = self.maxHP
+		self.maxHP = self:CalcFinalHP()
+		
+		-- Increase currentHP by the amount maxHP increased (or decreased if items were removed)
+		if prevMaxHP ~= 0 and self.maxHP ~= prevMaxHP then
+			local hpDiff = self.maxHP - prevMaxHP
+			self.currentHP = math.min(self.maxHP, math.max(1, self.currentHP + hpDiff))
+		end
+		
+		self.maxCost = self:CalcMaxCost()
+	end
+
+	method table CalcTotalItemStats()
+		local stats = {
+			itemAtk = 0,
+			itemAtkPercent = 0,
+			itemHp = 0,
+			itemHpPercent = 0,
+			itemAcc = 0,
+			itemCritRate = 0,
+			itemCritDmg = 0,
+			itemDef = 0
+		}
+		
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil then
+				local itemType = string.lower(tostring(item.type or ""))
+				local isArmor = (itemType == "armor")
+				if isArmor then
+					stats.itemHp += item.hp or 0
+					stats.itemHpPercent += item.hpPercent or 0
+					stats.itemAtk += item.atk or 0
+					stats.itemAtkPercent += item.atkPercent or 0
+					stats.itemAcc += item.accPercent or 0
+					stats.itemCritRate += item.critRate or 0
+					stats.itemCritDmg += item.critDmg or 0
+					stats.itemDef += item.def or 0
+				end
+			end
+		end
+		
+		return stats
+	end
+
+	method number CalcFinalATK(integer weaponItemId)
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseAtk = baseStat.atk
+		local lvAtk = 0
+		if lvStat ~= nil then
+			lvAtk = lvStat.atkPerLv * (self.level - 1)
+		end
+		
+		local stats = self:CalcTotalItemStats()
+		local itemAtk = stats.itemAtk
+		local itemAtkPercent = stats.itemAtkPercent
+		itemAtk += self:CalcWeaponSynergyAtk()
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemAtk += weaponData.atk or 0
+				itemAtkPercent += weaponData.atkPercent or 0
+			end
+		end
+		
+		local corrAtkPercent = 0
+		if correction ~= nil then
+			corrAtkPercent = correction.atkPercent
+		end
+		
+		local buffAtkPercent = self:GetBuffValue("atkPercent")
+		
+		local finalAtk = (baseAtk + lvAtk + itemAtk) * (1 + (corrAtkPercent + itemAtkPercent + buffAtkPercent) / 100)
+		return finalAtk
+	end
+
+	method number CalcFinalHP()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		
+		local baseHp = baseStat.hp
+		local lvHp = 0
+		if lvStat ~= nil then
+			lvHp = lvStat.hpPerLv * (self.level - 1)
+		end
+		
+		local stats = self:CalcTotalItemStats()
+		local itemHp = stats.itemHp
+		local itemHpPercent = stats.itemHpPercent
+		
+		local buffHpPercent = self:GetBuffValue("hpPercent")
+		
+		local finalHp = (baseHp + lvHp + itemHp) * (1 + (itemHpPercent + buffHpPercent) / 100)
+		return finalHp
+	end
+
+	method number CalcFinalACC(integer weaponItemId)
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseAcc = baseStat.acc
+		local lvAcc = 0
+		if lvStat ~= nil then
+			lvAcc = lvStat.accPerLv * (self.level - 1)
+		end
+		
+		local stats = self:CalcTotalItemStats()
+		local itemAcc = stats.itemAcc
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemAcc += weaponData.accPercent or 0
+			end
+		end
+		
+		local corrAcc = 0
+		if correction ~= nil then
+			corrAcc = correction.accPercent
+		end
+		
+		return baseAcc + lvAcc + itemAcc + corrAcc
+	end
+
+	method number CalcFinalCritRate(integer weaponItemId)
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCrit = baseStat.critRate
+		local stats = self:CalcTotalItemStats()
+		local itemCrit = stats.itemCritRate
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemCrit += weaponData.critRate or 0
+			end
+		end
+		
+		local corrCrit = 0
+		if correction ~= nil then
+			corrCrit = correction.critRate
+		end
+		
+		local buffCrit = self:GetBuffValue("critRate")
+		
+		return baseCrit + itemCrit + corrCrit + buffCrit
+	end
+
+	method number CalcFinalCritDMG(integer weaponItemId)
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local lvStat = self.dataManager:GetLevelStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCritDmg = baseStat.critDmg
+		local lvCritDmg = 0
+		if lvStat ~= nil then
+			lvCritDmg = lvStat.critDmgPerLv * (self.level - 1)
+		end
+		
+		local stats = self:CalcTotalItemStats()
+		local itemCritDmg = stats.itemCritDmg
+		
+		-- Add only the selected weapon stats
+		if weaponItemId ~= nil and weaponItemId > 0 and self.dataManager ~= nil then
+			local weaponData = self.dataManager:GetItemData(weaponItemId)
+			if weaponData ~= nil then
+				itemCritDmg += weaponData.critDmg or 0
+			end
+		end
+		
+		local corrCritDmg = 0
+		if correction ~= nil then
+			corrCritDmg = correction.critDmg
+		end
+		
+		local buffCritDmg = self:GetBuffValue("critDmg")
+		
+		return baseCritDmg + lvCritDmg + itemCritDmg + corrCritDmg + buffCritDmg
+	end
+
+	method number CalcMaxCost()
+		local baseStat = self.dataManager:GetBaseStats(self.classId)
+		local correction = self.dataManager:GetCorrectionStats(self.level)
+		
+		local baseCost = baseStat.cost or 10
+		
+		local corrCost = 0
+		if correction ~= nil then
+			corrCost = correction.maxCost
+		end
+		
+		return baseCost + corrCost
+	end
+
+	method void RestoreCost()
+		self.maxCost = self:CalcMaxCost()
+		self.currentCost = self.maxCost
+		log("[PlayerManager] Cost restored: " .. tostring(self.currentCost))
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method boolean UseCost(number amount)
+		if self.currentCost < amount then
+			log("[PlayerManager] Not enough cost. Curr: " .. tostring(self.currentCost) .. " Need: " .. tostring(amount))
+			return false
+		end
+		self.currentCost -= amount
+		log("[PlayerManager] Cost used: " .. tostring(amount) .. " Remain: " .. tostring(self.currentCost))
+		self:EmitPlayerStatChangedEvent()
+		return true
+	end
+
+	method void TakeDamage(number dmg)
+		if self.isDead == true then
+			return
+		end
+		
+		--
+		local stats = self:CalcTotalItemStats()
+		local totalDef = stats.itemDef
+		
+		local finalDmg = math.max(1, dmg - totalDef)
+		self.currentHP -= finalDmg
+		log("[PlayerManager] Took damage: " .. tostring(finalDmg) .. " (Orig: " .. tostring(dmg) .. " Def: " .. tostring(totalDef) .. ") Remain HP: " .. tostring(self.currentHP))
+		
+		if self.currentHP <= 0 then
+			self.currentHP = 0
+			self.isDead = true
+			log("[PlayerManager] Player died!")
+			self:PlayPlayerAnim("Dead")
+		else
+			self:PlayPlayerAnim("Hit")
+			self:ProcessHitVisual(finalDmg)
+		end
+		
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method void Heal(number amount)
+		self.currentHP = math.min(self.maxHP, self.currentHP + amount)
+		log("[PlayerManager] HP recovered: " .. tostring(amount) .. " Current HP: " .. tostring(self.currentHP))
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method void LevelUp()
+		self.level += 1
+		local prevMaxHP = self.maxHP
+		self:RecalcAllStats()
+		--
+		local hpGain = self.maxHP - prevMaxHP
+		self.currentHP += hpGain
+		self.currentHP = math.min(self.maxHP, self.currentHP)
+		log("[PlayerManager] Level up! Lv." .. tostring(self.level) .. " HP: " .. tostring(self.currentHP) .. "/" .. tostring(self.maxHP))
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method void AddBuff(string statName, number value, integer duration)
+		local buff = {}
+		buff.stat = statName
+		buff.value = value
+		buff.remainTurn = duration
+		self.buffList[#self.buffList + 1] = buff
+		log("[PlayerManager] Buff added: " .. statName .. " +" .. tostring(value) .. " (" .. tostring(duration) .. " turns)")
+	end
+
+	method number GetBuffValue(string statName)
+		local total = 0
+		for i = 1, #self.buffList do
+			if self.buffList[i] ~= nil and self.buffList[i].stat == statName then
+				total += self.buffList[i].value
+			end
+		end
+		return total
+	end
+
+	method void TickBuffs()
+		local newList = {}
+		for i = 1, #self.buffList do
+			local buff = self.buffList[i]
+			if buff ~= nil then
+				buff.remainTurn -= 1
+				if buff.remainTurn > 0 then
+					newList[#newList + 1] = buff
+				else
+					log("[PlayerManager] Buff expired: " .. buff.stat)
+				end
+			end
+		end
+		self.buffList = newList
+	end
+
+	method void AddGold(integer amount)
+		if amount == nil or amount <= 0 then
+			return
+		end
+		self.gold = (self.gold or 0) + amount
+		log("[PlayerManager] Gold +" .. tostring(amount) .. " => " .. tostring(self.gold))
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method void AddScroll(integer typeId, integer amount)
+		if amount == nil or amount <= 0 then
+			return
+		end
+		
+		if typeId == 9 then
+			self.scrollNormal = (self.scrollNormal or 0) + amount
+		elseif typeId == 10 then
+			self.scrollGuaranteed = (self.scrollGuaranteed or 0) + amount
+		else
+			return
+		end
+		
+		log("[PlayerManager] Scroll +" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
+		self:EmitPlayerStatChangedEvent()
+	end
+
+	method boolean UseScroll(integer typeId, integer amount)
+		if amount == nil or amount <= 0 then
+			return true
+		end
+		
+		local current = 0
+		if typeId == 9 then
+			current = self.scrollNormal or 0
+		elseif typeId == 10 then
+			current = self.scrollGuaranteed or 0
+		else
+			return false
+		end
+		
+		if current < amount then
+			log("[PlayerManager] Not enough scroll. type=" .. tostring(typeId) .. " need=" .. tostring(amount) .. " current=" .. tostring(current))
+			return false
+		end
+		
+		if typeId == 9 then
+			self.scrollNormal = current - amount
+		else
+			self.scrollGuaranteed = current - amount
+		end
+		
+		log("[PlayerManager] Scroll -" .. tostring(amount) .. " (type=" .. tostring(typeId) .. ") => normal=" .. tostring(self.scrollNormal) .. ", guaranteed=" .. tostring(self.scrollGuaranteed))
+		self:EmitPlayerStatChangedEvent()
+		return true
+	end
+
+	method boolean SpendGold(integer amount)
+		if amount == nil or amount <= 0 then
+			return true
+		end
+		local current = self.gold or 0
+		if current < amount then
+			log("[PlayerManager] Not enough gold. Need=" .. tostring(amount) .. " Current=" .. tostring(current))
+			return false
+		end
+		self.gold = current - amount
+		log("[PlayerManager] Gold -" .. tostring(amount) .. " => " .. tostring(self.gold))
+		self:EmitPlayerStatChangedEvent()
+		return true
+	end
+
+	method table BuildShapeCells(table itemData)
+		local shapeCells = {}
+		if itemData ~= nil and itemData.shapeMask ~= nil and itemData.shapeMask ~= "" then
+			local rowText = ""
+			local mask = itemData.shapeMask
+			local rowIndex = 0
+			for i = 1, string.len(mask) do
+				local ch = string.sub(mask, i, i)
+				if ch == "," or ch == "/" then
+					for colIndex = 1, string.len(rowText) do
+						if string.sub(rowText, colIndex, colIndex) == "1" then
+							shapeCells[#shapeCells + 1] = {row = rowIndex, col = colIndex - 1}
+						end
+					end
+					rowText = ""
+					rowIndex = rowIndex + 1
+				else
+					rowText = rowText .. ch
+				end
+			end
+		
+			if rowText ~= "" then
+				for colIndex = 1, string.len(rowText) do
+					if string.sub(rowText, colIndex, colIndex) == "1" then
+						shapeCells[#shapeCells + 1] = {row = rowIndex, col = colIndex - 1}
+					end
+				end
+			end
+		end
+		
+		if #shapeCells == 0 then
+			local width = itemData.width or 1
+			local height = itemData.height or 1
+			for r = 0, height - 1 do
+				for c = 0, width - 1 do
+					shapeCells[#shapeCells + 1] = {row = r, col = c}
+				end
+			end
+		end
+		
+		return shapeCells
+	end
+
+	method void AddItem(table itemData)
+		self.inventoryComp = self:ResolveInventoryComp()
+		
+		
+		if self.inventoryComp ~= nil then
+			local width = itemData.width or 1
+			local height = itemData.height or 1
+			local shapeCells = self:BuildShapeCells(itemData)
+			local placed = false
+			for r = 1, 6 do
+				for c = 1, 6 do
+					if self.inventoryComp:CanPlace(r, c, shapeCells) then
+						self.inventoryComp:PlaceItem(r, c, itemData.id, shapeCells)
+						placed = true
+						--
+						local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+						if uiMainEntity ~= nil then
+							local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+							if invUIEntity ~= nil and invUIEntity.InventoryUI ~= nil then
+								invUIEntity.InventoryUI:SpawnItemInGrid(itemData.id, r, c, width, height)
+							end
+						end
+						--
+						self:SyncInventoryFromGrid()
+						break
+					end
+				end
+				if placed then
+					break
+				end
+			end
+			if placed == false then
+				log_warning("[PlayerManager] No space to place item in inventory: " .. tostring(itemData.id))
+			end
+		end
+		
+		log("[PlayerManager] Item added: " .. (itemData.name or tostring(itemData.id)))
+	end
+
+	method integer GetItemCount(integer itemId)
+		local count = 0
+		if self.inventory == nil then return count end
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil and tonumber(item.id) == itemId then
+				count += 1
+			end
+		end
+		return count
+	end
+
+	method void RemoveItem(integer index)
+		if index >= 1 and index <= #self.inventory then
+			local item = self.inventory[index]
+			log("[PlayerManager] Item removed: " .. (item.name or tostring(item.id)))
+			local itemId = item.id
+			table.remove(self.inventory, index)
+			self.inventoryComp = self:ResolveInventoryComp()
+			if self.inventoryComp ~= nil then
+				self.inventoryComp:RemoveItem(itemId)
+				
+				-- Remove UI item entity as well.
+				local uiMainEntity = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+				if uiMainEntity ~= nil then
+					local invUIEntity = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+					if invUIEntity ~= nil and invUIEntity.InventoryUI ~= nil then
+						invUIEntity.InventoryUI:RemoveItemEntity(itemId)
+					end
+				end
+			end
+			self:RecalcAllStats()
+		end
+	end
+
+	method table UseSkill(any dataMgr)
+		local skillData = dataMgr:GetSkillData(self.skillName)
+		if skillData == nil then
+			log_error("[PlayerManager] No skill data: " .. self.skillName)
+			return nil
+		end
+		
+		if self:UseCost(skillData.cost) == false then
+			return nil
+		end
+		
+		local buffTurn = 3
+		if skillData.activeTurn ~= nil and skillData.activeTurn > 0 then
+			buffTurn = skillData.activeTurn
+		end
+		
+		--
+		if skillData.heal > 0 then
+			self:Heal(skillData.heal)
+		end
+		if skillData.critRate > 0 then
+			self:AddBuff("critRate", skillData.critRate, buffTurn)
+		end
+		if skillData.critDmg > 0 then
+			self:AddBuff("critDmg", skillData.critDmg, buffTurn)
+		end
+		if skillData.atk > 0 then
+			self:AddBuff("atkPercent", skillData.atk, buffTurn)
+		end
+		
+		log("[PlayerManager] Skill used: " .. self.skillName)
+		return skillData
+	end
+
+	@ExecSpace("Client")
+	method void PlayPlayerAnim(string stateName, integer itemId)
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		
+		local normalizedState = tostring(stateName or "")
+		local upperState = string.upper(normalizedState)
+		
+		if upperState == "HIT" then
+			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+			if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
+				gameSystem.SoundManager:PlaySFX(2004)
+			end
+		elseif upperState == "ATTACK" and itemId ~= nil and itemId > 0 and self.dataManager ~= nil then
+			local itemData = self.dataManager:GetItemData(itemId)
+			if itemData ~= nil and itemData.desc ~= nil then
+				local desc = itemData.desc
+				local actionName = ""
+				local soundId = 0
+				
+				if string.find(desc, "두손검") then 
+					actionName = "swingT1"
+					soundId = 2006
+				elseif string.find(desc, "한손검") then 
+					actionName = "swingO1"
+					soundId = 2001
+				elseif string.find(desc, "완드") then 
+					actionName = "swingO2"
+					soundId = 2003
+				elseif string.find(desc, "스태프") then 
+					actionName = "swingO2"
+					soundId = 2007
+				elseif string.find(desc, "활") then 
+					actionName = "shoot1"
+					soundId = 2002
+				elseif string.find(desc, "석궁") then 
+					actionName = "shoot2"
+					soundId = 2008
+				elseif string.find(desc, "단검") then 
+					actionName = "stabO1"
+					soundId = 2009
+				elseif string.find(desc, "아대") then 
+					actionName = "swingO1"
+					soundId = 2010
+				else
+					soundId = 2001
+				end
+				
+				if soundId > 0 then
+					local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+					if gameSystem ~= nil and gameSystem.SoundManager ~= nil then
+						gameSystem.SoundManager:PlaySFX(soundId)
+					end
+				end
+				
+				if actionName ~= "" then
+					local body = player
+					if player.AvatarRendererComponent ~= nil then
+						body = player.AvatarRendererComponent:GetBodyEntity()
+						if body == nil then body = player end
+					end
+					
+					local event = ActionStateChangedEvent(actionName, actionName, 1, SpriteAnimClipPlayType.Onetime)
+					body:SendEvent(event)
+					
+					_TimerService:SetTimerOnce(function()
+						if _EntityService:IsValid(body) then
+							local idleEvent = ActionStateChangedEvent("stand1", "stand1", 1, SpriteAnimClipPlayType.Loop)
+							body:SendEvent(idleEvent)
+						end
+					end, 0.6)
+					return
+				end
+			end
+		end
+
+		local stateComp = player.StateComponent
+		if stateComp ~= nil then
+			if upperState ~= "" then
+				stateComp:ChangeState(upperState)
+			end
+		end
+	end
+
+	@ExecSpace("Client")
+	method void ProcessHitVisual(number damage)
+		if self.isDead == true then
+			return
+		end
+		
+		local player = _UserService.LocalPlayer
+		if player == nil then return end
+		
+		-- 진짜 메이?�스?�리 ?��?지 ?�스???��?지 ?�킨)�??�우�??�해 HitEvent 발생
+		-- ?�백(?�로 밀�???방�??�기 ?�해 ?�동/물리 컴포?�트�??�시 비활?�화?�니??
+		local rb = player.RigidbodyComponent
+		local mv = player.MovementComponent
+		local wasRbEnabled = false
+		local wasMvEnabled = false
+		
+		if rb ~= nil then
+			wasRbEnabled = rb.Enable
+			rb.Enable = false
+		end
+		
+		if mv ~= nil then
+			wasMvEnabled = mv.Enable
+			mv.Enable = false
+		end
+		
+		-- Parameter: (방향, ?��?지?�치, ?�리?�컬?��?, 공격?�턴?�름, ?�격횟??
+		local hitComp = player.HitComponent
+		if hitComp ~= nil then
+			pcall(function()
+				hitComp:OnHit(player, math.ceil(damage), false, "ATTACK", 1)
+			end)
+		else
+			log_warning("[PlayerManager] HitComponent not found on LocalPlayer.")
+		end
+		
+		-- 0.5�??�백 계산 종료) ?�에 ?�시 물리 ?�태 복구
+		local restoreFunc = function()
+			if _EntityService:IsValid(player) then
+				local crb = player.RigidbodyComponent
+				local cmv = player.MovementComponent
+				if crb ~= nil then crb.Enable = wasRbEnabled end
+				if cmv ~= nil then cmv.Enable = wasMvEnabled end
+				
+				-- 가?�도가 ?�아?�을 ???�으므�?초기??
+				if crb ~= nil and wasRbEnabled then
+					crb.MoveVelocity = Vector2.zero
+					crb:SetForce(Vector2.zero)
+				end
+			end
+		end
+		
+		_TimerService:SetTimerOnce(restoreFunc, 0.5)
+	end
+
+end

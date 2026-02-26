@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://baf0f9118f8844f8947d93662928b7bb",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "a7/d9/a7d9ab19e3564a8f8ccce6ec3d080c0d/sprite/baf0f9118f8844f8947d93662928b7bb/639075213924911031",
+      "upload_hash": "B86AF4E0AC6B6B953EEBEDF12C8F6D3B34FB1F195ECD6F298F06F3E90AAB8D1D",
+      "name": "로비 이미지 최종",
+      "resource_guid": "baf0f9118f8844f8947d93662928b7bb",
+      "resource_version": "699d6c70c20404cce164b81e"
+    }
+  }
+}

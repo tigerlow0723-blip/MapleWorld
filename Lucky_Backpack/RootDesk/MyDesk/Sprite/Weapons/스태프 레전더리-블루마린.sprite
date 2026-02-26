@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://029a364e68de4377aff1d581a9c92d86",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/029a364e68de4377aff1d581a9c92d86/639074219961819369",
+      "upload_hash": "9466D82809755BC80D90ABAF390E49B801C6093D2474CC6B5759F10B33C0979A",
+      "name": "스태프 레전더리-블루마린",
+      "resource_guid": "029a364e68de4377aff1d581a9c92d86",
+      "resource_version": "699be82c2f2996a26f21b07e"
+    }
+  }
+}

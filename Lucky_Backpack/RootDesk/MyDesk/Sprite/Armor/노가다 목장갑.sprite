@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://78d467299e044689ab3175aeeb07a69f",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/78d467299e044689ab3175aeeb07a69f/639072651252038101",
+      "upload_hash": "C406D6F488DBA81CF3022BB57A917993C9D5E23B84631648E666B2C6A3A57276",
+      "name": "노가다 목장갑",
+      "resource_guid": "78d467299e044689ab3175aeeb07a69f",
+      "resource_version": "699983655e4a0a42e7573f69"
+    }
+  }
+}

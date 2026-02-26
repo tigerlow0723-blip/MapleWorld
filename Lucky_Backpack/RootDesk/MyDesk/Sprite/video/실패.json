@@ -1,0 +1,137 @@
+﻿[
+  {
+    "RUID": "0f9cd54928b3454bb45d0a8f415f3dba",
+    "clipName": "주문서 실패",
+    "subCategory": "object",
+    "sprites": [
+      {
+        "spriteRUID": "80f7cd7b7a31483db610a264e53300d8",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "7da62db4be39402e9bfdba0f7b7ed45a",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "e0512f08a475418e95156212b9c7d0c9",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "b36d24e7809549a48217a6fddd6f682d",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "dae52f97900a46beb8180fb3c8e49cc5",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "106eb86747a940c98f3dbaafc6ba3e46",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "1095fb5b3f20499aaf27ab5c3166371d",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "9727815dd34f43a2b8cf37bbdba6d83f",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "0641df48760f42e89d39c7dee18aa123",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "5058a57c6de9473c828c5bbab3fc782a",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "af7770bb39624835a0d2286b7be936cd",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "7c71b86f20bd4595abc69a7f19834ace",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "27b5c8c7c43041d88c84dbe9f2e3c8f3",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "a1633f48af554bd09ab77859b212b03c",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "baa030bb2b904832a7d2bab04a5e0bf5",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      },
+      {
+        "spriteRUID": "84666f6ee19a46fdb5c8762da4327be5",
+        "delay": 0.05,
+        "customOffset": {
+          "x": 0.0,
+          "y": 0.0
+        }
+      }
+    ]
+  }
+]

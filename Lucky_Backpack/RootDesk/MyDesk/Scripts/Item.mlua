@@ -1,0 +1,818 @@
+@Component
+script Item extends Component
+
+	property integer itemId = 0
+
+	property string itemName = ""
+
+	property string itemType = ""
+
+	property integer width = 1
+
+	property integer height = 1
+
+	property table shapeMatrix = {}
+
+	property integer atk = 0
+
+	property integer def = 0
+
+	property integer hp = 0
+
+	property integer cost = 0
+
+	property integer atkCount = 0
+
+	property integer currentAtkCount = 0
+
+	property integer bonusSynergyAtk = 0
+
+	property integer atkPercent = 0
+
+	property integer accPercent = 0
+
+	property integer critRate = 0
+
+	property integer critDmg = 0
+
+	property integer hpPercent = 0
+
+	property integer heldStages = 0
+
+	property integer armorUseCount = 0
+
+	property integer armorRemainingCount = 0
+
+	property integer armorAtkPercent = 0
+
+	property integer armorCritRate = 0
+
+	property integer armorCritDmg = 0
+
+	property integer armorWeaponCost = 0
+
+	property integer armorHpRecoveryPercent = 0
+
+	property boolean armorRollInitialized = false
+
+	property string armorSynergyTarget = "none"
+
+	property integer tempArmorAtkPercent = 0
+
+	property integer tempArmorCritRate = 0
+
+	property integer tempArmorCritDmg = 0
+
+	property integer tempArmorWeaponCost = 0
+
+	property integer tempArmorPotionHpPercent = 0
+
+	property integer spawnGroup = 0
+
+	property string desc = ""
+
+	property string spriteRUID = ""
+
+	property string grade = ""
+
+	property integer next_upgrade_id = 0
+
+	property integer displayBoundsCols = 0
+
+	property integer displayBoundsRows = 0
+
+	property integer gridRow = -1
+
+	property integer gridCol = -1
+
+	property string inventoryUIPath = ""
+
+	property table spawnPosition = {}
+	property boolean isDisplayAreaManuallyPositioned = false
+
+	property any dataManager = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		    local uiTransform = self.Entity.UITransformComponent
+		    if uiTransform ~= nil then
+		        self.spawnPosition = {x = uiTransform.anchoredPosition.x, y = uiTransform.anchoredPosition.y}
+		    end
+		
+		    if self.itemId > 0 then
+		        self:InitFromTable(self.itemId)
+		    end
+		
+		    if self.spriteRUID ~= "" and self.spriteRUID ~= "NONE" then
+		        local renderer = self.Entity.SpriteGUIRendererComponent
+		        if renderer ~= nil then
+		            renderer.ImageRUID = self.spriteRUID
+		        end
+		    end
+		
+		    self.Entity:ConnectEvent(UITouchDownEvent, function(event)
+		        if self:CanStartDragFromTouch(event) == false then
+		            return
+		        end
+		
+		        local inventoryUI = nil
+		        if self.inventoryUIPath ~= "" then
+		            local targetEntity = _EntityService:GetEntityByPath(self.inventoryUIPath)
+		            if targetEntity ~= nil then
+		                inventoryUI = targetEntity.InventoryUI
+		            end
+		        else
+		            local parent = self.Entity.Parent
+		            if parent ~= nil then
+		                inventoryUI = parent.InventoryUI
+		            end
+		        end
+		
+		        if inventoryUI ~= nil then
+		            inventoryUI:StartDrag(self.Entity, event)
+		        else
+		            log_warning("[Item] InventoryUI not found")
+		        end
+		    end)
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean CanStartDragFromTouch(any event)
+		    if self:IsRightClickTouch(event) == true then
+		        return false
+		    end
+
+		    local touchPoint = nil
+		    if event ~= nil then
+		        touchPoint = event.TouchPoint
+		    end
+		    if touchPoint == nil then
+		        touchPoint = _InputService:GetCursorPosition()
+		    end
+		    if touchPoint ~= nil then
+		        if self:IsTouchPointOnOccupiedShapeCell(touchPoint) == false then
+		            return false
+		        end
+		    end
+		
+		    if event ~= nil and event.TouchId ~= nil then
+		        local touchId = tonumber(event.TouchId)
+		        if touchId ~= nil and touchId >= 0 then
+		            return true
+		        end
+		    end
+		
+		    if _InputService:IsKeyPressed(KeyboardKey.Mouse0) == true then
+		        return true
+		    end
+		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsTouchPointOnOccupiedShapeCell(Vector2 touchPoint)
+		    if touchPoint == nil then
+		        return true
+		    end
+
+		    local hasShapeHitCell = false
+		    if self.Entity ~= nil then
+		        local children = self.Entity.Children
+		        if children ~= nil then
+		            for i = 1, #children do
+		                local child = children[i]
+		                if child ~= nil then
+		                    local childName = child.Name or ""
+		                    if string.sub(childName, 1, 13) == "ShapeHitCell_" then
+		                        hasShapeHitCell = true
+		                        local hitUI = child.UITransformComponent
+		                        if hitUI ~= nil then
+		                            local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, hitUI)
+		                            if localPos ~= nil then
+		                                local rect = hitUI.RectSize
+		                                local rectW = 0
+		                                local rectH = 0
+		                                if rect ~= nil then
+		                                    rectW = tonumber(rect.x) or 0
+		                                    rectH = tonumber(rect.y) or 0
+		                                end
+		                                if rectW <= 0 then rectW = 1 end
+		                                if rectH <= 0 then rectH = 1 end
+		                                local halfW = rectW * 0.5
+		                                local halfH = rectH * 0.5
+		                                if math.abs(localPos.x) <= halfW and math.abs(localPos.y) <= halfH then
+		                                    return true
+		                                end
+		                            end
+		                        end
+		                    end
+		                end
+		            end
+		        end
+		    end
+		    if hasShapeHitCell == true then
+		        return false
+		    end
+
+		    local uiTransform = self.Entity.UITransformComponent
+		    if uiTransform == nil then
+		        return true
+		    end
+
+		    local rect = uiTransform.RectSize
+		    if rect == nil then
+		        return true
+		    end
+
+		    local rectW = tonumber(rect.x) or 0
+		    local rectH = tonumber(rect.y) or 0
+		    if rectW <= 0 or rectH <= 0 then
+		        return true
+		    end
+
+		    local localPos = _UILogic:ScreenToLocalUIPosition(touchPoint, uiTransform)
+		    if localPos == nil then
+		        return true
+		    end
+
+		    local halfW = rectW * 0.5
+		    local halfH = rectH * 0.5
+		    if localPos.x < -halfW or localPos.x > halfW or localPos.y < -halfH or localPos.y > halfH then
+		        return false
+		    end
+
+		    local shapeCells = self:GetShapeCells()
+		    if shapeCells == nil or #shapeCells <= 0 then
+		        return true
+		    end
+
+		    local minRow = 999
+		    local maxRow = -999
+		    local minCol = 999
+		    local maxCol = -999
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row < minRow then minRow = row end
+		            if row > maxRow then maxRow = row end
+		            if col < minCol then minCol = col end
+		            if col > maxCol then maxCol = col end
+		        end
+		    end
+		    if minRow > maxRow or minCol > maxCol then
+		        return true
+		    end
+
+		    local displayCols = tonumber(self.displayBoundsCols) or 0
+		    local displayRows = tonumber(self.displayBoundsRows) or 0
+		    if displayCols <= 0 then
+		        displayCols = (maxCol - minCol + 1)
+		    end
+		    if displayRows <= 0 then
+		        displayRows = (maxRow - minRow + 1)
+		    end
+		    if displayCols <= 0 or displayRows <= 0 then
+		        return true
+		    end
+
+		    local cellW = rectW / displayCols
+		    local cellH = rectH / displayRows
+		    if cellW <= 0 or cellH <= 0 then
+		        return true
+		    end
+
+		    local colIndex = math.floor((localPos.x + halfW) / cellW)
+		    local rowIndex = math.floor((halfH - localPos.y) / cellH)
+		    if colIndex < 0 then colIndex = 0 end
+		    if rowIndex < 0 then rowIndex = 0 end
+		    if colIndex >= displayCols then colIndex = displayCols - 1 end
+		    if rowIndex >= displayRows then rowIndex = displayRows - 1 end
+
+		    local targetRow = minRow + rowIndex
+		    local targetCol = minCol + colIndex
+
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row == targetRow and col == targetCol then
+		                return true
+		            end
+		        end
+		    end
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsRightClickTouch(any event)
+		    if event == nil then
+		        return false
+		    end
+		
+		    if event.TouchId ~= nil and event.TouchId == -3 then
+		        return true
+		    end
+		
+		    local button = event.Button
+		    if button == nil then button = event.button end
+		    if button ~= nil then
+		        if button == 1 or button == 2 or button == -3 then
+		            return true
+		        end
+		        local buttonText = string.lower(tostring(button))
+		        if string.find(buttonText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    local actionType = event.ActionType
+		    if actionType ~= nil then
+		        local actionText = string.lower(tostring(actionType))
+		        if string.find(actionText, "right", 1, true) ~= nil then
+		            return true
+		        end
+		    end
+		
+		    if _InputService:IsKeyPressed(KeyboardKey.Mouse1) == true then
+		        return true
+		    end
+		
+		    return false
+	end
+
+	@ExecSpace("ClientOnly")
+	method void InitFromTable(integer id)
+		    local previousItemId = self.itemId
+		    local itemData = nil
+		    self:ResolveDataManager()
+		    if self.dataManager ~= nil then
+		        itemData = self.dataManager:GetItemData(id)
+		    end
+		
+		    if itemData == nil then
+		        log_warning("[Item] Item data not found for id: " .. tostring(id))
+		        return
+		    end
+		
+		    self.itemId = tonumber(itemData.id) or 0
+		    self.itemName = itemData.name or ""
+		    self.itemType = string.lower(tostring(itemData.type or ""))
+		    self.itemType = string.gsub(self.itemType, "%s+", "")
+		    self.width = math.max(1, tonumber(itemData.width) or 1)
+		    self.height = math.max(1, tonumber(itemData.height) or 1)
+		    self.atk = tonumber(itemData.atk) or 0
+		    self.def = tonumber(itemData.def) or 0
+		    self.hp = tonumber(itemData.hp) or 0
+		    self.cost = tonumber(itemData.cost) or 0
+		    self.atkCount = math.max(0, tonumber(itemData.atkCount) or 0)
+		    self.atkPercent = tonumber(itemData.atkPercent) or 0
+		    self.accPercent = tonumber(itemData.accPercent) or 0
+		    self.critRate = tonumber(itemData.critRate) or 0
+		    self.critDmg = tonumber(itemData.critDmg) or 0
+		    self.hpPercent = tonumber(itemData.hpPercent) or 0
+		    self.armorUseCount = math.max(0, tonumber(itemData.count) or 0)
+		    self.armorAtkPercent = tonumber(itemData.armorAtkPercent) or 0
+		    self.armorCritRate = tonumber(itemData.armorCritRate) or 0
+		    self.armorCritDmg = tonumber(itemData.armorCritDmg) or 0
+		    self.armorWeaponCost = tonumber(itemData.weaponCost) or 0
+		    self.armorHpRecoveryPercent = 0
+		    self.armorSynergyTarget = string.lower(tostring(itemData.armorSynergyTarget or "none"))
+		    self.armorSynergyTarget = string.gsub(self.armorSynergyTarget, "%s+", "")
+		    if self.armorSynergyTarget == "" then
+		        self.armorSynergyTarget = "none"
+		    end
+		    self.spawnGroup = tonumber(itemData.spawnGroup) or 0
+		    self.desc = itemData.desc or ""
+		    self.spriteRUID = itemData.imageRUID or ""
+		    self.grade = itemData.grade or ""
+		    self.next_upgrade_id = tonumber(itemData.next_upgrade_id) or 0
+		    if previousItemId ~= self.itemId then
+		        self.armorRollInitialized = false
+		        self.heldStages = 0
+		    end
+		    if self.itemType == "armor" then
+		        self:ResetArmorActivationCount()
+		    else
+		        self.armorRemainingCount = 0
+		        self.armorRollInitialized = false
+		    end
+		    self:ResetTemporaryArmorBuffs()
+
+		    local weaponDataSetName = "Data_Table - 아이템 - 장비"
+		    local weaponDataSet = _DataService:GetTable(weaponDataSetName)
+		    if weaponDataSet ~= nil then
+		        local row = self:FindItemRowById(weaponDataSet, id)
+		        if row > 0 then
+		            -- Use only named columns so CSV column reordering is safe.
+		            local okGradeByName, gradeByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "grade")
+		            end)
+		            if okGradeByName and gradeByName ~= nil and gradeByName ~= "" then
+		                self.grade = tostring(gradeByName)
+		            end
+		
+		            local okNextByName, nextByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "next_upgrade_id")
+		            end)
+		            if okNextByName and nextByName ~= nil and nextByName ~= "" then
+		                self.next_upgrade_id = tonumber(nextByName) or self.next_upgrade_id
+		            end
+		
+		            local namedAtkCountValue = nil
+		            local okCountByName, countByName = pcall(function()
+		                return weaponDataSet:GetCell(row, "count")
+		            end)
+		            if okCountByName and countByName ~= nil and countByName ~= "" then
+		                namedAtkCountValue = tonumber(countByName)
+		            end
+		            if namedAtkCountValue ~= nil then
+		                self.atkCount = math.max(0, namedAtkCountValue)
+		            end
+		        end
+		    end
+		
+		    self.currentAtkCount = self.atkCount
+		
+		    if self:IsSynergyScrollId(self.itemId) == true and self.bonusSynergyAtk == 0 then
+		        self.bonusSynergyAtk = self:RollSynergyAtk(self.itemId)
+		    end
+		
+		    local shapeMask = itemData.shapeMask or ""
+		    self.shapeMatrix = self:ParseShapeMask(shapeMask)
+		
+		    if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
+		        self.shapeMatrix = {}
+		        for r = 1, self.height do
+		            self.shapeMatrix[r] = {}
+		            for c = 1, self.width do
+		                self.shapeMatrix[r][c] = 1
+		            end
+		        end
+		    else
+		        self.height = #self.shapeMatrix
+		        local maxWidth = 0
+		        for r = 1, #self.shapeMatrix do
+		            local rowData = self.shapeMatrix[r]
+		            if rowData ~= nil and #rowData > maxWidth then
+		                maxWidth = #rowData
+		            end
+		        end
+		        self.width = math.max(1, maxWidth)
+		    end
+		
+		    self:UpdateDisplayBoundsFromShapeCells(self:GetShapeCells())
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResolveDataManager()
+		    if self.dataManager ~= nil then
+		        return
+		    end
+		
+		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		    if gameSystem ~= nil then
+		        self.dataManager = gameSystem.DataManager
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer FindItemRowById(any dataSet, integer id)
+		    if dataSet == nil then
+		        return 0
+		    end
+		
+		    local rowCount = dataSet:GetRowCount()
+		    for row = 1, rowCount do
+		        local rowId = tonumber(dataSet:GetCell(row, "id"))
+		        if rowId == nil then
+		            rowId = tonumber(dataSet:GetCell(row, "ID"))
+		        end
+		        if rowId ~= nil and rowId == id then
+		            return row
+		        end
+		    end
+		    return 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsSynergyScrollId(integer id)
+		    local range = self:GetSynergyScrollAtkRange(id)
+		    return range.isSynergy == true
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer RollSynergyAtk(integer id)
+		    local range = self:GetSynergyScrollAtkRange(id)
+		    if range.isSynergy ~= true then
+		        return 0
+		    end
+		    local minVal = tonumber(range.minAtk) or 0
+		    local maxVal = tonumber(range.maxAtk) or 0
+		    if minVal > maxVal then
+		        local tmp = minVal
+		        minVal = maxVal
+		        maxVal = tmp
+		    end
+		    if minVal <= 0 and maxVal <= 0 then
+		        return 0
+		    end
+		    if minVal <= 0 then
+		        minVal = 1
+		    end
+		    if maxVal <= 0 then
+		        maxVal = minVal
+		    end
+		    if minVal == maxVal then
+		        return minVal
+		    end
+		    return math.random(minVal, maxVal)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table GetSynergyScrollAtkRange(integer id)
+		    local result = {isSynergy = false, minAtk = 0, maxAtk = 0}
+		    if id == nil or id <= 0 then
+		        return result
+		    end
+		    self:ResolveDataManager()
+		    if self.dataManager == nil then
+		        return result
+		    end
+		    local itemData = self.dataManager:GetItemData(id)
+		    if itemData == nil then
+		        return result
+		    end
+		    local itemType = string.lower(tostring(itemData.type or ""))
+		    if itemType ~= "atk_scroll" then
+		        return result
+		    end
+		    local minAtk = tonumber(itemData.minAtk) or 0
+		    local maxAtk = tonumber(itemData.maxAtk) or 0
+		    if minAtk <= 0 and maxAtk <= 0 then
+		        return result
+		    end
+		    result.isSynergy = true
+		    result.minAtk = minAtk
+		    result.maxAtk = maxAtk
+		    return result
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer RollRangeInteger(integer minValue, integer maxValue, integer fallbackValue)
+		    local minVal = tonumber(minValue) or 0
+		    local maxVal = tonumber(maxValue) or 0
+		    local fallback = tonumber(fallbackValue) or 0
+		    if minVal == 0 and maxVal == 0 then
+		        return fallback
+		    end
+		    if minVal > maxVal then
+		        local tmp = minVal
+		        minVal = maxVal
+		        maxVal = tmp
+		    end
+		    if minVal == maxVal then
+		        return minVal
+		    end
+		    return math.random(minVal, maxVal)
+	end
+
+	@ExecSpace("ClientOnly")
+	method table RollArmorBuffsForUse(table itemData)
+		    local result = {}
+		    result.atkPercent = tonumber(itemData.armorAtkPercent) or tonumber(self.armorAtkPercent) or 0
+		    result.critRate = tonumber(itemData.armorCritRate) or tonumber(self.armorCritRate) or 0
+		    result.critDmg = tonumber(itemData.armorCritDmg) or tonumber(self.armorCritDmg) or 0
+		    result.weaponCost = tonumber(itemData.weaponCost) or tonumber(self.armorWeaponCost) or 0
+		    result.potionHpRecovery = tonumber(itemData.armorHpRecoveryPercent) or tonumber(self.armorHpRecoveryPercent) or 0
+		
+		    local minCritRate = tonumber(itemData.minCritRate) or 0
+		    local maxCritRate = tonumber(itemData.maxCritRate) or 0
+		    local minCritDmg = tonumber(itemData.minCritDmg) or 0
+		    local maxCritDmg = tonumber(itemData.maxCritDmg) or 0
+		    local minWeaponCost = tonumber(itemData.minWeaponCost) or 0
+		    local maxWeaponCost = tonumber(itemData.maxWeaponCost) or 0
+		    local minHpRecovery = tonumber(itemData.minHpRecovery) or 0
+		    local maxHpRecovery = tonumber(itemData.maxHpRecovery) or 0
+		
+		    result.critRate = self:RollRangeInteger(minCritRate, maxCritRate, result.critRate)
+		    result.critDmg = self:RollRangeInteger(minCritDmg, maxCritDmg, result.critDmg)
+		    result.weaponCost = self:RollRangeInteger(minWeaponCost, maxWeaponCost, result.weaponCost)
+		    result.potionHpRecovery = self:RollRangeInteger(minHpRecovery, maxHpRecovery, result.potionHpRecovery)
+		
+		    self.armorAtkPercent = tonumber(result.atkPercent) or 0
+		    self.armorCritRate = tonumber(result.critRate) or 0
+		    self.armorCritDmg = tonumber(result.critDmg) or 0
+		    self.armorWeaponCost = tonumber(result.weaponCost) or 0
+		    self.armorHpRecoveryPercent = tonumber(result.potionHpRecovery) or 0
+		    self.armorRollInitialized = true
+		
+		    local entityIdText = "unknown"
+		    if self.Entity ~= nil and self.Entity.Id ~= nil then
+		        entityIdText = tostring(self.Entity.Id)
+		    end
+		    log("[ArmorRoll] per-use itemId=" .. tostring(self.itemId)
+		        .. " entityId=" .. entityIdText
+		        .. " atk%=" .. tostring(self.armorAtkPercent)
+		        .. " critRate%=" .. tostring(self.armorCritRate)
+		        .. " critDmg%=" .. tostring(self.armorCritDmg)
+		        .. " weaponCost=" .. tostring(self.armorWeaponCost)
+		        .. " potionHpRecovery%=" .. tostring(self.armorHpRecoveryPercent))
+		
+		    return result
+	end
+
+	@ExecSpace("ClientOnly")
+	method void EnsureArmorRolls(table itemData)
+		    if self.itemType ~= "armor" then
+		        return
+		    end
+		    if self.armorRollInitialized == true then
+		        return
+		    end
+		    self:RollArmorBuffsForUse(itemData)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResetArmorActivationCount()
+		    self.armorRemainingCount = math.max(0, tonumber(self.armorUseCount) or 0)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ResetTemporaryArmorBuffs()
+		    self.tempArmorAtkPercent = 0
+		    self.tempArmorCritRate = 0
+		    self.tempArmorCritDmg = 0
+		    self.tempArmorWeaponCost = 0
+		    self.tempArmorPotionHpPercent = 0
+	end
+
+	@ExecSpace("ClientOnly")
+	method table ParseShapeMask(string shapeMask)
+		    local matrix = {}
+		    if shapeMask == nil or shapeMask == "" then
+		        return matrix
+		    end
+		
+		    local currentRow = ""
+		    for i = 1, string.len(shapeMask) do
+		        local ch = string.sub(shapeMask, i, i)
+		        if ch == "," or ch == "/" then
+		            if currentRow ~= "" then
+		                local rowData = {}
+		                for j = 1, string.len(currentRow) do
+		                    local cellChar = string.sub(currentRow, j, j)
+		                    if cellChar == "1" then
+		                        rowData[#rowData + 1] = 1
+		                    else
+		                        rowData[#rowData + 1] = 0
+		                    end
+		                end
+		                matrix[#matrix + 1] = rowData
+		            end
+		            currentRow = ""
+		        else
+		            currentRow = currentRow .. ch
+		        end
+		    end
+		
+		    if currentRow ~= "" then
+		        local rowData = {}
+		        for j = 1, string.len(currentRow) do
+		            local cellChar = string.sub(currentRow, j, j)
+		            if cellChar == "1" then
+		                rowData[#rowData + 1] = 1
+		            else
+		                rowData[#rowData + 1] = 0
+		            end
+		        end
+		        matrix[#matrix + 1] = rowData
+		    end
+		
+		    return matrix
+	end
+
+	method table GetShapeCells()
+		    local cells = {}
+		
+		    if self.shapeMatrix ~= nil and #self.shapeMatrix > 0 then
+		        for r = 1, #self.shapeMatrix do
+		            local rowData = self.shapeMatrix[r]
+		            if rowData ~= nil then
+		                for c = 1, #rowData do
+		                    if rowData[c] == 1 then
+		                        cells[#cells + 1] = {row = r - 1, col = c - 1}
+		                    end
+		                end
+		            end
+		        end
+		    end
+		
+		    if #cells == 0 then
+		        for r = 0, self.height - 1 do
+		            for c = 0, self.width - 1 do
+		                cells[#cells + 1] = {row = r, col = c}
+		            end
+		        end
+		    end
+		
+		    return cells
+	end
+
+	@ExecSpace("ClientOnly")
+	method void UpdateDisplayBoundsFromShapeCells(table shapeCells)
+		    if shapeCells == nil or #shapeCells <= 0 then
+		        self.displayBoundsCols = math.max(1, tonumber(self.width) or 1)
+		        self.displayBoundsRows = math.max(1, tonumber(self.height) or 1)
+		        return
+		    end
+
+		    local minRow = 999
+		    local maxRow = -999
+		    local minCol = 999
+		    local maxCol = -999
+		    for i = 1, #shapeCells do
+		        local cell = shapeCells[i]
+		        if cell ~= nil then
+		            local row = tonumber(cell.row) or 0
+		            local col = tonumber(cell.col) or 0
+		            if row < minRow then minRow = row end
+		            if row > maxRow then maxRow = row end
+		            if col < minCol then minCol = col end
+		            if col > maxCol then maxCol = col end
+		        end
+		    end
+
+		    if minRow <= maxRow and minCol <= maxCol then
+		        self.displayBoundsCols = maxCol - minCol + 1
+		        self.displayBoundsRows = maxRow - minRow + 1
+		    else
+		        self.displayBoundsCols = math.max(1, tonumber(self.width) or 1)
+		        self.displayBoundsRows = math.max(1, tonumber(self.height) or 1)
+		    end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void Rotate90Degrees()
+		    if self.shapeMatrix == nil or #self.shapeMatrix == 0 then
+		        return
+		    end
+		
+		    local oldRows = #self.shapeMatrix
+		    local oldCols = 0
+		    for r = 1, oldRows do
+		        local rowData = self.shapeMatrix[r]
+		        if rowData ~= nil and #rowData > oldCols then
+		            oldCols = #rowData
+		        end
+		    end
+		
+		    if oldRows <= 0 or oldCols <= 0 then
+		        return
+		    end
+		
+		    local rotated = {}
+		    for c = 1, oldCols do
+		        rotated[c] = {}
+		        for r = 1, oldRows do
+		            local srcRow = oldRows - r + 1
+		            local srcCell = 0
+		            local srcRowData = self.shapeMatrix[srcRow]
+		            if srcRowData ~= nil and srcRowData[c] ~= nil then
+		                srcCell = srcRowData[c]
+		            end
+		            rotated[c][r] = srcCell
+		        end
+		    end
+		
+		    self.shapeMatrix = rotated
+		
+		    local temp = self.width
+		    self.width = self.height
+		    self.height = temp
+
+		    self:UpdateDisplayBoundsFromShapeCells(self:GetShapeCells())
+		
+		    local uiTransform = self.Entity.UITransformComponent
+		    if uiTransform ~= nil then
+		        uiTransform.ZRotation = uiTransform.ZRotation - 90
+		    end
+	end
+
+	method void SetGridPosition(integer row, integer col)
+		    self.gridRow = row
+		    self.gridCol = col
+	end
+
+	method void ClearGridPosition()
+		    self.gridRow = -1
+		    self.gridCol = -1
+	end
+
+	method boolean IsPlaced()
+		    return self.gridRow >= 0 and self.gridCol >= 0
+	end
+
+end

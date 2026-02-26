@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://829b81657b324a3ea38fc096e441595b",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/829b81657b324a3ea38fc096e441595b/639071869962870644",
+      "upload_hash": "890E9E6D14FA4E0540E9F39A8A824C16750A9C271FE5D74C39275B246FC5D2AF",
+      "name": "하늘색 우산",
+      "resource_guid": "829b81657b324a3ea38fc096e441595b",
+      "resource_version": "699852341d7853c1f4cd9221"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://2eba48656393455286bebf7dcff6cd6e",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/2eba48656393455286bebf7dcff6cd6e/639074961117259484",
+      "upload_hash": "C0EF90544F1F2E71D61CEDABBCB522BA5CC6BA71FE0122650A3E899E9BF0579B",
+      "name": "공10 노가다 목장갑",
+      "resource_guid": "2eba48656393455286bebf7dcff6cd6e",
+      "resource_version": "699d09af807c886793944642"
+    }
+  }
+}

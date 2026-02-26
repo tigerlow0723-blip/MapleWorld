@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://2c14b944084a40389c6cc77d01597d17",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/2c14b944084a40389c6cc77d01597d17/639074219961755311",
+      "upload_hash": "E9E9D1CB31502A9AC2B985422DBEC51FEC66BDFCCDA4BDB5D1F5130D16028572",
+      "name": "스태프 에픽-고목나무 스태프",
+      "resource_guid": "2c14b944084a40389c6cc77d01597d17",
+      "resource_version": "699be82cf92933a652cbb0a7"
+    }
+  }
+}
