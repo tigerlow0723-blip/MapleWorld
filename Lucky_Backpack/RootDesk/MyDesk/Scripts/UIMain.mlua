@@ -1,4 +1,4 @@
-﻿@Component
+@Component
 script UIMain extends Component
 
 	property Entity sliderHP = nil
@@ -48,76 +48,142 @@ script UIMain extends Component
 	property Entity txtStage = nil
 
 	property Entity txtPlayerCoin = nil
+
 	property Entity uiPlayerCoinPanel = nil
+
 	property string playerCoinTextPath = "/ui/UIGroup/PlayerCoin/TxtPlayerCoin"
+
 	property string playerCoinPanelPath = "/ui/UIGroup/PlayerCoin"
+
 	property Entity uiStage5_1 = nil
+
 	property Entity uiStage5_2 = nil
+
 	property Entity uiStage5_3 = nil
+
 	property Entity uiStage5_4 = nil
+
 	property Entity uiStage5_Success = nil
+
 	property Entity uiStage5_Fail = nil
+
 	property Entity uiStage5_SuccessRoll = nil
+
 	property Entity uiStage5_FailRoll = nil
+
 	property Entity uiStage5_game = nil
+
 	property Entity btnPlayOddEven = nil
+
 	property Entity btnEnterShop = nil
+
 	property Entity btnExitMiniGame = nil
+
 	property Entity btnOdd = nil
+
 	property Entity btnEven = nil
+
 	property Entity btnBackFromPlay = nil
+
 	property Entity btnSellAllOre = nil
+
 	property Entity btnSellAllGoldBar = nil
+
 	property Entity btnBackFromShop = nil
+
 	property Entity stage5DiceImageEntity = nil
+
 	property Entity stage5DiceImageEntity2 = nil
+
 	property Entity stage5DiceRollEntity = nil
+
 	property Entity stage5DiceRollEntity2 = nil
+
 	property string stage5GamePath = "/ui/UIGroup/Stage_5_game"
+
 	property string stage5DiceImagePath = "/ui/UIGroup/Stage_5_game/DiceResult"
+
 	property string stage5DiceImagePath2 = "/ui/UIGroup/Stage_5_game/DiceResult2"
+
 	property string stage5DiceRollPath = "/ui/UIGroup/Stage_5_game/DiceRoll"
+
 	property string stage5DiceRollPath2 = "/ui/UIGroup/Stage_5_game/DiceRoll2"
+
 	property table stage5DiceImageRUIDs = {}
+
 	property table stage5DiceImageRUIDs2 = {}
+
 	property table stage5DiceRollRUIDs = {}
+
 	property table stage5DiceRollRUIDs2 = {}
+
 	property string stage5LastSubState = ""
+
 	property string stage5ResultRollKey = ""
+
 	property boolean stage5ResultRollPlayed = false
+
 	property Entity uiClear = nil
+
 	property Entity uiFail = nil
+
 	property Entity btnRetry = nil
+
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
+
 	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
+
 	property string rewardPanelPath = "/ui/UIGroup/RewardPanel"
+
 	property Entity scrollPanelEntity = nil
+
 	property Entity itemDisplayAreaEntity = nil
+
 	property Entity rewardPanelEntity = nil
+
+	property number itemDisplayAreaShowDelayAfterStageEntry = 1.65
+
+	property boolean itemDisplayAreaDelayPending = false
+
+	property boolean canShowItemDisplayAreaInPreparation = true
+
+	property integer itemDisplayAreaDelayTimerId = 0
+
 	property any gameManager = nil
+
 	property any battleManager = nil
+
 	property any playerManager = nil
+
 	property any scrollInventoryUI = nil
-	
-	-- Main Menu Properties
+
 	property Entity uiMainMenu = nil
+
 	property Entity btnStartGame = nil
+
 	property Entity btnHowToPlay = nil
-	
-	-- Tutorial Properties
+
 	property Entity uiTutorial = nil
+
 	property Entity btnNextPage = nil
+
 	property Entity btnPrevPage = nil
+
 	property Entity btnCloseTutorial = nil
+
 	property integer currentTutorialPage = 1
-	property table tutorialImages = {} -- user fills in RUIDs here
-	
+
+	property table tutorialImages = {}
+
 	property any rewardUI = nil
+
 	property integer targetMonsterIdx = 0
+
 	property table monsterSliders = {}
+
 	property integer lastBossPhase = 0
 
-		method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
+	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
 		local function disableInteract(ent)
 			if ent ~= nil then
 				local canvas = ent.CanvasGroupComponent
@@ -133,11 +199,14 @@ script UIMain extends Component
 		disableInteract(self.sliderHP)
 		disableInteract(self.sliderCost)
 		disableInteract(self.sliderBossHP)
-
-        log("[UIMain] InitializeUI called")
+		
+		log("[UIMain] InitializeUI called")
 		self.gameManager = gameMgr
 		self.battleManager = battleMgr
 		self.playerManager = playerMgr
+		self:ClearItemDisplayAreaDelayTimer()
+		self.itemDisplayAreaDelayPending = false
+		self.canShowItemDisplayAreaInPreparation = true
 		self:ResolveRewardUI()
 		
 		self:ConnectEvents()
@@ -152,7 +221,7 @@ script UIMain extends Component
 		end
 		
 		self:UpdateUI() -- ??��?????????UI 갱�??(명�??????��??
-        log("[UIMain] UI initialized")
+		        log("[UIMain] UI initialized")
 	end
 
 	method void ResolveRewardUI()
@@ -161,7 +230,7 @@ script UIMain extends Component
 		end
 		-- Always hide dice visuals at bind time to prevent default-visible leakage.
 		self:HideStage5DiceVisual()
-
+		
 		local rewardPanel = _EntityService:GetEntityByPath(self.rewardPanelPath)
 		if rewardPanel ~= nil then
 			self.rewardUI = rewardPanel.RewardUI
@@ -181,7 +250,7 @@ script UIMain extends Component
 			self.btnPrevPage = self.uiTutorial:GetChildByName("left")
 			self.btnCloseTutorial = self.uiTutorial:GetChildByName("Exit")
 			
-
+		
 			-- Load tutorial image RUIDs from DataManager
 			if self.gameManager ~= nil and self.gameManager.dataManager ~= nil then
 				local imgTable = self.gameManager.dataManager.TutorialImageTable
@@ -196,7 +265,7 @@ script UIMain extends Component
 					end
 					log("[UIMain] Tutorial images loaded from DataManager: " .. tostring(#self.tutorialImages))
 				end
-
+		
 				if self.gameManager.dataManager.DiceImageTable ~= nil then
 					self.stage5DiceImageRUIDs = self.gameManager.dataManager.DiceImageTable
 				end
@@ -210,7 +279,7 @@ script UIMain extends Component
 					self.stage5DiceRollRUIDs2 = self.gameManager.dataManager.DiceRollTable2
 				end
 			end
-
+		
 			-- Hide tutorial screen initially (it must be enabled in Maker for binding to work)
 			self.uiTutorial.Enable = false
 			log("[UIMain] explanation_screen bound and hidden successfully")
@@ -242,7 +311,7 @@ script UIMain extends Component
 		
 		self.uiStage5_4 = _EntityService:GetEntityByPath("/ui/UIGroup/Stage_5_4")
 		-- User binds uiStage5_Success, uiStage5_Fail, uiStage5_SuccessRoll, and uiStage5_FailRoll via property window
-
+		
 		-- Find Stage_5_game via parent (GetEntityByPath cannot find disabled entities)
 		local uiGroupEntity = _EntityService:GetEntityByPath("/ui/UIGroup")
 		if self.uiStage5_game == nil then
@@ -267,13 +336,13 @@ script UIMain extends Component
 				self.stage5DiceRollEntity2 = self.uiStage5_game:GetChildByName("DiceRoll2")
 			end
 		end
-
+		
 		-- Auto-resolve Success/Fail/SuccessRoll/FailRoll entities if not bound via property window
 		local searchParents = {}
 		if self.uiStage5_game ~= nil then searchParents[#searchParents + 1] = self.uiStage5_game end
 		if self.uiStage5_4 ~= nil then searchParents[#searchParents + 1] = self.uiStage5_4 end
 		if uiGroupEntity ~= nil then searchParents[#searchParents + 1] = uiGroupEntity end
-
+		
 		local function findByNames(propValue, names)
 			if propValue ~= nil then return propValue end
 			for p = 1, #searchParents do
@@ -284,14 +353,14 @@ script UIMain extends Component
 			end
 			return nil
 		end
-
+		
 		self.uiStage5_Success = findByNames(self.uiStage5_Success, {"Stage_5_success", "stage_5_success", "Success", "success"})
 		self.uiStage5_Fail = findByNames(self.uiStage5_Fail, {"Stage_5_fail", "stage_5_fail", "Fail", "fail"})
 		self.uiStage5_SuccessRoll = findByNames(self.uiStage5_SuccessRoll, {"Stage_5_successroll", "stage_5_successroll", "SuccessRoll", "successroll"})
 		self.uiStage5_FailRoll = findByNames(self.uiStage5_FailRoll, {"Stage_5_failroll", "stage_5_failroll", "FailRoll", "failroll"})
-
+		
 		log("[UIMain] Auto-resolve: Success=" .. tostring(self.uiStage5_Success ~= nil) .. " Fail=" .. tostring(self.uiStage5_Fail ~= nil) .. " SuccessRoll=" .. tostring(self.uiStage5_SuccessRoll ~= nil) .. " FailRoll=" .. tostring(self.uiStage5_FailRoll ~= nil))
-
+		
 		self:ResolvePlayerCoinUI()
 	end
 
@@ -533,7 +602,7 @@ script UIMain extends Component
 		if phase ~= "Preparation" then
 			return false
 		end
-
+		
 		local rewardPanelOpen = false
 		local rewardPanel = self.rewardPanelEntity
 		if rewardPanel == nil and self.rewardUI ~= nil then
@@ -547,13 +616,65 @@ script UIMain extends Component
 		if rewardPanel ~= nil and rewardPanel.Enable == true then
 			rewardPanelOpen = true
 		end
-
+		
 		local rewardChestActive = false
 		if self.gameManager ~= nil and self.gameManager.rewardChestEntity ~= nil and self.gameManager.rewardChestEntity.Enable == true then
 			rewardChestActive = true
 		end
-
+		
 		return rewardPanelOpen or rewardChestActive
+	end
+
+	method void ClearItemDisplayAreaDelayTimer()
+		if self.itemDisplayAreaDelayTimerId ~= nil and self.itemDisplayAreaDelayTimerId > 0 then
+			_TimerService:ClearTimer(self.itemDisplayAreaDelayTimerId)
+			self.itemDisplayAreaDelayTimerId = 0
+		end
+	end
+
+	method void MarkItemDisplayAreaDelayRequired()
+		self:ClearItemDisplayAreaDelayTimer()
+		self.itemDisplayAreaDelayPending = true
+		self.canShowItemDisplayAreaInPreparation = false
+	end
+
+	method void BeginItemDisplayAreaDelayIfNeeded()
+		if self.itemDisplayAreaDelayPending ~= true then
+			return
+		end
+		if self.itemDisplayAreaDelayTimerId ~= nil and self.itemDisplayAreaDelayTimerId > 0 then
+			return
+		end
+		
+		local delay = tonumber(self.itemDisplayAreaShowDelayAfterStageEntry) or 0
+		if delay < 0 then
+			delay = 0
+		end
+		if delay <= 0 then
+			self.itemDisplayAreaDelayPending = false
+			self.canShowItemDisplayAreaInPreparation = true
+			return
+		end
+		
+		self.itemDisplayAreaDelayTimerId = _TimerService:SetTimerOnce(function()
+			self.itemDisplayAreaDelayTimerId = 0
+			self.itemDisplayAreaDelayPending = false
+			self.canShowItemDisplayAreaInPreparation = true
+		
+			local phase = "None"
+			local isStageTransitioning = false
+			if self.gameManager ~= nil then
+				phase = tostring(self.gameManager.gamePhase or "None")
+				isStageTransitioning = (self.gameManager.isStageTransitioning == true)
+			end
+			local isRewardChestPhase = self:IsRewardChestPhase(phase)
+			if self.itemDisplayAreaEntity ~= nil and phase == "Preparation" and isStageTransitioning == false and isRewardChestPhase == false then
+				self.itemDisplayAreaEntity:SetEnable(true)
+				self.itemDisplayAreaEntity:SetVisible(true)
+			end
+			-- Re-evaluate phase-driven button visibility (e.g. next/battle-start button)
+			self:UpdateUI()
+		end, delay)
 	end
 
 	method void UpdatePhasePanelVisibility(string phase)
@@ -563,17 +684,29 @@ script UIMain extends Component
 		if self.gameManager ~= nil and self.gameManager.isStageTransitioning == true then
 			isStageTransitioning = true
 		end
-
+		if isStageTransitioning == true then
+			self:MarkItemDisplayAreaDelayRequired()
+		end
+		
 		if self.itemDisplayAreaEntity ~= nil then
 			if phase == "Battle" or phase == "MiniGame" or isRewardChestPhase or isStageTransitioning then
 				self.itemDisplayAreaEntity:SetEnable(false)
 				self.itemDisplayAreaEntity:SetVisible(false)
-			elseif phase == "Preparation" or phase == "Shop" then
+			elseif phase == "Preparation" then
+				if self.canShowItemDisplayAreaInPreparation == true then
+					self.itemDisplayAreaEntity:SetEnable(true)
+					self.itemDisplayAreaEntity:SetVisible(true)
+				else
+					self:BeginItemDisplayAreaDelayIfNeeded()
+					self.itemDisplayAreaEntity:SetEnable(false)
+					self.itemDisplayAreaEntity:SetVisible(false)
+				end
+			elseif phase == "Shop" then
 				self.itemDisplayAreaEntity:SetEnable(true)
 				self.itemDisplayAreaEntity:SetVisible(true)
 			end
 		end
-
+		
 		if self.scrollPanelEntity ~= nil then
 			if phase == "Battle" then
 				self.scrollPanelEntity:SetEnable(false)
@@ -584,6 +717,7 @@ script UIMain extends Component
 			end
 		end
 	end
+
 	method void ShowMainMenu()
 		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
 		if mainGroup ~= nil then
@@ -602,7 +736,7 @@ script UIMain extends Component
 			uiGroup.Enable = false
 		end
 	end
-	
+
 	method void HideMainMenu()
 		if self.uiMainMenu ~= nil then
 			self.uiMainMenu.Enable = false
@@ -701,7 +835,7 @@ script UIMain extends Component
 				txt.Text = math.ceil(self.playerManager.currentCost) .. "/" .. math.ceil(self.playerManager.maxCost)
 			end
 		end
-
+		
 		self:ResolvePlayerCoinUI()
 		if self.uiPlayerCoinPanel ~= nil then
 			self.uiPlayerCoinPanel:SetEnable(true)
@@ -883,36 +1017,36 @@ script UIMain extends Component
 		end
 		
 		-- 4. 미�??�???? ???��??메�??가???��?????��??
-        if phase == "MiniGame" then
-            -- Find Stage_5_game via GetChildByName (GetEntityByPath cannot find disabled entities)
-            if self.uiStage5_game == nil then
-                self.uiStage5_game = _EntityService:GetEntityByPath(self.stage5GamePath)
-                if self.uiStage5_game == nil then
-                    local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
-                    if uiGroup ~= nil then
-                        self.uiStage5_game = uiGroup:GetChildByName("Stage_5_game")
-                    end
-                end
-            end
-            if self.uiStage5_game ~= nil then
-                self.uiStage5_game.Enable = true
-                if self.stage5DiceImageEntity == nil then
-                    self.stage5DiceImageEntity = self.uiStage5_game:GetChildByName("DiceResult")
-                end
-                if self.stage5DiceImageEntity2 == nil then
-                    self.stage5DiceImageEntity2 = self.uiStage5_game:GetChildByName("DiceResult2")
-                end
-                if self.stage5DiceRollEntity == nil then
-                    self.stage5DiceRollEntity = self.uiStage5_game:GetChildByName("DiceRoll")
-                end
-                if self.stage5DiceRollEntity2 == nil then
-                    self.stage5DiceRollEntity2 = self.uiStage5_game:GetChildByName("DiceRoll2")
-                end
-            end
-
-            log("[UIMain-DEBUG] MiniGame phase. uiStage5_game=" .. tostring(self.uiStage5_game ~= nil) .. " diceRoll=" .. tostring(self.stage5DiceRollEntity ~= nil) .. " diceRoll2=" .. tostring(self.stage5DiceRollEntity2 ~= nil) .. " diceImg=" .. tostring(self.stage5DiceImageEntity ~= nil) .. " diceImg2=" .. tostring(self.stage5DiceImageEntity2 ~= nil) .. " rollRUID1=" .. tostring(self.stage5DiceRollRUIDs) .. " rollRUID2=" .. tostring(self.stage5DiceRollRUIDs2))
-            if self.gameManager ~= nil and self.gameManager.miniGameManager ~= nil then
-                local subState = self.gameManager.miniGameManager.subState
+		        if phase == "MiniGame" then
+		            -- Find Stage_5_game via GetChildByName (GetEntityByPath cannot find disabled entities)
+		            if self.uiStage5_game == nil then
+		                self.uiStage5_game = _EntityService:GetEntityByPath(self.stage5GamePath)
+		                if self.uiStage5_game == nil then
+		                    local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		                    if uiGroup ~= nil then
+		                        self.uiStage5_game = uiGroup:GetChildByName("Stage_5_game")
+		                    end
+		                end
+		            end
+		            if self.uiStage5_game ~= nil then
+		                self.uiStage5_game.Enable = true
+		                if self.stage5DiceImageEntity == nil then
+		                    self.stage5DiceImageEntity = self.uiStage5_game:GetChildByName("DiceResult")
+		                end
+		                if self.stage5DiceImageEntity2 == nil then
+		                    self.stage5DiceImageEntity2 = self.uiStage5_game:GetChildByName("DiceResult2")
+		                end
+		                if self.stage5DiceRollEntity == nil then
+		                    self.stage5DiceRollEntity = self.uiStage5_game:GetChildByName("DiceRoll")
+		                end
+		                if self.stage5DiceRollEntity2 == nil then
+		                    self.stage5DiceRollEntity2 = self.uiStage5_game:GetChildByName("DiceRoll2")
+		                end
+		            end
+		
+		            log("[UIMain-DEBUG] MiniGame phase. uiStage5_game=" .. tostring(self.uiStage5_game ~= nil) .. " diceRoll=" .. tostring(self.stage5DiceRollEntity ~= nil) .. " diceRoll2=" .. tostring(self.stage5DiceRollEntity2 ~= nil) .. " diceImg=" .. tostring(self.stage5DiceImageEntity ~= nil) .. " diceImg2=" .. tostring(self.stage5DiceImageEntity2 ~= nil) .. " rollRUID1=" .. tostring(self.stage5DiceRollRUIDs) .. " rollRUID2=" .. tostring(self.stage5DiceRollRUIDs2))
+		            if self.gameManager ~= nil and self.gameManager.miniGameManager ~= nil then
+		                local subState = self.gameManager.miniGameManager.subState
 				if self.stage5LastSubState ~= subState then
 					self.stage5LastSubState = subState
 					if subState ~= "ResultRoll" then
@@ -920,38 +1054,38 @@ script UIMain extends Component
 						self.stage5ResultRollPlayed = false
 					end
 				end
-                if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
-                if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
-                if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
-                if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = (subState == "Result" or subState == "ResultRoll") end
-                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result" or subState == "ResultRoll") end
-
-                if subState == "Roll" then
-                    self:UpdateStage5DiceRollVisual()
-                elseif subState == "Roll2" then
-                    self:UpdateStage5DiceRoll2Visual()
-                elseif subState == "ResultRoll" then
-                    self:UpdateStage5SuccessFailRoll()
-                elseif subState == "Result" then
-                    self:UpdateStage5DiceResult()
-                else
-                    self:HideStage5DiceVisual()
-                end
-            else
-                self:HideStage5DiceVisual()
-            end
-        else
+		                if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
+		                if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
+		                if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
+		                if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = (subState == "Result" or subState == "ResultRoll") end
+		                if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = (subState == "Roll" or subState == "Roll2" or subState == "Result" or subState == "ResultRoll") end
+		
+		                if subState == "Roll" then
+		                    self:UpdateStage5DiceRollVisual()
+		                elseif subState == "Roll2" then
+		                    self:UpdateStage5DiceRoll2Visual()
+		                elseif subState == "ResultRoll" then
+		                    self:UpdateStage5SuccessFailRoll()
+		                elseif subState == "Result" then
+		                    self:UpdateStage5DiceResult()
+		                else
+		                    self:HideStage5DiceVisual()
+		                end
+		            else
+		                self:HideStage5DiceVisual()
+		            end
+		        else
 			self.stage5LastSubState = ""
 			self.stage5ResultRollKey = ""
 			self.stage5ResultRollPlayed = false
-            if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
-            if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
-            if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
-            if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = false end
-            if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = false end
-            self:HideStage5DiceVisual()
-        end
-    end
+		            if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
+		            if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
+		            if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
+		            if self.uiStage5_4 ~= nil then self.uiStage5_4.Enable = false end
+		            if self.uiStage5_game ~= nil then self.uiStage5_game.Enable = false end
+		            self:HideStage5DiceVisual()
+		        end
+	end
 
 	method void HideStage5DiceVisual()
 		if self.stage5DiceRollEntity ~= nil then
@@ -1054,6 +1188,7 @@ script UIMain extends Component
 			self.uiStage5_FailRoll.Enable = false
 		end
 	end
+
 	method void UpdateStage5DiceRoll2Visual()
 		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
 			return
@@ -1132,7 +1267,7 @@ script UIMain extends Component
 			self.stage5ResultRollKey = resultKey
 			self.stage5ResultRollPlayed = false
 		end
-
+		
 		-- During success/fail roll phase, force dice to static images.
 		if self.stage5DiceRollEntity ~= nil then
 			self.stage5DiceRollEntity.Enable = false
@@ -1172,7 +1307,7 @@ script UIMain extends Component
 				self.stage5DiceImageEntity2.Enable = false
 			end
 		end
-
+		
 		if self.uiStage5_Success ~= nil then
 			self.uiStage5_Success.Enable = false
 		end
@@ -1295,7 +1430,7 @@ script UIMain extends Component
 				end
 			end
 		end
-
+		
 		if self.uiStage5_Success ~= nil then
 			self.uiStage5_Success.Enable = false
 		end
@@ -1308,7 +1443,7 @@ script UIMain extends Component
 		if self.uiStage5_FailRoll ~= nil then
 			self.uiStage5_FailRoll.Enable = false
 		end
-
+		
 		if self.gameManager.miniGameManager.lastRoundWin == true then
 			if self.uiStage5_Success ~= nil then
 				self.uiStage5_Success.Enable = true
@@ -1339,6 +1474,7 @@ script UIMain extends Component
 			end
 		end
 	end
+
 	method void OnClickMonster(integer monsterIndex)
 		-- ???��?????��??
 		self.targetMonsterIdx = monsterIndex
@@ -1352,12 +1488,10 @@ script UIMain extends Component
 		self:UpdateUI()
 	end
 
-	@EntityEventHandler
 	method void OnPlayerStatChangedEvent(PlayerStatChangedEvent event)
 		self:UpdateUI()
 	end
 
-	@EntityEventHandler
 	method void OnInventoryChangedEvent(InventoryChangedEvent event)
 		self:RefreshScrollInventoryUI()
 		self:UpdateUI()
@@ -1502,12 +1636,12 @@ script UIMain extends Component
 		if self.uiBossSkill1Sub == nil and self.uiBossSkill1 ~= nil then
 			self.uiBossSkill1Sub = self.uiBossSkill1:GetChildByName("UISprite", true)
 		end
-
+		
 		local normalizedType = tostring(selectedType or "")
 		normalizedType = string.gsub(normalizedType, "^%s+", "")
 		normalizedType = string.gsub(normalizedType, "%s+$", "")
 		normalizedType = string.lower(normalizedType)
-
+		
 		-- Keep parent sprite state deterministic every time this UI opens.
 		if self.uiBossSkill1 ~= nil then
 			local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
@@ -1525,7 +1659,7 @@ script UIMain extends Component
 				animDuration = 1.5
 			end
 		end
-
+		
 		local skills = {
 			{entity = self.uiBossSkill1, skillType = "hp_dmg"},
 			{entity = self.uiBossSkill2, skillType = "poison"},
@@ -1642,7 +1776,7 @@ script UIMain extends Component
 			if not hasShield then
 				if self.uiBossSkill3_1 ~= nil then self.uiBossSkill3_1.Enable = false end
 			end
-
+		
 			-- ???�드�? ???��?????��??????????????��?????��????????��??�????��??처�??(???????????��???duration ???��??
 			local hideOtherSkillFunc = function()
 				self.shieldTimer = nil
@@ -1675,7 +1809,7 @@ script UIMain extends Component
 				end
 			end
 		end
-
+		
 		if not hasShield then
 			if self.shieldTimer ~= nil then
 				_TimerService:ClearTimer(self.shieldTimer)
@@ -1745,6 +1879,5 @@ script UIMain extends Component
 			log_warning("[UIMain] ShowNoOreWarning called, but UI_NoOreWarning entity not found in /ui/UIGroup/")
 		end
 	end
+
 end
-
-

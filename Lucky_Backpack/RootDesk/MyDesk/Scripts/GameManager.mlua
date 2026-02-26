@@ -728,8 +728,24 @@ script GameManager extends Component
 		if inventoryComp == nil or children == nil then
 			return
 		end
+		local inventoryUI = inventoryEntity.InventoryUI
+		
+		local function ConvertRotationToClockwiseQuarterTurns(rotation)
+			local normalized = tonumber(rotation) or 0
+			normalized = normalized % 360
+			if normalized < 0 then
+				normalized += 360
+			end
+			
+			local counterClockwiseTurns = math.floor((normalized + 45) / 90) % 4
+			if counterClockwiseTurns == 0 then
+				return 0
+			end
+			return (4 - counterClockwiseTurns) % 4
+		end
 		
 		local transformedCount = 0
+		local inventoryTouched = false
 		for i = 1, #children do
 			local child = children[i]
 			if child == nil or child.Item == nil then
@@ -748,40 +764,87 @@ script GameManager extends Component
 			if tonumber(itemComp.itemId) == 2010 and itemComp.heldStages >= 2 then
 				local row = tonumber(itemComp.gridRow) or 0
 				local col = tonumber(itemComp.gridCol) or 0
+				local prevItemId = tonumber(itemComp.itemId) or 0
+				local prevWidth = math.max(1, tonumber(itemComp.width) or 1)
+				local prevHeight = math.max(1, tonumber(itemComp.height) or 1)
+				local prevHeldStages = math.max(0, tonumber(itemComp.heldStages) or 0)
 				
-				itemComp.itemId = 2011
-				itemComp:InitFromTable(2011)
-				itemComp:SetGridPosition(row, col)
-				itemComp.heldStages = 0
-				
-				local placedInfo = inventoryComp:GetPlacedItemInfoAt(0, row, col)
-				if placedInfo ~= nil then
-					placedInfo.itemId = 2011
+				local itemUI = child.UITransformComponent
+				local preservedRotationSteps = 0
+				if itemUI ~= nil then
+					preservedRotationSteps = ConvertRotationToClockwiseQuarterTurns(tonumber(itemUI.ZRotation) or 0)
 				end
 				
-				local shapeCells = itemComp:GetShapeCells()
-				if shapeCells ~= nil and #shapeCells > 0 then
-					for s = 1, #shapeCells do
-						local cell = shapeCells[s]
-						if cell ~= nil then
-							local absRow = row + (tonumber(cell.row) or 0)
-							local absCol = col + (tonumber(cell.col) or 0)
-							if absRow >= 1 and absRow <= inventoryComp.maxHeight and absCol >= 1 and absCol <= inventoryComp.maxWidth then
-								inventoryComp.grid[absRow][absCol] = 2011
-							end
-						end
+				inventoryTouched = true
+				inventoryComp:RemoveItemAt(prevItemId, row, col, prevWidth, prevHeight)
+				
+				itemComp:InitFromTable(2011)
+				if itemUI ~= nil then
+					itemUI.ZRotation = 0
+				end
+				if preservedRotationSteps > 0 then
+					for rot = 1, preservedRotationSteps do
+						itemComp:Rotate90Degrees()
 					end
 				end
 				
-				local renderer = child.SpriteGUIRendererComponent
-				if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
-					renderer.ImageRUID = itemComp.spriteRUID
+				local nextShapeCells = itemComp:GetShapeCells()
+				local placed = inventoryComp:PlaceItem(row, col, itemComp.itemId, nextShapeCells)
+				if placed == true then
+					itemComp:SetGridPosition(row, col)
+					itemComp.heldStages = 0
+					
+					local renderer = child.SpriteGUIRendererComponent
+					if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+						renderer.ImageRUID = itemComp.spriteRUID
+					end
+					
+					if inventoryUI ~= nil then
+						inventoryUI:SnapItemToGrid(child, row, col, itemComp.width, itemComp.height, nextShapeCells)
+						if inventoryUI.RefreshPlacedItemVisualAlignment ~= nil then
+							inventoryUI:RefreshPlacedItemVisualAlignment()
+						end
+					end
+					transformedCount += 1
+				else
+					log_warning("[GameManager] Armor stage transform placement failed. Reverting itemId=2010 at (" .. tostring(row) .. "," .. tostring(col) .. ")")
+					
+					itemComp:InitFromTable(prevItemId)
+					if itemUI ~= nil then
+						itemUI.ZRotation = 0
+					end
+					if preservedRotationSteps > 0 then
+						for rot = 1, preservedRotationSteps do
+							itemComp:Rotate90Degrees()
+						end
+					end
+					
+					local prevShapeCells = itemComp:GetShapeCells()
+					local restored = inventoryComp:PlaceItem(row, col, prevItemId, prevShapeCells)
+					if restored == true then
+						itemComp:SetGridPosition(row, col)
+						itemComp.heldStages = prevHeldStages
+						
+						local renderer = child.SpriteGUIRendererComponent
+						if renderer ~= nil and itemComp.spriteRUID ~= nil and itemComp.spriteRUID ~= "" and itemComp.spriteRUID ~= "NONE" then
+							renderer.ImageRUID = itemComp.spriteRUID
+						end
+						
+						if inventoryUI ~= nil then
+							inventoryUI:SnapItemToGrid(child, row, col, itemComp.width, itemComp.height, prevShapeCells)
+							if inventoryUI.RefreshPlacedItemVisualAlignment ~= nil then
+								inventoryUI:RefreshPlacedItemVisualAlignment()
+							end
+						end
+					else
+						itemComp:ClearGridPosition()
+						log_error("[GameManager] Armor stage transform rollback failed. itemId=" .. tostring(prevItemId) .. " cell=(" .. tostring(row) .. "," .. tostring(col) .. ")")
+					end
 				end
-				transformedCount += 1
 			end
 		end
 		
-		if transformedCount > 0 then
+		if inventoryTouched == true then
 			inventoryComp.gridVersion += 1
 			if self.playerManager ~= nil then
 				self.playerManager:SyncInventoryFromGrid()
@@ -789,6 +852,8 @@ script GameManager extends Component
 			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()
 			end
+		end
+		if transformedCount > 0 then
 			log("[GameManager] Armor stage transform applied. count=" .. tostring(transformedCount))
 		end
 	end
