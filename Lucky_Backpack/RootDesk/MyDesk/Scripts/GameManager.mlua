@@ -78,7 +78,7 @@ script GameManager extends Component
 	property boolean stageCinematicMoveWasEnabled = false
 
 	property boolean stageCinematicRigidWasEnabled = false
-	
+
 	property boolean pendingStageAdvance = false
 
 	method void OnInitialize()
@@ -1064,7 +1064,7 @@ script GameManager extends Component
 			self:GameClear()
 			return
 		end
-
+		
 		self:UpdateArmorHeldStageTransforms()
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = true
@@ -1141,12 +1141,12 @@ script GameManager extends Component
 		self.isStageTransitioning = true
 		self.pendingStageAdvance = true
 		self.gamePhase = "Transition"
-
+		
 		if self.itemDisplayArea ~= nil and self.itemDisplayArea.Entity ~= nil then
 			self.itemDisplayArea.Entity:SetEnable(false)
 			self.itemDisplayArea.Entity:SetVisible(false)
 		end
-
+		
 		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
 		if shopPanel ~= nil then
 			shopPanel:SetEnable(false)
@@ -1155,7 +1155,7 @@ script GameManager extends Component
 		if self.uiMain ~= nil then
 			self.uiMain:UpdateUI()
 		end
-
+		
 		self:ClientPlayShopOutro()
 		
 		local transitionDelay = self.stageOutroFadeDuration
@@ -1171,8 +1171,6 @@ script GameManager extends Component
 			self:TryAdvanceStageAfterShopExit("fallback_timer")
 		end, transitionDelay + 0.35)
 	end
-
-
 
 	@ExecSpace("Client")
 	method void ClientPlayShopOutro()
@@ -1217,4 +1215,3 @@ script GameManager extends Component
 	end
 
 end
-
