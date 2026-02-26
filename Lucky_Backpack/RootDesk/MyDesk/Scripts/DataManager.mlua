@@ -138,6 +138,8 @@ script DataManager extends Component
 			headers["name"] = true
 			headers["grade"] = true
 			headers["cost"] = true
+			headers["sell_price"] = true
+			headers["sellPrice"] = true
 			headers["count"] = true
 			headers["shapeMask"] = true
 			headers["hp"] = true
@@ -163,6 +165,8 @@ script DataManager extends Component
 			headers["name"] = true
 			headers["grade"] = true
 			headers["cost"] = true
+			headers["sell_price"] = true
+			headers["sellPrice"] = true
 			headers["count"] = true
 			headers["shapeMask"] = true
 			headers["hp"] = true
@@ -193,6 +197,8 @@ script DataManager extends Component
 			headers["name"] = true
 			headers["cost"] = true
 			headers["price"] = true
+			headers["sell_price"] = true
+			headers["sellPrice"] = true
 			headers["atk"] = true
 			headers["min_atk"] = true
 			headers["max_atk"] = true
@@ -552,6 +558,11 @@ script DataManager extends Component
 							data.price = getNumber("price", "", data.cost)
 						else
 							data.price = data.cost
+						end
+						if hasCol("sell_price") or hasCol("sellPrice") then
+							data.sellPrice = getNumber("sell_price", "sellPrice", 50)
+						else
+							data.sellPrice = 50
 						end
 						data.atk = 0
 						if hasCol("atk") then data.atk = getNumber("atk", "", 0) end

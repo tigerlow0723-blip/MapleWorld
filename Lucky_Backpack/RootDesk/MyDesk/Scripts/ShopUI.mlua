@@ -83,10 +83,6 @@ script ShopUI extends Component
 	property integer porkPurchaseCount = 0
 
 	property integer porkItemId = 11
-	property integer goldBarItemId = 13
-	property integer diamondItemId = 14
-	property integer goldBarManualSellPrice = 1000
-	property integer diamondManualSellPrice = 10000
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -783,36 +779,20 @@ script ShopUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method integer GetSellPrice(integer itemId)
-		    if itemId == self.goldBarItemId then
-		        return math.max(1, tonumber(self.goldBarManualSellPrice) or 1000)
-		    end
-		    if itemId == self.diamondItemId then
-		        return math.max(1, tonumber(self.diamondManualSellPrice) or 10000)
-		    end
-		
 		    if self.dataManager == nil then
-		        return 1
+		        return 50
 		    end
 		
 		    local itemData = self.dataManager:GetItemData(itemId)
 		    if itemData == nil then
-		        return 1
-		    end
-		
-		    local itemType = string.lower(tostring(itemData.type or ""))
-		    local spawnGroup = tonumber(itemData.spawnGroup) or 0
-		    -- Reward/drop-tier items are auto-sold at fixed 50 in ItemDisplayArea.
-		    -- Keep manual SellArea behavior aligned, excluding explicit exception groups.
-		    if spawnGroup > 0 and itemType ~= "goods" and itemType ~= "grade_scroll" then
 		        return 50
 		    end
-		
-		    local price = self:GetBaseItemPrice(itemData)
-		    local sellPrice = math.floor(price * 0.5)
+
+		    local sellPrice = tonumber(itemData.sellPrice) or tonumber(itemData.sell_price) or 0
 		    if sellPrice <= 0 then
-		        sellPrice = 1
+		        sellPrice = 50
 		    end
-		    return sellPrice
+		    return math.max(1, math.floor(sellPrice))
 	end
 
 	@ExecSpace("ClientOnly")

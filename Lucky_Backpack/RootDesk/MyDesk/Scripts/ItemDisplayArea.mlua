@@ -1019,11 +1019,14 @@ script ItemDisplayArea extends Component
 	method void SellRemainingItems()
 		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		local playerManager = nil
+		local dataManager = nil
 		if gameSystem ~= nil then
 			playerManager = gameSystem.PlayerManager
+			dataManager = gameSystem.DataManager
 		end
 		
 		local soldCount = 0
+		local soldGold = 0
 		local movedScrollCount = 0
 		self:ResolveInventoryUI()
 		for i = #self.spawnedItems, 1, -1 do
@@ -1055,6 +1058,20 @@ script ItemDisplayArea extends Component
 						movedScrollCount += 1
 					else
 						soldCount += 1
+						local sellPrice = 50
+						if dataManager ~= nil and dataManager.GetItemData ~= nil and soldItemId > 0 then
+							local itemData = dataManager:GetItemData(soldItemId)
+							if itemData ~= nil then
+								local parsed = tonumber(itemData.sellPrice) or tonumber(itemData.sell_price) or 0
+								if parsed > 0 then
+									sellPrice = math.floor(parsed)
+								end
+							end
+						end
+						if sellPrice <= 0 then
+							sellPrice = 50
+						end
+						soldGold += sellPrice
 					end
 					itemEntity:Destroy()
 				end
@@ -1063,7 +1080,7 @@ script ItemDisplayArea extends Component
 		end
 		self.spawnedItems = {}
 		
-		local totalGold = soldCount * 50
+		local totalGold = soldGold
 		if totalGold > 0 and playerManager ~= nil then
 			playerManager:AddGold(totalGold)
 		end
