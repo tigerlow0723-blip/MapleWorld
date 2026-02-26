@@ -13,6 +13,8 @@ script MiniGameManager extends Component
 
 	property integer GOLD_BAR_PRICE = 1000
 
+	property integer DIAMOND_PRICE = 10000
+
 	property boolean isMiniGameActive = false
 
 	property string subState = "None"
@@ -32,6 +34,8 @@ script MiniGameManager extends Component
 	property number successFailDisplayDuration = 1.2
 	
 	property number rollDisplayDuration = 1
+
+	property number rollResultExtraDelay = 0.3
 	
 	property integer DOUBLE_SEVEN_REWARD_ITEM_ID = 14
 
@@ -155,6 +159,19 @@ script MiniGameManager extends Component
 		return count
 	end
 
+	method integer GetDiamondCount()
+		local count = 0
+		if self.playerManager ~= nil then
+			local inv = self.playerManager.inventory
+			for i = 1, #inv do
+				if inv[i].id == 14 then
+					count = count + 1
+				end
+			end
+		end
+		return count
+	end
+
 	method void ConsumeItem(integer itemId, integer count)
 		if self.playerManager == nil then
 			return
@@ -239,6 +256,16 @@ script MiniGameManager extends Component
 			sfDelay = 0
 		end
 
+		local rollToResultDelay = rollDelay
+		if resultDelay > rollToResultDelay then
+			rollToResultDelay = resultDelay
+		end
+		local extraDelay = tonumber(self.rollResultExtraDelay) or 0.5
+		if extraDelay < 0 then
+			extraDelay = 0
+		end
+		rollToResultDelay = rollToResultDelay + extraDelay
+
 		local savedDice2 = dice2
 
 		_TimerService:SetTimerOnce(function()
@@ -268,8 +295,10 @@ script MiniGameManager extends Component
 				
 				local isDoubleOne = (self.lastDiceRoll == 1 and self.lastDiceRoll2 == 1)
 				local isDoubleSeven = (self.lastDiceRoll == 7 and self.lastDiceRoll2 == 7)
-				if isDoubleOne or isDoubleSeven then
+				if isDoubleOne then
 					self.lastRoundWin = false
+				elseif isDoubleSeven then
+					self.lastRoundWin = true
 				end
 
 				if isDoubleOne then
@@ -336,7 +365,7 @@ script MiniGameManager extends Component
 						end
 					end, sfDelay)
 				end, self:GetAnimDelay())
-			end, rollDelay)
+			end, rollToResultDelay)
 		end, rollDelay)
 	end
 
@@ -361,12 +390,18 @@ script MiniGameManager extends Component
 	method void SellAllGoldBar()
 		if not self.isMiniGameActive then return end
 
-		local count = self:GetGoldBarCount()
-		if count > 0 then
-			self:ConsumeItem(13, count)
-			local totalGold = count * self.GOLD_BAR_PRICE
+		local goldBarCount = self:GetGoldBarCount()
+		local diamondCount = self:GetDiamondCount()
+		if goldBarCount > 0 or diamondCount > 0 then
+			if goldBarCount > 0 then
+				self:ConsumeItem(13, goldBarCount)
+			end
+			if diamondCount > 0 then
+				self:ConsumeItem(14, diamondCount)
+			end
+			local totalGold = (goldBarCount * self.GOLD_BAR_PRICE) + (diamondCount * self.DIAMOND_PRICE)
 			self.playerManager.gold = (self.playerManager.gold or 0) + totalGold
-			log("[MiniGameManager] Gold bars sold. count=" .. tostring(count) .. " gain=" .. tostring(totalGold))
+			log("[MiniGameManager] Mini-game valuables sold. goldBarCount=" .. tostring(goldBarCount) .. " diamondCount=" .. tostring(diamondCount) .. " gain=" .. tostring(totalGold))
 			local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 			if gameSystem and gameSystem.SoundManager then gameSystem.SoundManager:PlaySFX(5002) end
 
@@ -374,7 +409,7 @@ script MiniGameManager extends Component
 				self.uiMain:UpdateUI()
 			end
 		else
-			log("[MiniGameManager] No gold bars to sell.")
+			log("[MiniGameManager] No gold bars or diamonds to sell.")
 		end
 	end
 

@@ -82,6 +82,9 @@ script UIMain extends Component
 	property table stage5DiceImageRUIDs2 = {}
 	property table stage5DiceRollRUIDs = {}
 	property table stage5DiceRollRUIDs2 = {}
+	property string stage5LastSubState = ""
+	property string stage5ResultRollKey = ""
+	property boolean stage5ResultRollPlayed = false
 	property Entity uiClear = nil
 	property Entity uiFail = nil
 	property Entity btnRetry = nil
@@ -910,6 +913,13 @@ script UIMain extends Component
             log("[UIMain-DEBUG] MiniGame phase. uiStage5_game=" .. tostring(self.uiStage5_game ~= nil) .. " diceRoll=" .. tostring(self.stage5DiceRollEntity ~= nil) .. " diceRoll2=" .. tostring(self.stage5DiceRollEntity2 ~= nil) .. " diceImg=" .. tostring(self.stage5DiceImageEntity ~= nil) .. " diceImg2=" .. tostring(self.stage5DiceImageEntity2 ~= nil) .. " rollRUID1=" .. tostring(self.stage5DiceRollRUIDs) .. " rollRUID2=" .. tostring(self.stage5DiceRollRUIDs2))
             if self.gameManager ~= nil and self.gameManager.miniGameManager ~= nil then
                 local subState = self.gameManager.miniGameManager.subState
+				if self.stage5LastSubState ~= subState then
+					self.stage5LastSubState = subState
+					if subState ~= "ResultRoll" then
+						self.stage5ResultRollKey = ""
+						self.stage5ResultRollPlayed = false
+					end
+				end
                 if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = (subState == "Main") end
                 if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = (subState == "Play") end
                 if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = (subState == "Shop") end
@@ -931,6 +941,9 @@ script UIMain extends Component
                 self:HideStage5DiceVisual()
             end
         else
+			self.stage5LastSubState = ""
+			self.stage5ResultRollKey = ""
+			self.stage5ResultRollPlayed = false
             if self.uiStage5_1 ~= nil then self.uiStage5_1.Enable = false end
             if self.uiStage5_2 ~= nil then self.uiStage5_2.Enable = false end
             if self.uiStage5_3 ~= nil then self.uiStage5_3.Enable = false end
@@ -1111,6 +1124,55 @@ script UIMain extends Component
 		if self.gameManager == nil or self.gameManager.miniGameManager == nil then
 			return
 		end
+		local roll = tonumber(self.gameManager.miniGameManager.lastDiceRoll) or 0
+		local roll2 = tonumber(self.gameManager.miniGameManager.lastDiceRoll2) or 0
+		local didWin = (self.gameManager.miniGameManager.lastRoundWin == true)
+		local resultKey = tostring(roll) .. ":" .. tostring(roll2) .. ":" .. (didWin and "W" or "L")
+		if self.stage5ResultRollKey ~= resultKey then
+			self.stage5ResultRollKey = resultKey
+			self.stage5ResultRollPlayed = false
+		end
+
+		-- During success/fail roll phase, force dice to static images.
+		if self.stage5DiceRollEntity ~= nil then
+			self.stage5DiceRollEntity.Enable = false
+		end
+		if self.stage5DiceRollEntity2 ~= nil then
+			self.stage5DiceRollEntity2.Enable = false
+		end
+		if self.stage5DiceImageEntity ~= nil then
+			if self.stage5DiceImageRUIDs ~= nil and roll >= 1 and roll <= 7 and self.stage5DiceImageRUIDs[roll] ~= nil and self.stage5DiceImageRUIDs[roll] ~= "" then
+				local gui = self.stage5DiceImageEntity.SpriteGUIRendererComponent
+				if gui ~= nil then
+					gui.ImageRUID = self.stage5DiceImageRUIDs[roll]
+				else
+					local sprite = self.stage5DiceImageEntity.SpriteRendererComponent
+					if sprite ~= nil then
+						sprite.SpriteRUID = self.stage5DiceImageRUIDs[roll]
+					end
+				end
+				self.stage5DiceImageEntity.Enable = true
+			else
+				self.stage5DiceImageEntity.Enable = false
+			end
+		end
+		if self.stage5DiceImageEntity2 ~= nil then
+			if self.stage5DiceImageRUIDs2 ~= nil and roll2 >= 1 and roll2 <= 7 and self.stage5DiceImageRUIDs2[roll2] ~= nil and self.stage5DiceImageRUIDs2[roll2] ~= "" then
+				local gui2 = self.stage5DiceImageEntity2.SpriteGUIRendererComponent
+				if gui2 ~= nil then
+					gui2.ImageRUID = self.stage5DiceImageRUIDs2[roll2]
+				else
+					local sprite2 = self.stage5DiceImageEntity2.SpriteRendererComponent
+					if sprite2 ~= nil then
+						sprite2.SpriteRUID = self.stage5DiceImageRUIDs2[roll2]
+					end
+				end
+				self.stage5DiceImageEntity2.Enable = true
+			else
+				self.stage5DiceImageEntity2.Enable = false
+			end
+		end
+
 		if self.uiStage5_Success ~= nil then
 			self.uiStage5_Success.Enable = false
 		end
@@ -1123,10 +1185,10 @@ script UIMain extends Component
 			dm = self.gameManager.dataManager
 		end
 		
-		if self.gameManager.miniGameManager.lastRoundWin == true then
+		if didWin == true then
 			if self.uiStage5_SuccessRoll ~= nil then
 				self.uiStage5_SuccessRoll.Enable = true
-				if dm ~= nil and dm.SuccessAnimRUID ~= nil and dm.SuccessAnimRUID ~= "" then
+				if self.stage5ResultRollPlayed == false and dm ~= nil and dm.SuccessAnimRUID ~= nil and dm.SuccessAnimRUID ~= "" then
 					local gui = self.uiStage5_SuccessRoll.SpriteGUIRendererComponent
 					if gui ~= nil then
 						gui.Enable = false
@@ -1153,7 +1215,7 @@ script UIMain extends Component
 		else
 			if self.uiStage5_FailRoll ~= nil then
 				self.uiStage5_FailRoll.Enable = true
-				if dm ~= nil and dm.FailAnimRUID ~= nil and dm.FailAnimRUID ~= "" then
+				if self.stage5ResultRollPlayed == false and dm ~= nil and dm.FailAnimRUID ~= nil and dm.FailAnimRUID ~= "" then
 					local gui = self.uiStage5_FailRoll.SpriteGUIRendererComponent
 					if gui ~= nil then
 						gui.Enable = false
@@ -1178,6 +1240,7 @@ script UIMain extends Component
 				self.uiStage5_SuccessRoll.Enable = false
 			end
 		end
+		self.stage5ResultRollPlayed = true
 	end
 
 	method void UpdateStage5DiceResult()
@@ -1439,10 +1502,24 @@ script UIMain extends Component
 		if self.uiBossSkill1Sub == nil and self.uiBossSkill1 ~= nil then
 			self.uiBossSkill1Sub = self.uiBossSkill1:GetChildByName("UISprite", true)
 		end
+
+		local normalizedType = tostring(selectedType or "")
+		normalizedType = string.gsub(normalizedType, "^%s+", "")
+		normalizedType = string.gsub(normalizedType, "%s+$", "")
+		normalizedType = string.lower(normalizedType)
+
+		-- Keep parent sprite state deterministic every time this UI opens.
+		if self.uiBossSkill1 ~= nil then
+			local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+			if parentImg ~= nil then
+				parentImg.Enable = true
+				parentImg.Color = Color(1, 1, 1, 1)
+			end
+		end
 		
 		local animDuration = duration
 		if animDuration == nil or animDuration <= 0 then
-			if selectedType == "shield" then
+			if normalizedType == "shield" then
 				animDuration = 0.81
 			else
 				animDuration = 1.5
@@ -1460,7 +1537,7 @@ script UIMain extends Component
 			if skill.entity ~= nil then
 				local img = skill.entity.SpriteGUIRendererComponent
 				if img ~= nil then
-					if skill.skillType == selectedType then
+					if skill.skillType == normalizedType then
 						-- Show and highlight only the selected skill
 						skill.entity.Enable = true
 						img.Color = Color(1, 1, 1, 1)
@@ -1473,7 +1550,7 @@ script UIMain extends Component
 		end
 		
 		-- Skill1: play parent first, then child entity.
-		if selectedType == "hp_dmg" then
+		if normalizedType == "hp_dmg" then
 			if self.uiBossSkill1Sub ~= nil then
 				self.uiBossSkill1Sub.Enable = false
 			end
@@ -1497,7 +1574,11 @@ script UIMain extends Component
 			self.skill1Timer = _TimerService:SetTimerOnce(function()
 				self.skill1Timer = nil
 				if self.uiBossSkill1 ~= nil then
-					self.uiBossSkill1.Enable = false
+					-- Keep parent entity enabled: sub sprite is its child.
+					local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+					if parentImg ~= nil then
+						parentImg.Enable = false
+					end
 				end
 				if self.uiBossSkill1Sub ~= nil then
 					self.uiBossSkill1Sub.Enable = true
@@ -1508,13 +1589,19 @@ script UIMain extends Component
 				end
 			end, parentDuration)
 		else
+			if self.uiBossSkill1 ~= nil then
+				local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+				if parentImg ~= nil then
+					parentImg.Enable = true
+				end
+			end
 			if self.uiBossSkill1Sub ~= nil then
 				self.uiBossSkill1Sub.Enable = false
 			end
 		end
 		
 		-- ???��????????????��??처�??(1.53?????��????반�???????????��?????????
-		if selectedType == "shield" then
+		if normalizedType == "shield" then
 			if self.uiBossSkill1Sub ~= nil then self.uiBossSkill1Sub.Enable = false end
 			if self.uiBossSkill3 ~= nil then
 				self.uiBossSkill3.Enable = true
@@ -1569,7 +1656,7 @@ script UIMain extends Component
 			self.shieldTimer = _TimerService:SetTimerOnce(hideOtherSkillFunc, animDuration)
 		end
 		
-		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
+		log("[UIMain] Boss skill highlighted: " .. tostring(normalizedType))
 	end
 
 	method void ResetBossSkillUI()
