@@ -149,6 +149,10 @@ script MonsterManager extends Component
 			monster.alive = true
 			monster.deathDelay = template.deathDelay or 0.7
 			monster.arrowOffsetY = template.arrowOffsetY or 1.2
+			monster.attackDelay = tonumber(template.attackDelay) or 1.0
+			if monster.attackDelay < 0 then
+				monster.attackDelay = 0
+			end
 			monster.dotEffects = {}
 			monster.incomingDmgUp = 0
 			monster.incomingDmgUpTurn = 0
@@ -448,11 +452,7 @@ script MonsterManager extends Component
 		
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
-		self:PlayEntityState(animTargetId, "ATTACK1", 2.0)
-		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
-		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3003 or 3001)
-		end
+		self:PlayEntityState(animTargetId, "ATTACK1", 0)
 	end
 	method void MonsterSkillAttack(integer index)
 		local monster = self.monsterList[index]
@@ -491,18 +491,14 @@ script MonsterManager extends Component
 				end
 			elseif statusKey == "poison" then
 				self.lastStatus = "poison"
-			else
-				self.lastStatus = monster.status
-			end
+		else
+			self.lastStatus = monster.status
 		end
+	end
 		
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
-		self:PlayEntityState(animTargetId, "SKILL1", 2.0)
-		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
-		if gameSystem and gameSystem.SoundManager then
-			gameSystem.SoundManager:PlaySFX(monster.isBoss and 3003 or 3001)
-		end
+		self:PlayEntityState(animTargetId, "SKILL1", 0)
 	end
 	method void MonsterAction(integer index)
 		local monster = self.monsterList[index]

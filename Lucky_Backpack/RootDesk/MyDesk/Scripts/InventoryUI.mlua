@@ -67,6 +67,12 @@ script InventoryUI extends Component
 
 	property number dragActivationDistance = 10
 
+	property number battleItemUseClickDelay = 0.2
+
+	property boolean battleItemUseClickLocked = false
+
+	property integer battleItemUseClickLockTimerId = 0
+
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
 		    self.colorInactive = {r = 0.3, g = 0.3, b = 0.3, a = 0.5}
@@ -130,6 +136,46 @@ script InventoryUI extends Component
 		        self.tooltipRightClickKeyHandler = nil
 		    end
 		    self:ClearGridHoverTimer()
+		    self:ClearBattleItemUseClickDelay()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ClearBattleItemUseClickDelay()
+		    if self.battleItemUseClickLockTimerId ~= nil and self.battleItemUseClickLockTimerId > 0 then
+		        _TimerService:ClearTimer(self.battleItemUseClickLockTimerId)
+		    end
+		    self.battleItemUseClickLockTimerId = 0
+		    self.battleItemUseClickLocked = false
+	end
+
+	@ExecSpace("ClientOnly")
+	method boolean IsBattleItemUseClickDelayBlocked(string itemType)
+		    if itemType ~= "weapon" and itemType ~= "armor" then
+		        return false
+		    end
+		    return self.battleItemUseClickLocked == true
+	end
+
+	@ExecSpace("ClientOnly")
+	method void BeginBattleItemUseClickDelay(string itemType)
+		    if itemType ~= "weapon" and itemType ~= "armor" then
+		        return
+		    end
+		
+		    if self.battleItemUseClickLockTimerId ~= nil and self.battleItemUseClickLockTimerId > 0 then
+		        _TimerService:ClearTimer(self.battleItemUseClickLockTimerId)
+		    end
+		
+		    self.battleItemUseClickLocked = true
+		    local delay = tonumber(self.battleItemUseClickDelay) or 0.2
+		    if delay <= 0 then
+		        delay = 0.2
+		    end
+		
+		    self.battleItemUseClickLockTimerId = _TimerService:SetTimerOnce(function()
+		        self.battleItemUseClickLockTimerId = 0
+		        self.battleItemUseClickLocked = false
+		    end, delay)
 	end
 
 	@ExecSpace("ClientOnly")
@@ -1513,13 +1559,19 @@ script InventoryUI extends Component
 		                return
 		            end
 		
+		            local itemType = string.lower(tostring(itemComp.itemType or ""))
+		            if self:IsBattleItemUseClickDelayBlocked(itemType) then
+		                return
+		            end
+		            self:BeginBattleItemUseClickDelay(itemType)
+		
 		            local targetMonsterIdx = 1
 		            local uiMain = gameSystem.UIMain
 		            if uiMain ~= nil and uiMain.targetMonsterIdx ~= nil and uiMain.targetMonsterIdx > 0 then
 		                targetMonsterIdx = uiMain.targetMonsterIdx
 		            end
 		
-		            if itemComp.itemType == "weapon" then
+		            if itemType == "weapon" then
 		                local usedWeapon = false
 		                if battleManager.OnPlayerUseWeaponByComponent ~= nil then
 		                    usedWeapon = battleManager:OnPlayerUseWeaponByComponent(itemComp, targetMonsterIdx)
@@ -1531,7 +1583,7 @@ script InventoryUI extends Component
 		                    self:EmitInventoryChangedEvent()
 		                end
 		                return
-		            elseif itemComp.itemType == "armor" then
+		            elseif itemType == "armor" then
 		                local usedArmor = battleManager:OnPlayerUseArmorByComponent(itemComp)
 		                if usedArmor then
 		                    if gameSystem.SoundManager ~= nil then
@@ -1540,7 +1592,7 @@ script InventoryUI extends Component
 		                    self:EmitInventoryChangedEvent()
 		                end
 		                return
-		            elseif itemComp.itemType == "potion" then
+		            elseif itemType == "potion" then
 		                local usedPotion = battleManager:OnPlayerUsePotionByComponent(itemComp)
 		                if usedPotion then
 		                    local inventory = self.Entity.Inventory
@@ -1557,7 +1609,7 @@ script InventoryUI extends Component
 		                    self:EmitInventoryChangedEvent()
 		                end
 		                return
-		            elseif itemComp.itemType == "consumable" then
+		            elseif itemType == "consumable" then
 		                local used = battleManager:OnPlayerUseConsumableById(itemComp.itemId)
 		                if used then
 		                    local inventory = self.Entity.Inventory
