@@ -818,6 +818,10 @@ script PlayerManager extends Component
 	end
 
 	method void TakeDamage(number dmg)
+		if self.isDead == true then
+			return
+		end
+		
 		--
 		local stats = self:CalcTotalItemStats()
 		local totalDef = stats.itemDef
@@ -833,9 +837,9 @@ script PlayerManager extends Component
 			self:PlayPlayerAnim("Dead")
 		else
 			self:PlayPlayerAnim("Hit")
+			self:ProcessHitVisual(finalDmg)
 		end
 		
-		self:ProcessHitVisual(finalDmg)
 		self:EmitPlayerStatChangedEvent()
 	end
 
@@ -1200,6 +1204,10 @@ script PlayerManager extends Component
 
 	@ExecSpace("Client")
 	method void ProcessHitVisual(number damage)
+		if self.isDead == true then
+			return
+		end
+		
 		local player = _UserService.LocalPlayer
 		if player == nil then return end
 		
@@ -1221,9 +1229,11 @@ script PlayerManager extends Component
 		end
 		
 		-- Parameter: (방향, ?��?지?�치, ?�리?�컬?��?, 공격?�턴?�름, ?�격횟??
-				local hitComp = player.HitComponent
+		local hitComp = player.HitComponent
 		if hitComp ~= nil then
-			hitComp:OnHit(player, math.ceil(damage), false, "ATTACK", 1)
+			pcall(function()
+				hitComp:OnHit(player, math.ceil(damage), false, "ATTACK", 1)
+			end)
 		else
 			log_warning("[PlayerManager] HitComponent not found on LocalPlayer.")
 		end

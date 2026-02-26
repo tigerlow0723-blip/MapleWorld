@@ -612,6 +612,9 @@ script GameManager extends Component
 		self.pendingStageAdvance = false
 		self.currentStage = 1
 		self.hasStagePlayerAnchor = false
+		if self.monsterManager ~= nil and self.monsterManager.ClearAll ~= nil then
+			self.monsterManager:ClearAll()
+		end
 		
 		--
 		if self.playerManager == nil then
@@ -619,6 +622,7 @@ script GameManager extends Component
 			return
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
+		self:ResetLocalPlayerVisualState()
 		
 		self.playerManager.isInitializingItems = true
 		
@@ -1002,9 +1006,6 @@ script GameManager extends Component
 			local stateAnim = animTarget.StateAnimationComponent
 			if stateAnim ~= nil then
 				stateAnim.Enable = true
-				pcall(function()
-					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("move", "stand"))
-				end)
 			end
 		end
 	end
@@ -1024,10 +1025,78 @@ script GameManager extends Component
 			local stateAnim = animTarget.StateAnimationComponent
 			if stateAnim ~= nil then
 				stateAnim.Enable = true
-				pcall(function()
-					stateAnim:ReceiveStateChangeEvent(self, StateChangeEvent("stand", "move"))
-				end)
 			end
+		end
+	end
+
+	@ExecSpace("Client")
+	method void ResetLocalPlayerVisualState()
+		log("[GameManager] ResetLocalPlayerVisualState called")
+		local player = self:ResolveStagePlayerEntity()
+		if player == nil then
+			return
+		end
+		
+		local function resetEntityRotation(targetEntity)
+			if targetEntity == nil or targetEntity.TransformComponent == nil then
+				return
+			end
+			local tf = targetEntity.TransformComponent
+			tf.ZRotation = 0
+			tf.Rotation = Vector3(0, 0, 0)
+		end
+		
+		player:SetEnable(true)
+		player:SetVisible(true)
+		resetEntityRotation(player)
+		
+		local playerComp = player.PlayerComponent
+		if playerComp ~= nil and playerComp.ProcessRevive ~= nil then
+			pcall(function()
+				playerComp:ProcessRevive()
+			end)
+		end
+		
+		local sprite = player.SpriteRendererComponent
+		if sprite ~= nil then
+			sprite.Enable = true
+			sprite.Color = Color(1, 1, 1, 1)
+			sprite.FlipX = true
+		end
+		
+		local rb = player.RigidbodyComponent
+		if rb ~= nil then
+			rb.MoveVelocity = Vector2.zero
+			rb:SetForce(Vector2.zero)
+		end
+		
+		local animEntity = self:ResolveStagePlayerAnimEntity(player)
+		if animEntity ~= nil then
+			animEntity:SetEnable(true)
+			animEntity:SetVisible(true)
+			resetEntityRotation(animEntity)
+			
+			pcall(function()
+				animEntity:SendEvent(ActionStateChangedEvent("stand1", "stand1", 1, SpriteAnimClipPlayType.Loop))
+			end)
+			
+			_TimerService:SetTimerOnce(function()
+				if _EntityService:IsValid(player) then
+					local delayedPlayerComp = player.PlayerComponent
+					if delayedPlayerComp ~= nil and delayedPlayerComp.ProcessRevive ~= nil then
+						pcall(function()
+							delayedPlayerComp:ProcessRevive()
+						end)
+					end
+					resetEntityRotation(player)
+				end
+				if _EntityService:IsValid(animEntity) then
+					resetEntityRotation(animEntity)
+					pcall(function()
+						animEntity:SendEvent(ActionStateChangedEvent("stand1", "stand1", 1, SpriteAnimClipPlayType.Loop))
+					end)
+				end
+			end, 0.05)
 		end
 	end
 
@@ -1613,6 +1682,154 @@ script GameManager extends Component
 		
 		--
 		self:ProceedToStage()
+	end
+
+	method void ReturnToLobbyFromFail()
+		log("[GameManager] ReturnToLobbyFromFail called")
+		
+		self.pendingRewards = {}
+		self.gamePhase = "None"
+		self.canEndPreparation = false
+		self.isStageTransitioning = false
+		self.pendingStageAdvance = false
+		self.currentStage = 1
+		self.hasStagePlayerAnchor = false
+		
+		self:SetStageFadeAlpha(0)
+		
+		if self.battleManager ~= nil then
+			self.battleManager.battleState = "Idle"
+			self.battleManager.currentTurn = "None"
+			self.battleManager.playerDotEffects = {}
+			if self.battleManager.monsterTurnTimerId ~= nil and self.battleManager.monsterTurnTimerId > 0 then
+				_TimerService:ClearTimer(self.battleManager.monsterTurnTimerId)
+				self.battleManager.monsterTurnTimerId = 0
+			end
+			if self.battleManager.deferredTargetInitTimerId ~= nil and self.battleManager.deferredTargetInitTimerId > 0 then
+				_TimerService:ClearTimer(self.battleManager.deferredTargetInitTimerId)
+				self.battleManager.deferredTargetInitTimerId = 0
+			end
+		end
+		
+		if self.monsterManager ~= nil then
+			self.monsterManager:ClearAll()
+			if self.monsterManager.UpdateTargetHighlight ~= nil then
+				self.monsterManager:UpdateTargetHighlight(0)
+			end
+		end
+		
+		if self.miniGameManager ~= nil and self.miniGameManager.EndMiniGamePhase ~= nil then
+			self.miniGameManager:EndMiniGamePhase()
+		end
+		
+		if self.itemDisplayArea == nil then
+			local displayAreaEntity = _EntityService:GetEntityByPath("/ui/UIGroup/ItemDisplayArea")
+			if displayAreaEntity ~= nil then
+				self.itemDisplayArea = displayAreaEntity.ItemDisplayArea
+			end
+		end
+		if self.itemDisplayArea ~= nil then
+			if self.itemDisplayArea.ClearAllItems ~= nil then
+				self.itemDisplayArea:ClearAllItems()
+			end
+			if self.itemDisplayArea.Entity ~= nil then
+				self.itemDisplayArea.Entity:SetEnable(false)
+				self.itemDisplayArea.Entity:SetVisible(false)
+			end
+		end
+		
+		local shopPanel = _EntityService:GetEntityByPath(self.shopPanelPath)
+		if shopPanel ~= nil then
+			shopPanel:SetEnable(false)
+			shopPanel:SetVisible(false)
+		end
+		
+		self:ResolveRewardUI()
+		if self.rewardUI ~= nil then
+			if self.rewardUI.ClearCloseTimer ~= nil then
+				self.rewardUI:ClearCloseTimer()
+			end
+			if self.rewardUI.ClearCards ~= nil then
+				self.rewardUI:ClearCards()
+			end
+			if self.rewardUI.HidePanel ~= nil then
+				self.rewardUI:HidePanel()
+			end
+			self.rewardUI.pendingRewards = {}
+		end
+		
+		if self.rewardChestEntity ~= nil then
+			local chestComp = self.rewardChestEntity.RewardChest
+			if chestComp ~= nil and chestComp.ResetChest ~= nil then
+				chestComp:ResetChest()
+			end
+			self.rewardChestEntity:SetEnable(false)
+			self.rewardChestEntity:SetVisible(false)
+		end
+		
+		local resetClassId = "War"
+		if self.playerManager ~= nil and self.playerManager.classId ~= nil then
+			local currentClassId = tostring(self.playerManager.classId)
+			if currentClassId ~= nil and currentClassId ~= "" then
+				resetClassId = currentClassId
+			end
+		end
+		if self.playerManager ~= nil and self.dataManager ~= nil then
+			self.playerManager:InitPlayer(resetClassId, self.dataManager)
+			self.playerManager.isInitializingItems = false
+		end
+		self:ResetLocalPlayerVisualState()
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel ~= nil and inventoryPanel.InventoryUI ~= nil then
+			if inventoryPanel.InventoryUI.RebuildItemsFromGrid ~= nil then
+				inventoryPanel.InventoryUI:RebuildItemsFromGrid()
+			end
+			if inventoryPanel.InventoryUI.RenderGrid ~= nil then
+				inventoryPanel.InventoryUI:RenderGrid()
+			end
+		end
+		
+		if self.uiMain ~= nil then
+			if self.uiMain.ClearItemDisplayAreaDelayTimer ~= nil then
+				self.uiMain:ClearItemDisplayAreaDelayTimer()
+			end
+			self.uiMain.itemDisplayAreaDelayPending = false
+			self.uiMain.canShowItemDisplayAreaInPreparation = true
+			
+			if self.uiMain.uiClear ~= nil then
+				self.uiMain.uiClear.Enable = false
+				self.uiMain.uiClear:SetVisible(false)
+			end
+			
+			if self.uiMain.HideFailUI ~= nil then
+				self.uiMain:HideFailUI()
+			elseif self.uiMain.uiFail ~= nil then
+				self.uiMain.uiFail.Enable = false
+				self.uiMain.uiFail:SetVisible(false)
+			end
+			
+			self.uiMain.targetMonsterIdx = 0
+			self.uiMain:UpdateUI()
+		end
+		
+		local introEntity = self:ResolveIntroGroup()
+		if introEntity ~= nil then
+			introEntity:SetEnable(false)
+			introEntity:SetVisible(false)
+		end
+		self:StopIntroVideo()
+		if self.introTimerId ~= nil and self.introTimerId > 0 then
+			_TimerService:ClearTimer(self.introTimerId)
+			self.introTimerId = 0
+		end
+		if self.introStartTimerId ~= nil and self.introStartTimerId > 0 then
+			_TimerService:ClearTimer(self.introStartTimerId)
+			self.introStartTimerId = 0
+		end
+		
+		self.gameState = "Init"
+		self:ShowMainMenuTitle()
 	end
 
 	method void GameClear()

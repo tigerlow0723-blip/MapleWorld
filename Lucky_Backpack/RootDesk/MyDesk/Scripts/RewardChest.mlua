@@ -77,7 +77,6 @@ script RewardChest extends Component
 		end
 
 		-- Try to load animation RUIDs from DataManager if not set
-		--
 		if self.chestOpenAnimRUID == "" or self.chestEffectAnimRUID == "" then
 			if gameSystemEntity ~= nil and gameSystemEntity.GameManager ~= nil then
 				local dm = gameSystemEntity.GameManager.dataManager

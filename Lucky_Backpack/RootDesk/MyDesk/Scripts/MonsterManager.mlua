@@ -669,12 +669,41 @@ script MonsterManager extends Component
 
 	method void ClearAll(boolean skipDestroy)
 		if skipDestroy ~= true then
+			local destroyedById = {}
+			local function destroyEntityById(entityId)
+				if entityId == nil then
+					return
+				end
+				local key = tostring(entityId)
+				if key == "" or destroyedById[key] == true then
+					return
+				end
+				destroyedById[key] = true
+				local entity = _EntityService:GetEntity(entityId)
+				if entity ~= nil then
+					_EntityService:Destroy(entity)
+				end
+			end
+			
 			for i = 1, #self.monsterList do
 				local mon = self.monsterList[i]
-				if mon.entityId ~= nil then
-					local entity = _EntityService:GetEntity(mon.entityId)
-					if entity ~= nil then
-						_EntityService:Destroy(entity)
+				if mon ~= nil then
+					destroyEntityById(mon.animEntityId)
+					destroyEntityById(mon.entityId)
+				end
+			end
+			
+			-- Fallback cleanup for stale visuals (e.g. defeat path that already cleared monsterList).
+			local parentEntity = self.Entity.Parent
+			if parentEntity ~= nil and parentEntity.Children ~= nil then
+				local children = parentEntity.Children
+				for i = 1, #children do
+					local child = children[i]
+					if child ~= nil then
+						local childName = tostring(child.Name or "")
+						if string.sub(childName, 1, 8) == "Monster_" then
+							_EntityService:Destroy(child)
+						end
 					end
 				end
 			end
@@ -683,6 +712,9 @@ script MonsterManager extends Component
 		self.isBossBattle = false
 		self.currentBossId = ""
 		self.currentBossPhase = 1
+		self.pendingSpawnEntranceCount = 0
+		self.isPhaseTransitioning = false
+		self.isDyingAnimating = false
 	end
 
 	method void SpawnVisual(table monster, integer index, boolean isBoss, integer totalCount)
