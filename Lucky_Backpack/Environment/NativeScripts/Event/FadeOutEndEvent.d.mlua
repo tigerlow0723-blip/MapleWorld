@@ -1,8 +1,0 @@
----@sealed
----@description "The event that takes place when a Fade Out completes."
-@Event
-script FadeOutEndEvent extends EventType
-
-	constructor FadeOutEndEvent() end
-
-end

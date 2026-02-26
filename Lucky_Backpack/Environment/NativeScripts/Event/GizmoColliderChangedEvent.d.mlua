@@ -1,8 +1,0 @@
----@sealed
----@description "This event occurs when changing the GizmoCollider."
-@Event
-script GizmoColliderChangedEvent extends EventType
-
-	constructor GizmoColliderChangedEvent() end
-
-end
