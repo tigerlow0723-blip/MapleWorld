@@ -1507,6 +1507,7 @@ script InventoryUI extends Component
 		    end
 		
 		    local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+
 		    if gameSystem ~= nil and gameSystem.GameManager ~= nil then
 		        local gameManager = gameSystem.GameManager
 		        if gameManager.gamePhase == "Battle" then
@@ -1536,6 +1537,9 @@ script InventoryUI extends Component
 		            elseif itemComp.itemType == "armor" then
 		                local usedArmor = battleManager:OnPlayerUseArmorByComponent(itemComp)
 		                if usedArmor then
+		                    if gameSystem.SoundManager ~= nil then
+		                        gameSystem.SoundManager:PlaySFX(4006)
+		                    end
 		                    self:EmitInventoryChangedEvent()
 		                end
 		                return
