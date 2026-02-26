@@ -610,7 +610,7 @@ script GameManager extends Component
 		self.canEndPreparation = false
 		self.isStageTransitioning = false
 		self.pendingStageAdvance = false
-		self.currentStage = 10
+		self.currentStage = 1
 		self.hasStagePlayerAnchor = false
 		
 		--
@@ -1372,7 +1372,7 @@ script GameManager extends Component
 					self.uiMain:ShowNoOreWarning()
 				end
 			end, uiDelay)
-
+		
 			-- Proceed to next stage 2 seconds after the UI appears
 			local nextFunc = function()
 				self:CloseShop()
