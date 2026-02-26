@@ -1,13 +1,13 @@
 ﻿boss_id,phase,name,effect_type,effect_value,turn,Patten_RUID,duration
 B_01,1,광역피해,hp_dmg,25,0,58e099a62e0d47569fc9109e0b8be031,1.71
-B_01,1,맹독,poison,5,3,69c3876d499c48f99300036d0923b645,1
+B_01,1,맹독,poison,5,3,aee197d4fac04cd587ffe1325e5e8acc,2
 B_01,1,절대방어,shield,1,1,861f6dc678354fbab9cfb6a592df0daf,1.53
 B_01,1,자기회복,heal,5,0,379efdfe540e47af8834af8e9b594243,1.38
 B_01,2,진·광역피해,hp_dmg,35,0,58e099a62e0d47569fc9109e0b8be031,1.71
-B_01,2,치명맹독,poison,10,3,69c3876d499c48f99300036d0923b645,1
+B_01,2,치명맹독,poison,10,3,aee197d4fac04cd587ffe1325e5e8acc,2
 B_01,2,절대방어,shield,1,1,861f6dc678354fbab9cfb6a592df0daf,1.53
 B_01,2,초재생,heal,10,0,379efdfe540e47af8834af8e9b594243,1.38
 B_01,3,멸망피해,hp_dmg,45,0,58e099a62e0d47569fc9109e0b8be031,1.71
-B_01,3,절명독,poison,15,3,69c3876d499c48f99300036d0923b645,1
+B_01,3,절명독,poison,15,3,aee197d4fac04cd587ffe1325e5e8acc,2
 B_01,3,신성한방패,shield,1,1,861f6dc678354fbab9cfb6a592df0daf,1.53
 B_01,3,기적의회복,heal,15,0,379efdfe540e47af8834af8e9b594243,1.38

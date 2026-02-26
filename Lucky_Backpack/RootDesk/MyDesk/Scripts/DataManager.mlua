@@ -41,6 +41,13 @@ script DataManager extends Component
 	
 	property number DiceSuccessFailDelay = 1.2
 
+	property string SuccessAnimRUID = ""
+	property string FailAnimRUID = ""
+	property string SuccessImgRUID = ""
+	property string FailImgRUID = ""
+	property number SuccessAnimDelay = 0.81
+	property number FailAnimDelay = 1.2
+
 	property table StartItemTable = {}
 
 	property table SoundTable = {}
@@ -1015,6 +1022,40 @@ script DataManager extends Component
 				else
 					self.DiceSuccessFailDelay = self.DiceResultDelay
 				end
+			end
+			
+			if self.SuccessAnimRUID == "" then
+				local val = self:GetCellString(ds, i, "success_anim_ruid", "")
+				if val ~= "" then
+					self.SuccessAnimRUID = val
+				end
+			end
+			if self.FailAnimRUID == "" then
+				local val = self:GetCellString(ds, i, "fail_anim_ruid", "")
+				if val ~= "" then
+					self.FailAnimRUID = val
+				end
+			end
+			if self.SuccessImgRUID == "" then
+				local val = self:GetCellString(ds, i, "success_img_ruid", "")
+				if val ~= "" then
+					self.SuccessImgRUID = val
+				end
+			end
+			if self.FailImgRUID == "" then
+				local val = self:GetCellString(ds, i, "fail_img_ruid", "")
+				if val ~= "" then
+					self.FailImgRUID = val
+				end
+			end
+			
+			local saDelay = tonumber(self:GetCellString(ds, i, "success_anim_delay", ""))
+			if saDelay ~= nil and saDelay >= 0 then
+				self.SuccessAnimDelay = saDelay
+			end
+			local faDelay = tonumber(self:GetCellString(ds, i, "fail_anim_delay", ""))
+			if faDelay ~= nil and faDelay >= 0 then
+				self.FailAnimDelay = faDelay
 			end
 		end
 		

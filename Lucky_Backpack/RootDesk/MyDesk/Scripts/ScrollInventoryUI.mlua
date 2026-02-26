@@ -48,6 +48,8 @@ script ScrollInventoryUI extends Component
 	property boolean isScrollTooltipVisible = false
 
 	property string scrollUIPath = ""
+	property number successResultDisplayDelay = 1.05
+	property number failResultDisplayDelay = 0.8
 
 	@ExecSpace("ClientOnly")
 	method void OnBeginPlay()
@@ -854,6 +856,13 @@ script ScrollInventoryUI extends Component
 			if self.scrollUIPath ~= "" then
 				local scrollUI = _EntityService:GetEntityByPath(self.scrollUIPath)
 				if scrollUI ~= nil then
+					local resultDisplayDelay = tonumber(self.failResultDisplayDelay) or 1.5
+					if isSuccessMsg then
+						resultDisplayDelay = tonumber(self.successResultDisplayDelay) or resultDisplayDelay
+					end
+					if resultDisplayDelay < 0 then
+						resultDisplayDelay = 0
+					end
 					local targetEntity = nil
 					if isSuccessMsg then
 						targetEntity = scrollUI:GetChildByName("success", true)
@@ -888,7 +897,7 @@ script ScrollInventoryUI extends Component
 								targetEntity:SetEnable(false)
 								targetEntity:SetVisible(false)
 							end
-						end, 1.5)
+						end, resultDisplayDelay)
 					else
 						log_error("[ScrollUI Debug] SUCCESS/FAIL child not found under scrollUI")
 					end

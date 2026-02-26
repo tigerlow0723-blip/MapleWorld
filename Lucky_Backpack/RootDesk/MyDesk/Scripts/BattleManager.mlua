@@ -975,97 +975,171 @@ script BattleManager extends Component
 			self.monsterTurnTimerId = _TimerService:SetTimerOnce(nextFunc, 1.0)
 		end
 		
-		if self.monsterManager.lastActionValid == true then
-			local rawStatusName = self.monsterManager.lastStatus
-			local statusName = nil
-			local effectValue = self.monsterManager.lastDamage
-			
-			if rawStatusName ~= nil then
-				statusName = tostring(rawStatusName)
-				statusName = string.gsub(statusName, "^%s+", "")
-				statusName = string.gsub(statusName, "%s+$", "")
-			end
-			
-			if statusName == nil or statusName == "" then
-				statusName = "none"
-			elseif statusName == "독" then
-				statusName = "poison"
-			elseif statusName == "없음" then
-				statusName = "none"
-			else
-				statusName = string.lower(statusName)
-			end
-			
-			if statusName == "hp_dmg" then
-				local maxHP = self.playerManager.maxHP or self.playerManager.hp
-				local dmg = math.floor(maxHP * (effectValue / 100.0))
-				self.playerManager:TakeDamage(dmg)
-			elseif statusName == "poison" then
-				local dotTurnVal = self.monsterManager.lastDotTurn or 1
-				if dotTurnVal <= 0 then
-					dotTurnVal = 1
+		local function applyMonsterActionEffect()
+			if self.monsterManager.lastActionValid == true then
+				local rawStatusName = self.monsterManager.lastStatus
+				local statusName = nil
+				local effectValue = self.monsterManager.lastDamage
+				
+				if rawStatusName ~= nil then
+					statusName = tostring(rawStatusName)
+					statusName = string.gsub(statusName, "^%s+", "")
+					statusName = string.gsub(statusName, "%s+$", "")
 				end
 				
-				local dot = {}
-				dot.status = "poison"
-				dot.remainTurn = dotTurnVal
-				
-				if self.monsterManager.isBossBattle then
-					local percentPerTurn = math.floor(effectValue or 0)
-					if percentPerTurn > 0 then
-						dot.dmgPercent = percentPerTurn
-						self.playerDotEffects[#self.playerDotEffects + 1] = dot
-						log("[BattleManager] Boss poison applied: " .. tostring(percentPerTurn) .. "% MaxHP x " .. tostring(dotTurnVal) .. " turns")
-					end
+				if statusName == nil or statusName == "" then
+					statusName = "none"
+				elseif statusName == "독" then
+					statusName = "poison"
+				elseif statusName == "없음" then
+					statusName = "none"
 				else
-					local dmgPerTurn = math.floor(self.monsterManager.lastDotDmg or 0)
-					if dmgPerTurn > 0 then
-						dot.dmg = dmgPerTurn
-						self.playerDotEffects[#self.playerDotEffects + 1] = dot
-						log("[BattleManager] Monster poison applied: " .. tostring(dmgPerTurn) .. " x " .. tostring(dotTurnVal) .. " turns")
-					end
+					statusName = string.lower(statusName)
 				end
-			elseif statusName == "multi" then
-				local hitCount = self.monsterManager.lastHitCount or 1
-				if hitCount <= 0 then hitCount = 1 end
-				local oneHitDamage = self.monsterManager.lastDamage or 0
-				local hitIndex = 0
 				
-				local hitFunc = nil
-				hitFunc = function()
-					hitIndex += 1
-					self.playerManager:TakeDamage(oneHitDamage)
-					self:RefreshUI()
-					
-					if self.playerManager.isDead == true then
-						self:EndBattle("Defeat")
-						return
+				if statusName == "hp_dmg" then
+					local maxHP = self.playerManager.maxHP or self.playerManager.hp
+					local dmg = math.floor(maxHP * (effectValue / 100.0))
+					self.playerManager:TakeDamage(dmg)
+				elseif statusName == "poison" then
+					local dotTurnVal = self.monsterManager.lastDotTurn or 1
+					if dotTurnVal <= 0 then
+						dotTurnVal = 1
 					end
 					
-					if hitIndex < hitCount then
-						_TimerService:SetTimerOnce(hitFunc, 0.12)
+					local dot = {}
+					dot.status = "poison"
+					dot.remainTurn = dotTurnVal
+					
+					if self.monsterManager.isBossBattle then
+						local percentPerTurn = math.floor(effectValue or 0)
+						if percentPerTurn > 0 then
+							dot.dmgPercent = percentPerTurn
+							self.playerDotEffects[#self.playerDotEffects + 1] = dot
+							log("[BattleManager] Boss poison applied: " .. tostring(percentPerTurn) .. "% MaxHP x " .. tostring(dotTurnVal) .. " turns")
+						end
 					else
-						queueNext()
+						local dmgPerTurn = math.floor(self.monsterManager.lastDotDmg or 0)
+						if dmgPerTurn > 0 then
+							dot.dmg = dmgPerTurn
+							self.playerDotEffects[#self.playerDotEffects + 1] = dot
+							log("[BattleManager] Monster poison applied: " .. tostring(dmgPerTurn) .. " x " .. tostring(dotTurnVal) .. " turns")
+						end
 					end
+				elseif statusName == "multi" then
+					local hitCount = self.monsterManager.lastHitCount or 1
+					if hitCount <= 0 then hitCount = 1 end
+					local oneHitDamage = self.monsterManager.lastDamage or 0
+					local hitIndex = 0
+					
+					local hitFunc = nil
+					hitFunc = function()
+						hitIndex += 1
+						self.playerManager:TakeDamage(oneHitDamage)
+						self:RefreshUI()
+						
+						if self.playerManager.isDead == true then
+							self:EndBattle("Defeat")
+							return
+						end
+						
+						if hitIndex < hitCount then
+							_TimerService:SetTimerOnce(hitFunc, 0.12)
+						else
+							queueNext()
+						end
+					end
+					
+					hitFunc()
+					return
+				elseif statusName == "shield" or statusName == "heal" then
+					log("[BattleManager] Boss utility skill used: " .. tostring(statusName) .. " (No damage to player)")
+				elseif statusName == "none" or statusName == nil then
+					self.playerManager:TakeDamage(self.monsterManager.lastDamage)
+				else
+					log_warning("[BattleManager] Unknown monster status: " .. tostring(self.monsterManager.lastStatus) .. ", fallback to normal damage")
+					self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 				end
 				
-				hitFunc()
-				return
-			elseif statusName == "none" or statusName == nil then
-				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
-			else
-				log_warning("[BattleManager] Unknown monster status: " .. tostring(self.monsterManager.lastStatus) .. ", fallback to normal damage")
-				self.playerManager:TakeDamage(self.monsterManager.lastDamage)
+				self:RefreshUI()
+				if self.playerManager.isDead == true then
+					self:EndBattle("Defeat")
+					return
+				end
 			end
 			
-			self:RefreshUI()
-			if self.playerManager.isDead == true then
-				self:EndBattle("Defeat")
+			queueNext()
+		end
+		
+		local function triggerBossSkillUI(overrideDuration)
+			if self.monsterManager == nil or self.monsterManager.isBossBattle ~= true then
 				return
+			end
+			if self.gameManager == nil or self.gameManager.uiMain == nil then
+				return
+			end
+			if self.gameManager.uiMain.UpdateBossSkillUI ~= nil then
+				local uiDuration = overrideDuration
+				if uiDuration == nil or uiDuration <= 0 then
+					uiDuration = self.monsterManager.lastPatternDuration
+				end
+				self.gameManager.uiMain:UpdateBossSkillUI(self.monsterManager.lastStatus, uiDuration)
 			end
 		end
 		
-		queueNext()
+		if self.monsterManager ~= nil and self.monsterManager.isBossBattle == true and self.monsterManager.lastActionValid == true then
+			local rawBossStatus = tostring(self.monsterManager.lastStatus or "")
+			rawBossStatus = string.gsub(rawBossStatus, "^%s+", "")
+			rawBossStatus = string.gsub(rawBossStatus, "%s+$", "")
+			rawBossStatus = string.lower(rawBossStatus)
+			
+			-- Boss skill #1 (hp_dmg):
+			-- show parent UI immediately, then sub UI + damage after pattern delay.
+			if rawBossStatus == "hp_dmg" then
+				local impactDelay = tonumber(self.monsterManager.bossSkillImpactDelay) or 0
+				if impactDelay < 0 then
+					impactDelay = 0
+				end
+				
+				local uiTail = 0.6
+				if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
+					local uiMain = self.gameManager.uiMain
+					uiTail = tonumber(uiMain.bossSkill1ParentDuration) or uiTail
+					if uiTail <= 0 then
+						uiTail = 0.6
+					end
+					uiMain.bossSkill1ParentDurationOverride = impactDelay
+				end
+				
+				-- Parent UI appears immediately.
+				triggerBossSkillUI(impactDelay + uiTail)
+				
+				local resolveBossImpact = function()
+					self.monsterTurnTimerId = 0
+					if self.battleState ~= "Battle" then
+						return
+					end
+					-- Apply damage when sub-entity timing begins.
+					applyMonsterActionEffect()
+				end
+				
+				if impactDelay <= 0 then
+					resolveBossImpact()
+				else
+					if self.monsterTurnTimerId > 0 then
+						_TimerService:ClearTimer(self.monsterTurnTimerId)
+						self.monsterTurnTimerId = 0
+					end
+					self.monsterTurnTimerId = _TimerService:SetTimerOnce(resolveBossImpact, impactDelay)
+				end
+			else
+				-- Other boss patterns remain immediate.
+				triggerBossSkillUI()
+				applyMonsterActionEffect()
+			end
+		else
+			applyMonsterActionEffect()
+		end
 	end
 	method void ProcessPlayerDots(any onDone)
 		local hits = {}

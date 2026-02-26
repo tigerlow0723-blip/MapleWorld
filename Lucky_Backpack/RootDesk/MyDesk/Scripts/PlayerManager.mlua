@@ -1045,6 +1045,18 @@ script PlayerManager extends Component
 		log("[PlayerManager] Item added: " .. (itemData.name or tostring(itemData.id)))
 	end
 
+	method integer GetItemCount(integer itemId)
+		local count = 0
+		if self.inventory == nil then return count end
+		for i = 1, #self.inventory do
+			local item = self.inventory[i]
+			if item ~= nil and tonumber(item.id) == itemId then
+				count += 1
+			end
+		end
+		return count
+	end
+
 	method void RemoveItem(integer index)
 		if index >= 1 and index <= #self.inventory then
 			local item = self.inventory[index]

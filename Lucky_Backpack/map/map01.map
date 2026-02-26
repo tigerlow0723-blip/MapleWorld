@@ -852,6 +852,16 @@
                 "EntityId": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
                 "Version2": false
               },
+              "introSkipButtonPath": "/ui/introgroup/YoutubePlayerGUI/BtnSkipIntro",
+              "introSkipButtonEntity": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "681c4155-e313-408d-a6c4-7cdcd5a97877",
+                "Version2": false
+              },
+              "introSkipButtonBound": false,
+              "introDuration": 8.0,
+              "playIntroBeforeMainMenu": true,
               "stageFadeEntity": {
                 "tempEntityId": null,
                 "IsRelative": false,
@@ -947,6 +957,12 @@
                 "EntityId": "30c89844-149f-4f0b-b074-ad3073d81aee",
                 "Version2": false
               },
+              "uiBossSkill1Sub": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "06e6ee53-d4bd-487d-80a2-ff4caebad63b",
+                "Version2": false
+              },
               "uiBossSkill2": {
                 "tempEntityId": null,
                 "IsRelative": false,
@@ -1028,13 +1044,25 @@
               "uiStage5_Success": {
                 "tempEntityId": null,
                 "IsRelative": false,
-                "EntityId": "4dea7afd-bb3a-4eb3-9a3f-ffe655e81666",
+                "EntityId": "bdbc8987-0908-4a89-a274-afd12b6b5a2c",
                 "Version2": false
               },
               "uiStage5_Fail": {
                 "tempEntityId": null,
                 "IsRelative": false,
-                "EntityId": "8eb6d367-42ba-4da0-aeee-dccc6ab0379d",
+                "EntityId": "8789b36e-7a82-49f8-878f-56e1e1322629",
+                "Version2": false
+              },
+              "uiStage5_SuccessRoll": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "bc3f9dbb-375d-4769-a886-5ba74f7457b8",
+                "Version2": false
+              },
+              "uiStage5_FailRoll": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "109b0d5d-3b47-48bd-a416-3f68384d4573",
                 "Version2": false
               },
               "uiStage5_game": {
