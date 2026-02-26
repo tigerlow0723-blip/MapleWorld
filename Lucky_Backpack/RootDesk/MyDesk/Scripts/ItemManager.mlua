@@ -66,26 +66,10 @@ script ItemManager extends Component
 			low = high
 			high = temp
 		end
-		
-		local randomValue = _UtilLogic:RandomIntegerRange(low, high)
-		if randomValue ~= nil then
-			return tonumber(randomValue) or low
-		end
 		return math.random(low, high)
 	end
 
 	method number GetRandomUnit()
-		local randomValue = _UtilLogic:RandomDouble()
-		if randomValue ~= nil then
-			local normalized = tonumber(randomValue) or 0
-			if normalized < 0 then
-				return 0
-			end
-			if normalized >= 1 then
-				return 0.999999
-			end
-			return normalized
-		end
 		return math.random()
 	end
 

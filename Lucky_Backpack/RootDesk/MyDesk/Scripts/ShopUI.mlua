@@ -215,10 +215,6 @@ script ShopUI extends Component
 		        low = high
 		        high = temp
 		    end
-		    local randomValue = _UtilLogic:RandomIntegerRange(low, high)
-		    if randomValue ~= nil then
-		        return tonumber(randomValue) or low
-		    end
 		    return math.random(low, high)
 	end
 

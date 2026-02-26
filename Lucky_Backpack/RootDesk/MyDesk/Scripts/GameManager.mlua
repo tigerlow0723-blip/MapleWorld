@@ -67,6 +67,10 @@ script GameManager extends Component
 
 	property table pendingRewards = {}
 
+	property integer clientRandomSeed = 1
+
+	property integer clientRandomReseedCount = 0
+
 	property string gamePhase = "None"
 
 	property boolean canEndPreparation = false
@@ -133,6 +137,7 @@ script GameManager extends Component
 		
 		--
 		if self:IsClient() then
+			self:ReseedClientRandom("OnBeginPlay")
 			local player = _UserService.LocalPlayer
 			if player ~= nil then
 				local moveComp = player.MovementComponent
@@ -223,6 +228,72 @@ script GameManager extends Component
 		end
 		initFunc()
 		log("[GameManager] Init complete. Intro/title flow started immediately.")
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer HashSeedSource(string sourceText)
+		local normalizedText = sourceText or ""
+		local hash = 0
+		for i = 1, string.len(normalizedText) do
+			local code = string.byte(normalizedText, i) or 0
+			hash = (hash * 131 + code) % 2147483647
+		end
+		if hash <= 0 then
+			hash = 1
+		end
+		return hash
+	end
+
+	@ExecSpace("ClientOnly")
+	method integer BuildClientRandomSeed(integer reseedCount)
+		local elapsedMs = 0
+		local utcNow = DateTime.UtcNow
+		if utcNow ~= nil then
+			elapsedMs = tonumber(utcNow.Elapsed) or 0
+		end
+		
+		local localUserId = "anonymous"
+		local localUser = _UserService.LocalPlayer
+		if localUser ~= nil and localUser.UserId ~= nil and localUser.UserId ~= "" then
+			localUserId = tostring(localUser.UserId)
+		end
+		local userHash = self:HashSeedSource(localUserId)
+		
+		local entityId = 0
+		if self.Entity ~= nil and self.Entity.Id ~= nil then
+			entityId = tonumber(self.Entity.Id) or 0
+		end
+		
+		local mix = elapsedMs
+		mix += userHash * 31
+		mix += entityId * 17
+		mix += (tonumber(reseedCount) or 0) * 1009
+		mix = mix % 2147483647
+		if mix <= 0 then
+			mix += 2147483646
+		end
+		return mix
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ReseedClientRandom(string reason)
+		local reseedCount = tonumber(self.clientRandomReseedCount) or 0
+		if reseedCount < 0 then
+			reseedCount = 0
+		end
+		reseedCount += 1
+		self.clientRandomReseedCount = reseedCount
+		
+		local seed = self:BuildClientRandomSeed(reseedCount)
+		self.clientRandomSeed = seed
+		
+		if math ~= nil and math.randomseed ~= nil then
+			math.randomseed(seed)
+			math.random()
+			math.random()
+		end
+		
+		log("[GameManager][RNG] Client reseeded reason=" .. tostring(reason) .. " seed=" .. tostring(seed) .. " count=" .. tostring(reseedCount))
 	end
 
 	method void ResolveRewardUI()
@@ -655,12 +726,15 @@ script GameManager extends Component
 
 	method void StartGame(string classId)
 		log("[DEBUG-GAME] StartGame Called! Class: " .. classId)
+		if self:IsClient() then
+			self:ReseedClientRandom("StartGame")
+		end
 		self.gameState = "Playing"
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
 		self.isStageTransitioning = false
 		self.pendingStageAdvance = false
-		self.currentStage = 10
+		self.currentStage = 1
 		self.hasStagePlayerAnchor = false
 		if self.monsterManager ~= nil and self.monsterManager.ClearAll ~= nil then
 			self.monsterManager:ClearAll()
