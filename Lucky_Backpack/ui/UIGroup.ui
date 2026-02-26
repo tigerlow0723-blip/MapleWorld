@@ -4675,7 +4675,7 @@
           "name": "Stage_5_1",
           "path": "/ui/UIGroup/Stage_5_1",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 10,
@@ -5179,7 +5179,7 @@
           "name": "Stage_5_2",
           "path": "/ui/UIGroup/Stage_5_2",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 11,
@@ -5684,7 +5684,7 @@
           "name": "Stage_5_3",
           "path": "/ui/UIGroup/Stage_5_3",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 12,
@@ -6042,7 +6042,7 @@
           "name": "stage_5_game",
           "path": "/ui/UIGroup/stage_5_game",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 13,
@@ -11693,11 +11693,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 2061.45557,
+                "x": 2111.45557,
                 "y": 1809.20142
               },
               "OffsetMin": {
-                "x": 1961.45557,
+                "x": 1911.45557,
                 "y": 1759.20142
               },
               "Pivot": {
@@ -11705,7 +11705,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
+                "x": 200.0,
                 "y": 50.0
               },
               "UIMode": 1,
@@ -11775,7 +11775,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 20,
