@@ -1952,6 +1952,49 @@ script UIMain extends Component
 			worldTransform.Position = worldPos
 		end
 	end
+	
+	method void RestartBossSkillSprite(Entity targetEntity, boolean loopPlay)
+		if targetEntity == nil then
+			return
+		end
+		
+		local gui = targetEntity.SpriteGUIRendererComponent
+		if gui ~= nil then
+			local currentRuid = gui.ImageRUID
+			gui.Enable = false
+			gui.PlayRate = 1
+			gui.StartFrameIndex = 0
+			if loopPlay == true then
+				gui.AnimClipPlayType = SpriteAnimClipPlayType.Loop
+			else
+				gui.AnimClipPlayType = SpriteAnimClipPlayType.Onetime
+			end
+			
+			if currentRuid ~= nil and tostring(currentRuid) ~= "" then
+				gui.ImageRUID = ""
+				gui.ImageRUID = currentRuid
+			else
+				gui.ImageRUID = currentRuid
+			end
+			gui.Enable = true
+			return
+		end
+		
+		local sprite = targetEntity.SpriteRendererComponent
+		if sprite ~= nil then
+			local currentRuid = sprite.SpriteRUID
+			sprite.Enable = false
+			sprite.PlayRate = 1
+			sprite.StartFrameIndex = 0
+			if currentRuid ~= nil and tostring(currentRuid) ~= "" then
+				sprite.SpriteRUID = ""
+				sprite.SpriteRUID = currentRuid
+			else
+				sprite.SpriteRUID = currentRuid
+			end
+			sprite.Enable = true
+		end
+	end
 
 	method void UpdateBossSkillUI(string selectedType, number duration)
 		-- 기�???????��????��??(???��??경�??
@@ -2069,6 +2112,7 @@ script UIMain extends Component
 		if normalizedType == "shield" then
 			if self.uiBossSkill1Sub ~= nil then self.uiBossSkill1Sub.Enable = false end
 			if self.uiBossSkill3 ~= nil then
+				self:RestartBossSkillSprite(self.uiBossSkill3, false)
 				self.uiBossSkill3.Enable = true
 				local img = self.uiBossSkill3.SpriteGUIRendererComponent
 				if img ~= nil then img.Color = Color(1, 1, 1, 1) end
@@ -2083,6 +2127,7 @@ script UIMain extends Component
 					self.uiBossSkill3.Enable = false
 				end
 				if self.uiBossSkill3_1 ~= nil then
+					self:RestartBossSkillSprite(self.uiBossSkill3_1, true)
 					self.uiBossSkill3_1.Enable = true
 					local loopImg = self.uiBossSkill3_1.SpriteGUIRendererComponent
 					if loopImg ~= nil then loopImg.Color = Color(1, 1, 1, 1) end

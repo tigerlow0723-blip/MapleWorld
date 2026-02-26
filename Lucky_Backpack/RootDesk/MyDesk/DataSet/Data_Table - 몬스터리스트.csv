@@ -1,14 +1,14 @@
-﻿ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,goldDrop,ModelID,deathDelay,arrowOffsetY
-M_01,주니어 페페,1,200,5,,,,,,,,,,,,model://maplestorymonster$bdbbdecb893949cd88891b9175106efd,0.84,0.7
-M_02,페페,2,1000,75,,,,,,,,,,,,model://maplestorymonster$fb25f77230494175ab4347e6aeebb3d6,0.75,1
-M_03,주니어 예티,2,1000,75,,,,,,,,,,,,model://maplestorymonster$9cd5951048484659809808d24d02466b,0.81,0.9
-M_04,예티와 페페,3,2500,150,,,,,,,,,,,,model://maplestorymonster$ad6ae7c07af5413b91527816483d3847,0.6,2
-M_05,화이트팽,4,2000,70,,,,,,,,,,,,model://maplestorymonster$39405e66974e476c9057585e93932d22,0.6,0.9
-M_06,헥터,,3000,100,,,,,,,,,,,,model://maplestorymonster$75e189978d3041649e0332d1451baf49,0.72,0.9
-M_07,웨어울프,6,7500,75,,,MULTI,50,2,,,,,,,model://maplestorymonster$1a1dcf27010e4a0389f1a10d63a06f74,1.27,2.2
-M_08,쿨리좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54,1.3,1.3
-M_09,마이너좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$70813aa4bbd34dd484b7e6e01edd9271,1.3,1.3
-M_10,플라이아이,7,1500,250,,,,,,,,,,,,model://maplestorymonster$ff92a83b36034ce5962e4f4a958fab81,1.54,1
-M_11,파이어독,8,10000,75,,,,,,,,,,,,model://maplestorymonster$6dd6bf3d231b42abb58581cb22bd5057,0.78,1.2
-M_12,파이어봄,8,2500,350,,,,,,,,,,,,model://maplestorymonster$53731fb2333b412385d3085483328d43,0.78,1.2
-M_13,쿠스코,9,20000,200,,,,,,,,,,,,model://maplestorymonster$6f278d2646d54928ac52da6eb51d1612,1.05,2.7
+﻿ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,goldDrop,ModelID,deathDelay,arrowOffsetY,attackDelay
+M_01,주니어 페페,1,200,5,,,,,,,,,,,,model://maplestorymonster$bdbbdecb893949cd88891b9175106efd,0.84,0.7,0.72
+M_02,페페,2,1000,75,,,,,,,,,,,,model://maplestorymonster$fb25f77230494175ab4347e6aeebb3d6,0.75,1,0.6
+M_03,주니어 예티,2,1000,75,,,,,,,,,,,,model://maplestorymonster$9cd5951048484659809808d24d02466b,0.81,0.9,0.72
+M_04,예티와 페페,3,2500,150,,,,,,,,,,,,model://maplestorymonster$ad6ae7c07af5413b91527816483d3847,0.6,2,1.58
+M_05,화이트팽,4,2000,70,,,,,,,,,,,,model://maplestorymonster$39405e66974e476c9057585e93932d22,0.6,0.9,1.5
+M_06,헥터,,3000,100,,,,,,,,,,,,model://maplestorymonster$75e189978d3041649e0332d1451baf49,0.72,0.9,1.5
+M_07,웨어울프,6,7500,75,,,MULTI,50,2,,,,,,,model://maplestorymonster$1a1dcf27010e4a0389f1a10d63a06f74,1.27,2.2,1.81
+M_08,쿨리좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$af7a8cb915a24097968dba81aba67e54,1.3,1.3,1.5
+M_09,마이너좀비,7,5000,100,,,,,,,,,,,,model://maplestorymonster$70813aa4bbd34dd484b7e6e01edd9271,1.3,1.3,1.5
+M_10,플라이아이,7,1500,250,,,,,,,,,,,,model://maplestorymonster$ff92a83b36034ce5962e4f4a958fab81,1.54,1,0.72
+M_11,파이어독,8,10000,75,,,,,,,,,,,,model://maplestorymonster$6dd6bf3d231b42abb58581cb22bd5057,0.78,1.2,1.52
+M_12,파이어봄,8,2500,350,,,,,,,,,,,,model://maplestorymonster$53731fb2333b412385d3085483328d43,0.78,1.2,1.8
+M_13,쿠스코,9,20000,200,,,,,,,,,,,,model://maplestorymonster$6f278d2646d54928ac52da6eb51d1612,1.05,2.7,1.6
