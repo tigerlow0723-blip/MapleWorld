@@ -1083,7 +1083,17 @@ script BattleManager extends Component
 				if uiDuration == nil or uiDuration <= 0 then
 					uiDuration = self.monsterManager.lastPatternDuration
 				end
-				self.gameManager.uiMain:UpdateBossSkillUI(self.monsterManager.lastStatus, uiDuration)
+				local uiType = tostring(self.monsterManager.lastStatus or "")
+				uiType = string.gsub(uiType, "^%s+", "")
+				uiType = string.gsub(uiType, "%s+$", "")
+				if uiType == "독" then
+					uiType = "poison"
+				elseif uiType == "없음" or uiType == "" then
+					uiType = "none"
+				else
+					uiType = string.lower(uiType)
+				end
+				self.gameManager.uiMain:UpdateBossSkillUI(uiType, uiDuration)
 			end
 		end
 		
