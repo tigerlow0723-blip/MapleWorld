@@ -1439,10 +1439,24 @@ script UIMain extends Component
 		if self.uiBossSkill1Sub == nil and self.uiBossSkill1 ~= nil then
 			self.uiBossSkill1Sub = self.uiBossSkill1:GetChildByName("UISprite", true)
 		end
+
+		local normalizedType = tostring(selectedType or "")
+		normalizedType = string.gsub(normalizedType, "^%s+", "")
+		normalizedType = string.gsub(normalizedType, "%s+$", "")
+		normalizedType = string.lower(normalizedType)
+
+		-- Keep parent sprite state deterministic every time this UI opens.
+		if self.uiBossSkill1 ~= nil then
+			local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+			if parentImg ~= nil then
+				parentImg.Enable = true
+				parentImg.Color = Color(1, 1, 1, 1)
+			end
+		end
 		
 		local animDuration = duration
 		if animDuration == nil or animDuration <= 0 then
-			if selectedType == "shield" then
+			if normalizedType == "shield" then
 				animDuration = 0.81
 			else
 				animDuration = 1.5
@@ -1460,7 +1474,7 @@ script UIMain extends Component
 			if skill.entity ~= nil then
 				local img = skill.entity.SpriteGUIRendererComponent
 				if img ~= nil then
-					if skill.skillType == selectedType then
+					if skill.skillType == normalizedType then
 						-- Show and highlight only the selected skill
 						skill.entity.Enable = true
 						img.Color = Color(1, 1, 1, 1)
@@ -1473,7 +1487,7 @@ script UIMain extends Component
 		end
 		
 		-- Skill1: play parent first, then child entity.
-		if selectedType == "hp_dmg" then
+		if normalizedType == "hp_dmg" then
 			if self.uiBossSkill1Sub ~= nil then
 				self.uiBossSkill1Sub.Enable = false
 			end
@@ -1497,7 +1511,11 @@ script UIMain extends Component
 			self.skill1Timer = _TimerService:SetTimerOnce(function()
 				self.skill1Timer = nil
 				if self.uiBossSkill1 ~= nil then
-					self.uiBossSkill1.Enable = false
+					-- Keep parent entity enabled: sub sprite is its child.
+					local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+					if parentImg ~= nil then
+						parentImg.Enable = false
+					end
 				end
 				if self.uiBossSkill1Sub ~= nil then
 					self.uiBossSkill1Sub.Enable = true
@@ -1508,13 +1526,19 @@ script UIMain extends Component
 				end
 			end, parentDuration)
 		else
+			if self.uiBossSkill1 ~= nil then
+				local parentImg = self.uiBossSkill1.SpriteGUIRendererComponent
+				if parentImg ~= nil then
+					parentImg.Enable = true
+				end
+			end
 			if self.uiBossSkill1Sub ~= nil then
 				self.uiBossSkill1Sub.Enable = false
 			end
 		end
 		
 		-- ???��????????????��??처�??(1.53?????��????반�???????????��?????????
-		if selectedType == "shield" then
+		if normalizedType == "shield" then
 			if self.uiBossSkill1Sub ~= nil then self.uiBossSkill1Sub.Enable = false end
 			if self.uiBossSkill3 ~= nil then
 				self.uiBossSkill3.Enable = true
@@ -1569,7 +1593,7 @@ script UIMain extends Component
 			self.shieldTimer = _TimerService:SetTimerOnce(hideOtherSkillFunc, animDuration)
 		end
 		
-		log("[UIMain] Boss skill highlighted: " .. tostring(selectedType))
+		log("[UIMain] Boss skill highlighted: " .. tostring(normalizedType))
 	end
 
 	method void ResetBossSkillUI()
