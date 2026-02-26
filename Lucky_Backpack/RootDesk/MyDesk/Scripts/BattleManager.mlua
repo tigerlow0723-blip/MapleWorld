@@ -1052,6 +1052,8 @@ script BattleManager extends Component
 					
 					hitFunc()
 					return
+				elseif statusName == "shield" or statusName == "heal" then
+					log("[BattleManager] Boss utility skill used: " .. tostring(statusName) .. " (No damage to player)")
 				elseif statusName == "none" or statusName == nil then
 					self.playerManager:TakeDamage(self.monsterManager.lastDamage)
 				else

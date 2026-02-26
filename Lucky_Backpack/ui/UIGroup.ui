@@ -4043,7 +4043,7 @@
           "name": "ItemDisplayArea",
           "path": "/ui/UIGroup/ItemDisplayArea",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 5,
@@ -4219,7 +4219,7 @@
           "name": "RewardChest",
           "path": "/ui/UIGroup/RewardChest",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 7,
@@ -6434,7 +6434,7 @@
           "name": "stage_5_4",
           "path": "/ui/UIGroup/stage_5_4",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 14,
@@ -6898,30 +6898,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 262.0077,
-                "y": 410.661652
+                "x": 374.903076,
+                "y": 418.6206
               },
               "OffsetMin": {
-                "x": -205.0341,
-                "y": -36.85666
+                "x": -242.854675,
+                "y": -126.133804
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 467.0418,
-                "y": 447.5183
+                "x": 617.757751,
+                "y": 544.7544
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": 28.4868011,
-                "y": 186.9025
+                "x": 66.0242,
+                "y": 146.2434
               },
               "Position": {
-                "x": 28.4868011,
-                "y": 186.9025,
+                "x": 66.0242,
+                "y": 146.2434,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -6980,30 +6980,30 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 338.0579,
-                "y": -120.547104
+                "x": 409.435669,
+                "y": 3.27105713
               },
               "OffsetMin": {
-                "x": -355.4565,
-                "y": -220.5471
+                "x": -507.878052,
+                "y": -526.84845
               },
               "Pivot": {
                 "x": 0.5,
                 "y": 0.5
               },
               "RectSize": {
-                "x": 693.5144,
-                "y": 100.0
+                "x": 917.3137,
+                "y": 530.1195
               },
               "UIMode": 1,
               "UIVersion": 2,
               "anchoredPosition": {
-                "x": -8.699299,
-                "y": -170.5471
+                "x": -49.2212,
+                "y": -261.7887
               },
               "Position": {
-                "x": -8.699299,
-                "y": -170.5471,
+                "x": -49.2212,
+                "y": -261.7887,
                 "z": 0.0
               },
               "QuaternionRotation": {
@@ -7017,14 +7017,20 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": "2f2faeb8e27d4e7e987802fd89c4d0bd"
+                "DataId": "5d1fa21cf60045149f13fe6e3c489346"
               },
               "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
               "Enable": true
             },
             {
               "@type": "MOD.Core.TextComponent",
-              "Font": 1,
+              "Font": 3,
               "FontSize": 50,
               "MaxSize": 50,
               "MinSize": 10,
@@ -7033,7 +7039,7 @@
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "자격 조건이 안되니 돌아가시오.",
+              "Text": "금의 기운이 없는 자 돌아가라",
               "Enable": true
             }
           ],
@@ -7323,7 +7329,7 @@
           "name": "ShopPanel",
           "path": "/ui/UIGroup/ShopPanel",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 17,
