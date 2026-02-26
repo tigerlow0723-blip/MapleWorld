@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://a2a2ce6350f34710b0a84f1a9a266951",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/a2a2ce6350f34710b0a84f1a9a266951/639076707742394988",
+      "upload_hash": "6DF0050372A2DE0571826679D1CAD5DE717783108DEC89A5506B89775F3B9747",
+      "name": "ShopLegendaryUI",
+      "resource_guid": "a2a2ce6350f34710b0a84f1a9a266951",
+      "resource_version": "699fb3f6662b69f3b7788d5e"
+    }
+  }
+}

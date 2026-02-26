@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "sprite://ada3f76585da45298d997c18bff6ba98",
+  "ContentType": "x-mod/sprite",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.1.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "upload_keyname": "3e/a8/3ea82aec061e4c02b981fd87bf1fe68d/sprite/ada3f76585da45298d997c18bff6ba98/639076707742550049",
+      "upload_hash": "F076F8D3A41D928347D5A1D879F1269F25C44F5AD0ACE37AE0E5357264A3AC6A",
+      "name": "ShopEpicUI",
+      "resource_guid": "ada3f76585da45298d997c18bff6ba98",
+      "resource_version": "699fb3f63201639d5a990608"
+    }
+  }
+}
