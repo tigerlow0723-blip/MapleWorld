@@ -443,11 +443,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 50.0856,
+                "x": 100.0856,
                 "y": 25.0
               },
               "OffsetMin": {
-                "x": -49.9144,
+                "x": -99.9144,
                 "y": -25.0
               },
               "Pivot": {
@@ -455,7 +455,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
+                "x": 200.0,
                 "y": 50.0
               },
               "UIMode": 1,
@@ -735,11 +735,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 49.7087,
+                "x": 99.7087,
                 "y": 25.0
               },
               "OffsetMin": {
-                "x": -50.2913,
+                "x": -100.2913,
                 "y": -25.0
               },
               "Pivot": {
@@ -747,7 +747,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
+                "x": 200.0,
                 "y": 50.0
               },
               "UIMode": 1,
@@ -6583,7 +6583,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": ""
+                "DataId": "6d5a507b49764376bc71df113c5d7cf2"
               },
               "OverrideSorting": false,
               "Color": {
@@ -6671,7 +6671,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": ""
+                "DataId": "921ae100f9c7457d929dbc44e6d0dcce"
               },
               "OverrideSorting": false,
               "Color": {
@@ -6759,7 +6759,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": ""
+                "DataId": "50b5152f92cd473da0505c00063c4026"
               },
               "OverrideSorting": false,
               "Color": {
@@ -6847,7 +6847,7 @@
             {
               "@type": "MOD.Core.SpriteGUIRendererComponent",
               "ImageRUID": {
-                "DataId": ""
+                "DataId": "ec808ad55fd04cc787d06f02db1a6c39"
               },
               "OverrideSorting": false,
               "Color": {
@@ -11693,11 +11693,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 2061.45557,
+                "x": 2086.45557,
                 "y": 1809.20142
               },
               "OffsetMin": {
-                "x": 1961.45557,
+                "x": 1936.45557,
                 "y": 1759.20142
               },
               "Pivot": {
@@ -11705,7 +11705,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 100.0,
+                "x": 150.0,
                 "y": 50.0
               },
               "UIMode": 1,
@@ -11775,7 +11775,7 @@
           "name": "boss_skill",
           "path": "/ui/UIGroup/boss_skill",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 20,
@@ -11932,195 +11932,6 @@
         }
       },
       {
-        "id": "30c89844-149f-4f0b-b074-ad3073d81aee",
-        "path": "/ui/UIGroup/boss_skill/boss_skill_1",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
-        "jsonString": {
-          "name": "boss_skill_1",
-          "path": "/ui/UIGroup/boss_skill/boss_skill_1",
-          "nameEditable": true,
-          "enable": true,
-          "visible": true,
-          "localize": true,
-          "displayOrder": 1,
-          "pathConstraints": "////",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "uisprite",
-            "sub_entity_id": null,
-            "root_entity_id": "30c89844-149f-4f0b-b074-ad3073d81aee",
-            "replaced_model_id": null
-          },
-          "modelId": "uisprite",
-          "@components": [
-            {
-              "@type": "MOD.Core.UITransformComponent",
-              "AlignmentOption": 0,
-              "AnchorsMax": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "AnchorsMin": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "MobileOnly": false,
-              "OffsetMax": {
-                "x": 1813.59558,
-                "y": 1377.6626
-              },
-              "OffsetMin": {
-                "x": 1338.25427,
-                "y": 968.5188
-              },
-              "Pivot": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "RectSize": {
-                "x": 475.341248,
-                "y": 409.143738
-              },
-              "UIMode": 1,
-              "UIScale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-              },
-              "UIVersion": 2,
-              "anchoredPosition": {
-                "x": 1575.92493,
-                "y": 1173.0907
-              },
-              "Rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-              },
-              "Position": {
-                "x": 1575.92493,
-                "y": 1173.0907,
-                "z": 0.0
-              },
-              "QuaternionRotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": -1.0
-              },
-              "Scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-              },
-              "ZRotation": 0.0,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "ImageRUID": {
-                "DataId": "58e099a62e0d47569fc9109e0b8be031"
-              },
-              "OverrideSorting": false,
-              "FlipX": false,
-              "FlipY": false,
-              "RaycastTarget": true,
-              "Enable": true
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
-        "id": "06e6ee53-d4bd-487d-80a2-ff4caebad63b",
-        "path": "/ui/UIGroup/boss_skill/boss_skill_1/UISprite",
-        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
-        "jsonString": {
-          "name": "UISprite",
-          "path": "/ui/UIGroup/boss_skill/boss_skill_1/UISprite",
-          "nameEditable": true,
-          "enable": true,
-          "visible": true,
-          "localize": true,
-          "displayOrder": 0,
-          "pathConstraints": "/////",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "uisprite",
-            "sub_entity_id": null,
-            "root_entity_id": "06e6ee53-d4bd-487d-80a2-ff4caebad63b",
-            "replaced_model_id": null
-          },
-          "modelId": "uisprite",
-          "@components": [
-            {
-              "@type": "MOD.Core.UITransformComponent",
-              "AlignmentOption": 0,
-              "AnchorsMax": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "AnchorsMin": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "MobileOnly": false,
-              "OffsetMax": {
-                "x": -776.4341,
-                "y": -34.60788
-              },
-              "OffsetMin": {
-                "x": -1062.75037,
-                "y": -279.5721
-              },
-              "Pivot": {
-                "x": 0.5,
-                "y": 0.5
-              },
-              "RectSize": {
-                "x": 286.316254,
-                "y": 244.964233
-              },
-              "UIMode": 1,
-              "UIVersion": 2,
-              "anchoredPosition": {
-                "x": -919.5922,
-                "y": -157.09
-              },
-              "Position": {
-                "x": -919.5922,
-                "y": -157.09,
-                "z": 0.0
-              },
-              "QuaternionRotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteGUIRendererComponent",
-              "ImageRUID": {
-                "DataId": "f32e67c3c37d49cfa4a21cac6df816e0"
-              },
-              "OverrideSorting": false,
-              "Color": {
-                "r": 0.9199219,
-                "g": 0.802931368,
-                "b": 0.540813446,
-                "a": 0.7558594
-              },
-              "Enable": true
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
         "id": "240b4929-9578-4fe5-a158-2d821220631d",
         "path": "/ui/UIGroup/boss_skill/boss_skill_2",
         "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
@@ -12131,7 +11942,7 @@
           "enable": true,
           "visible": true,
           "localize": true,
-          "displayOrder": 2,
+          "displayOrder": 1,
           "pathConstraints": "////",
           "revision": 1,
           "origin": {
@@ -12217,6 +12028,394 @@
                 "r": 1.0,
                 "g": 1.0,
                 "b": 1.0,
+                "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "378c4ed3-ffc2-47cb-bd13-b05d4e099a4d",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "boss_skill_2_dotfx",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "378c4ed3-ffc2-47cb-bd13-b05d4e099a4d",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 695.92395,
+                "y": 1265.22058
+              },
+              "OffsetMin": {
+                "x": 562.9955,
+                "y": 1101.94836
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 132.928482,
+                "y": 163.272186
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 629.4597,
+                "y": 1183.58447
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 629.4597,
+                "y": 1183.58447,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": ""
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 0.0
+              },
+              "FlipX": false,
+              "Type": 1,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "71776933-0962-47bd-8506-125058fcc550",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_1",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "stack_1",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_1",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "71776933-0962-47bd-8506-125058fcc550",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 117.5356,
+                "y": 100.1132
+              },
+              "OffsetMin": {
+                "x": -82.4644,
+                "y": -99.8868
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 17.5355988,
+                "y": 0.113200188
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 17.5355988,
+                "y": 0.113200188,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "18911a48632c484da55ef382e6740e4f"
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 1.0,
+                "g": 0.57421875,
+                "b": 0.0,
+                "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "c6faa66f-2022-429c-9ef4-c81c034db595",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_2",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "stack_2",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_2",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 1,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "71776933-0962-47bd-8506-125058fcc550",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 117.5356,
+                "y": 100.1132
+              },
+              "OffsetMin": {
+                "x": -82.4644,
+                "y": -99.8868
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 17.5355988,
+                "y": 0.113200188
+              },
+              "Position": {
+                "x": 17.5355988,
+                "y": 0.113200188,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "e8984765070e4ce284390fb19823fb83"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Color": {
+                "r": 1.0,
+                "g": 0.57421875,
+                "b": 0.0,
+                "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "82b7c5c5-447e-42b2-991e-8273e7f1a83b",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_3",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "stack_3",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_2_dotfx/stack_3",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 2,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "71776933-0962-47bd-8506-125058fcc550",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 117.5356,
+                "y": 100.1132
+              },
+              "OffsetMin": {
+                "x": -82.4644,
+                "y": -99.8868
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 200.0,
+                "y": 200.0
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 17.5355988,
+                "y": 0.113200188
+              },
+              "Position": {
+                "x": 17.5355988,
+                "y": 0.113200188,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "a633618f5aa542f0b3146cb5832ef122"
+              },
+              "OverrideSorting": false,
+              "SortingLayer": "MapLayer0",
+              "Color": {
+                "r": 1.0,
+                "g": 0.57421875,
+                "b": 0.0,
                 "a": 1.0
               },
               "Enable": true
@@ -12413,6 +12612,195 @@
                 "g": 1.0,
                 "b": 1.0,
                 "a": 1.0
+              },
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "30c89844-149f-4f0b-b074-ad3073d81aee",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_1",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "boss_skill_1",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_1",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 5,
+          "pathConstraints": "////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "30c89844-149f-4f0b-b074-ad3073d81aee",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": 1813.59558,
+                "y": 1377.6626
+              },
+              "OffsetMin": {
+                "x": 1338.25427,
+                "y": 968.5188
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 475.341248,
+                "y": 409.143738
+              },
+              "UIMode": 1,
+              "UIScale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": 1575.92493,
+                "y": 1173.0907
+              },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "Position": {
+                "x": 1575.92493,
+                "y": 1173.0907,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": -1.0
+              },
+              "Scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "ZRotation": 0.0,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "58e099a62e0d47569fc9109e0b8be031"
+              },
+              "OverrideSorting": false,
+              "FlipX": false,
+              "FlipY": false,
+              "RaycastTarget": true,
+              "Enable": true
+            }
+          ],
+          "@version": 1
+        }
+      },
+      {
+        "id": "06e6ee53-d4bd-487d-80a2-ff4caebad63b",
+        "path": "/ui/UIGroup/boss_skill/boss_skill_1/UISprite",
+        "componentNames": "MOD.Core.UITransformComponent,MOD.Core.SpriteGUIRendererComponent",
+        "jsonString": {
+          "name": "UISprite",
+          "path": "/ui/UIGroup/boss_skill/boss_skill_1/UISprite",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": true,
+          "displayOrder": 0,
+          "pathConstraints": "/////",
+          "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "uisprite",
+            "sub_entity_id": null,
+            "root_entity_id": "06e6ee53-d4bd-487d-80a2-ff4caebad63b",
+            "replaced_model_id": null
+          },
+          "modelId": "uisprite",
+          "@components": [
+            {
+              "@type": "MOD.Core.UITransformComponent",
+              "AlignmentOption": 0,
+              "AnchorsMax": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "AnchorsMin": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "MobileOnly": false,
+              "OffsetMax": {
+                "x": -776.4341,
+                "y": -34.60788
+              },
+              "OffsetMin": {
+                "x": -1062.75037,
+                "y": -279.5721
+              },
+              "Pivot": {
+                "x": 0.5,
+                "y": 0.5
+              },
+              "RectSize": {
+                "x": 286.316254,
+                "y": 244.964233
+              },
+              "UIMode": 1,
+              "UIVersion": 2,
+              "anchoredPosition": {
+                "x": -919.5922,
+                "y": -157.09
+              },
+              "Position": {
+                "x": -919.5922,
+                "y": -157.09,
+                "z": 0.0
+              },
+              "QuaternionRotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteGUIRendererComponent",
+              "ImageRUID": {
+                "DataId": "f32e67c3c37d49cfa4a21cac6df816e0"
+              },
+              "OverrideSorting": false,
+              "Color": {
+                "r": 0.9199219,
+                "g": 0.802931368,
+                "b": 0.540813446,
+                "a": 0.7558594
               },
               "Enable": true
             }
@@ -16144,6 +16532,9 @@
                 "b": 0.0,
                 "a": 1.0
               },
+              "FontSize": 30,
+              "MaxSize": 40,
+              "MinSize": 10,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -16243,6 +16634,9 @@
                 "b": 0.0,
                 "a": 1.0
               },
+              "FontSize": 30,
+              "MaxSize": 40,
+              "MinSize": 10,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
@@ -16343,12 +16737,15 @@
                 "b": 0.0,
                 "a": 1.0
               },
+              "FontSize": 30,
+              "MaxSize": 40,
+              "MinSize": 10,
               "OutlineDistance": {
                 "x": 1.0,
                 "y": -1.0
               },
               "OverrideSorting": false,
-              "Text": "보스턴",
+              "Text": "보스 턴",
               "Enable": true
             }
           ],
@@ -16448,7 +16845,7 @@
           "name": "scroll",
           "path": "/ui/UIGroup/scroll",
           "nameEditable": true,
-          "enable": true,
+          "enable": false,
           "visible": true,
           "localize": true,
           "displayOrder": 30,

@@ -1,5 +1,5 @@
 ﻿ID,name,Spawn_Group,HP,ATK,DEF,dodge,patternId,patternProb,atkCount,status,dotDmg,dotTurn,rewardExp,rewardGold,goldDrop,ModelID,deathDelay,arrowOffsetY
-M_01,주니어 페페,1,200,5,,,POISON,100,,,5,4,,,,model://maplestorymonster$bdbbdecb893949cd88891b9175106efd,0.84,0.7
+M_01,주니어 페페,1,200,5,,,,,,,,,,,,model://maplestorymonster$bdbbdecb893949cd88891b9175106efd,0.84,0.7
 M_02,페페,2,1000,75,,,,,,,,,,,,model://maplestorymonster$fb25f77230494175ab4347e6aeebb3d6,0.75,1
 M_03,주니어 예티,2,1000,75,,,,,,,,,,,,model://maplestorymonster$9cd5951048484659809808d24d02466b,0.81,0.9
 M_04,예티와 페페,3,2500,150,,,,,,,,,,,,model://maplestorymonster$ad6ae7c07af5413b91527816483d3847,0.6,2

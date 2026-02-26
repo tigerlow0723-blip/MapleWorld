@@ -987,6 +987,12 @@
                 "EntityId": "96b3e94d-e2a1-496f-993c-487873f12e40",
                 "Version2": false
               },
+              "uiBossSkill2DotFx": {
+                "tempEntityId": null,
+                "IsRelative": false,
+                "EntityId": "378c4ed3-ffc2-47cb-bd13-b05d4e099a4d",
+                "Version2": false
+              },
               "btnTurnEnd": {
                 "tempEntityId": null,
                 "IsRelative": false,
