@@ -354,10 +354,10 @@ script MonsterManager extends Component
 						end, 1.5)
 					end, currentDelay)
 				else
-					-- Boss Dead (Phase 3 defeated) - play die animation then destroy
+					-- Boss Dead (Phase 3 defeated) - play die2 animation then destroy
 					if oldEntityId ~= nil then
 						self.isDyingAnimating = true
-						self:PlayEntityState(oldEntityId, "DIE", 0)
+						self:PlayEntityState(oldEntityId, "DIE2", 0)
 						local capturedId = oldEntityId
 						local delay = monster.deathDelayPhase3 or 1.5
 						_TimerService:SetTimerOnce(function()
@@ -1085,6 +1085,12 @@ script MonsterManager extends Component
 			else
 				sheetKey = idleKey
 			end
+		elseif stateName == "DIE2" then
+			if sheet["die2"] ~= nil then
+				sheetKey = "die2"
+			else
+				sheetKey = "die"
+			end
 		elseif stateName == "DIE" then
 			sheetKey = "die"
 		end
@@ -1112,7 +1118,7 @@ script MonsterManager extends Component
 			end
 		end
 		
-		if duration > 0 and stateName ~= "DIE" then
+		if duration > 0 and stateName ~= "DIE" and stateName ~= "DIE2" then
 			local capturedToken = stateToken
 			local capturedEntityKey = entityKey
 			_TimerService:SetTimerOnce(function()
