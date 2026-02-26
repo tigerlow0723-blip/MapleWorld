@@ -1948,10 +1948,6 @@ script InventoryUI extends Component
 		        return false
 		    end
 		
-		    if self.dragState.originRow <= 0 or self.dragState.originCol <= 0 then
-		        return false
-		    end
-		
 		    local shopEntity = _EntityService:GetEntityByPath(self.shopPanelPath)
 		    if shopEntity == nil or shopEntity.ShopUI == nil then
 		        return false
@@ -1968,6 +1964,14 @@ script InventoryUI extends Component
 		    local sold = shopEntity.ShopUI:SellItemById(itemEntity.Item.itemId)
 		    if sold == false then
 		        return false
+		    end
+
+		    local draggedFromDisplayArea = (self.dragState.originRow <= 0 or self.dragState.originCol <= 0)
+		    if draggedFromDisplayArea == true then
+		        local displayArea = gameSystem.GameManager.itemDisplayArea
+		        if displayArea ~= nil and displayArea.RemoveItem ~= nil then
+		            displayArea:RemoveItem(itemEntity)
+		        end
 		    end
 		
 		    if isvalid(itemEntity) then
