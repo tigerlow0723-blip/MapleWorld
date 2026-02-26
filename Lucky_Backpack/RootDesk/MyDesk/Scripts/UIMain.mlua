@@ -139,6 +139,8 @@ script UIMain extends Component
 
 	property Entity btnRetry = nil
 
+	property Entity btnClearRestart = nil
+
 	property string scrollPanelPath = "/ui/UIGroup/ScrollPanel"
 
 	property string itemDisplayAreaPath = "/ui/UIGroup/ItemDisplayArea"
@@ -372,6 +374,8 @@ script UIMain extends Component
 		
 		log("[UIMain] Auto-resolve: Success=" .. tostring(self.uiStage5_Success ~= nil) .. " Fail=" .. tostring(self.uiStage5_Fail ~= nil) .. " SuccessRoll=" .. tostring(self.uiStage5_SuccessRoll ~= nil) .. " FailRoll=" .. tostring(self.uiStage5_FailRoll ~= nil))
 		
+		self:ResolveClearUI()
+		self:ResolveFailUI()
 		self:ResolvePlayerCoinUI()
 	end
 
@@ -383,6 +387,53 @@ script UIMain extends Component
 			self.txtPlayerCoin = _EntityService:GetEntityByPath(self.playerCoinTextPath)
 			if self.txtPlayerCoin == nil and self.uiPlayerCoinPanel ~= nil then
 				self.txtPlayerCoin = self.uiPlayerCoinPanel:GetChildByName("TxtPlayerCoin", true)
+			end
+		end
+	end
+
+	method void ResolveClearUI()
+		if self.uiClear == nil then
+			self.uiClear = _EntityService:GetEntityByPath("/ui/UIGroup/Clear")
+			if self.uiClear == nil then
+				self.uiClear = _EntityService:GetEntityByPath("/ui/UIGroup/clear")
+			end
+		end
+		
+		if self.btnClearRestart == nil then
+			if self.uiClear ~= nil then
+				self.btnClearRestart = self.uiClear:GetChildByName("restart", true)
+				if self.btnClearRestart == nil then
+					self.btnClearRestart = self.uiClear:GetChildByName("retry", true)
+				end
+			end
+			
+			if self.btnClearRestart == nil then
+				self.btnClearRestart = _EntityService:GetEntityByPath("/ui/UIGroup/Clear/restart")
+			end
+			if self.btnClearRestart == nil then
+				self.btnClearRestart = _EntityService:GetEntityByPath("/ui/UIGroup/clear/restart")
+			end
+		end
+	end
+
+	method void ResolveFailUI()
+		if self.uiFail == nil then
+			self.uiFail = _EntityService:GetEntityByPath("/ui/UIGroup/fail")
+		end
+		
+		if self.btnRetry == nil then
+			if self.uiFail ~= nil then
+				self.btnRetry = self.uiFail:GetChildByName("restart", true)
+				if self.btnRetry == nil then
+					self.btnRetry = self.uiFail:GetChildByName("retry", true)
+				end
+			end
+			
+			if self.btnRetry == nil then
+				self.btnRetry = _EntityService:GetEntityByPath("/ui/UIGroup/fail/restart")
+			end
+			if self.btnRetry == nil then
+				self.btnRetry = _EntityService:GetEntityByPath("/ui/UIGroup/fail/retry")
 			end
 		end
 	end
@@ -469,6 +520,40 @@ script UIMain extends Component
 		end
 		
 		-- ????��??버�??
+		self:ResolveClearUI()
+		if self.btnClearRestart ~= nil then
+			self.btnClearRestart:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
+				self:HideClearUI()
+				if self.gameManager ~= nil and self.gameManager.ReturnToLobbyFromFail ~= nil then
+					self.gameManager:ReturnToLobbyFromFail()
+				elseif self.gameManager ~= nil and self.gameManager.ShowMainMenuTitle ~= nil then
+					self.gameManager:ShowMainMenuTitle()
+				else
+					self:ShowMainMenu()
+				end
+			end)
+		else
+			log_warning("[UIMain] Clear restart button not found. Expected /ui/UIGroup/Clear/restart")
+		end
+		
+		self:ResolveFailUI()
+		if self.btnRetry ~= nil then
+			self.btnRetry:ConnectEvent("ButtonClickEvent", function()
+				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
+				self:HideFailUI()
+				if self.gameManager ~= nil and self.gameManager.ReturnToLobbyFromFail ~= nil then
+					self.gameManager:ReturnToLobbyFromFail()
+				elseif self.gameManager ~= nil and self.gameManager.ShowMainMenuTitle ~= nil then
+					self.gameManager:ShowMainMenuTitle()
+				else
+					self:ShowMainMenu()
+				end
+			end)
+		else
+			log_warning("[UIMain] Retry button not found. Expected /ui/UIGroup/fail/restart")
+		end
+		
 		if self.btnTurnEnd ~= nil then
 			self.btnTurnEnd:ConnectEvent("ButtonClickEvent", function()
 				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end 
@@ -2089,16 +2174,32 @@ script UIMain extends Component
 	end
 
 	method void ShowClearUI()
+		self:ResolveClearUI()
 		if self.uiClear ~= nil then
 			self.uiClear.Enable = true
 			self.uiClear:SetVisible(true)
 		end
 	end
 
+	method void HideClearUI()
+		if self.uiClear ~= nil then
+			self.uiClear.Enable = false
+			self.uiClear:SetVisible(false)
+		end
+	end
+
 	method void ShowFailUI()
+		self:ResolveFailUI()
 		if self.uiFail ~= nil then
 			self.uiFail.Enable = true
 			self.uiFail:SetVisible(true)
+		end
+	end
+
+	method void HideFailUI()
+		if self.uiFail ~= nil then
+			self.uiFail.Enable = false
+			self.uiFail:SetVisible(false)
 		end
 	end
 

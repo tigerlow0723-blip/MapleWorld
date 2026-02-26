@@ -1304,7 +1304,8 @@ script BattleManager extends Component
 		log("========================================")
 		
 		--
-		self.monsterManager:ClearAll(true)
+		local skipDestroy = (result == "Victory")
+		self.monsterManager:ClearAll(skipDestroy)
 		self.playerDotEffects = {}
 		
 		--
