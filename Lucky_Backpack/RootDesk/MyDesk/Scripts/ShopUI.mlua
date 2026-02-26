@@ -207,6 +207,22 @@ script ShopUI extends Component
 	end
 
 	@ExecSpace("ClientOnly")
+	method integer GetRandomInt(integer minVal, integer maxVal)
+		    local low = tonumber(minVal) or 0
+		    local high = tonumber(maxVal) or low
+		    if high < low then
+		        local temp = low
+		        low = high
+		        high = temp
+		    end
+		    local randomValue = _UtilLogic:RandomIntegerRange(low, high)
+		    if randomValue ~= nil then
+		        return tonumber(randomValue) or low
+		    end
+		    return math.random(low, high)
+	end
+
+	@ExecSpace("ClientOnly")
 	method void GenerateShopItems()
 		    self:RollShopTier()
 		
@@ -232,7 +248,7 @@ script ShopUI extends Component
 		    end
 		
 		    for i = 1, spawnCount do
-		        local randomIdx = math.random(1, #pool)
+		        local randomIdx = self:GetRandomInt(1, #pool)
 		        table.insert(self.shopItems, pool[randomIdx])
 		        table.remove(pool, randomIdx)
 		    end
@@ -390,7 +406,7 @@ script ShopUI extends Component
 
 	@ExecSpace("ClientOnly")
 	method void RollShopTier()
-		    local rand = math.random(1, 100)
+		    local rand = self:GetRandomInt(1, 100)
 		    if rand <= 50 then
 		        self.currentShopTier = "Rare"
 		    elseif rand <= 75 then

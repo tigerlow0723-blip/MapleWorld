@@ -23,7 +23,10 @@ script RewardManager extends Component
 	end
 
 	method void GenerateRewards(integer stageId, any dataMgr)
-		local dropCount = math.random(3, 5)
+		local dropCount = _UtilLogic:RandomIntegerRange(3, 5)
+		if dropCount == nil then
+			dropCount = math.random(3, 5)
+		end
 		log("[RewardManager] 보상 아이템 " .. tostring(dropCount) .. "개 생성")
 		
 		self.droppedItems = self.itemManager:GenerateDropItems(stageId, dropCount, dataMgr)
