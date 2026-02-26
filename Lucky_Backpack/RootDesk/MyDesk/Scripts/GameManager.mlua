@@ -660,7 +660,7 @@ script GameManager extends Component
 		self.canEndPreparation = false
 		self.isStageTransitioning = false
 		self.pendingStageAdvance = false
-		self.currentStage = 10
+		self.currentStage = 1
 		self.hasStagePlayerAnchor = false
 		if self.monsterManager ~= nil and self.monsterManager.ClearAll ~= nil then
 			self.monsterManager:ClearAll()

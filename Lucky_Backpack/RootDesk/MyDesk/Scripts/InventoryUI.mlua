@@ -1730,7 +1730,12 @@ script InventoryUI extends Component
 		    if inventory ~= nil and itemComp:IsPlaced() then
 		        local itemW = math.max(1, tonumber(itemComp.width) or 1)
 		        local itemH = math.max(1, tonumber(itemComp.height) or 1)
-		        inventory:RemoveItemAt(itemComp.itemId, itemComp.gridRow, itemComp.gridCol, itemW, itemH)
+		        local removed = inventory:RemoveItemAt(itemComp.itemId, itemComp.gridRow, itemComp.gridCol, itemW, itemH)
+		        if removed == false then
+		            -- Keep drag in pre-activation state when source remove fails to avoid inventory desync.
+		            log_warning("[InventoryUI] ActivateDragVisual failed to remove source item. itemId=" .. tostring(itemComp.itemId) .. " row=" .. tostring(itemComp.gridRow) .. " col=" .. tostring(itemComp.gridCol))
+		            return
+		        end
 		        local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
 		        if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
 		            gameSystem.PlayerManager:SyncInventoryFromGrid()
@@ -2043,17 +2048,23 @@ script InventoryUI extends Component
 		    local inventory = self.Entity.Inventory
 		    if inventory ~= nil and self.dragState.originRow > 0 and self.dragState.originCol > 0 then
 		        local shapeCells = itemComp:GetShapeCells()
-		        local placed = inventory:PlaceItem(self.dragState.originRow, self.dragState.originCol, itemComp.itemId, shapeCells)
-		        if placed then
-		            itemComp:SetGridPosition(self.dragState.originRow, self.dragState.originCol)
-		            self:SnapItemToGrid(itemEntity, self.dragState.originRow, self.dragState.originCol, itemComp.width, itemComp.height, shapeCells)
-		            self:SyncShapeHitModeWithParent(itemEntity, self.Entity)
-		            local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
-		            if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
-		                gameSystem.PlayerManager:SyncInventoryFromGrid()
+		        local canPlace = false
+		        if inventory.CanPlace ~= nil then
+		            canPlace = inventory:CanPlace(self.dragState.originRow, self.dragState.originCol, shapeCells)
+		        end
+		        if canPlace == true then
+		            local placed = inventory:PlaceItem(self.dragState.originRow, self.dragState.originCol, itemComp.itemId, shapeCells)
+		            if placed then
+		                itemComp:SetGridPosition(self.dragState.originRow, self.dragState.originCol)
+		                self:SnapItemToGrid(itemEntity, self.dragState.originRow, self.dragState.originCol, itemComp.width, itemComp.height, shapeCells)
+		                self:SyncShapeHitModeWithParent(itemEntity, self.Entity)
+		                local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		                if gameSystem ~= nil and gameSystem.PlayerManager ~= nil then
+		                    gameSystem.PlayerManager:SyncInventoryFromGrid()
+		                end
+		                self:EmitInventoryChangedEvent()
+		                return
 		            end
-		            self:EmitInventoryChangedEvent()
-		            return
 		        end
 		    end
 		
