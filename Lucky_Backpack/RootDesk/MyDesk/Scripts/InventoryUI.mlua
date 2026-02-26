@@ -163,10 +163,7 @@ script InventoryUI extends Component
 		        for i = #children, 1, -1 do
 		            local child = children[i]
 		            if child ~= nil and child.Item ~= nil then
-		                local name = child.Name or ""
-		                if string.sub(name, 1, 14) == "InventoryItem_" then
-		                    child:Destroy()
-		                end
+		                child:Destroy()
 		            end
 		        end
 		    end

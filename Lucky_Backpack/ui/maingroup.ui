@@ -21,7 +21,7 @@
           "name": "maingroup",
           "path": "/ui/maingroup",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 4,
@@ -244,6 +244,11 @@
                 "x": 669.9663,
                 "y": -425.2886
               },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 270.0
+              },
               "Position": {
                 "x": 669.9663,
                 "y": -425.2886,
@@ -252,9 +257,10 @@
               "QuaternionRotation": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "z": 0.707106948,
+                "w": -0.7071066
               },
+              "ZRotation": 270.0,
               "Enable": true
             },
             {
@@ -371,6 +377,11 @@
                 "x": 826.0881,
                 "y": -425.2886
               },
+              "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 270.0
+              },
               "Position": {
                 "x": 826.0881,
                 "y": -425.2886,
@@ -379,9 +390,10 @@
               "QuaternionRotation": {
                 "x": 0.0,
                 "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "z": 0.707106948,
+                "w": -0.7071066
               },
+              "ZRotation": 270.0,
               "Enable": true
             },
             {

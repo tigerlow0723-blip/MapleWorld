@@ -244,6 +244,56 @@ script GameManager extends Component
 		end
 	end
 
+	method void RebuildInventoryUIFromGrid()
+		self:ForceClearInventoryVisuals()
+		
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil or inventoryPanel.InventoryUI == nil then
+			return
+		end
+		
+		if inventoryPanel.InventoryUI.RebuildItemsFromGrid ~= nil then
+			inventoryPanel.InventoryUI:RebuildItemsFromGrid()
+		end
+		if inventoryPanel.InventoryUI.RenderGrid ~= nil then
+			inventoryPanel.InventoryUI:RenderGrid()
+		end
+	end
+
+	@ExecSpace("Client")
+	method void ForceClearInventoryVisuals()
+		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
+		if inventoryPanel == nil then
+			return
+		end
+		
+		local inventoryUI = inventoryPanel.InventoryUI
+		if inventoryUI ~= nil then
+			if inventoryUI.ClearAllTooltipTimers ~= nil then
+				inventoryUI:ClearAllTooltipTimers()
+			end
+			if inventoryUI.HideTooltip ~= nil then
+				inventoryUI:HideTooltip()
+			end
+		end
+		
+		local children = inventoryPanel.Children
+		if children ~= nil then
+			for i = #children, 1, -1 do
+				local child = children[i]
+				if child ~= nil and child.Item ~= nil then
+					child:Destroy()
+				end
+			end
+		end
+		
+		if inventoryUI ~= nil then
+			if inventoryUI.RenderGrid ~= nil then
+				inventoryUI:RenderGrid()
+			end
+		end
+	end
+
 	method Entity ResolveIntroGroup()
 		if self.introGroupEntity ~= nil then
 			return self.introGroupEntity
@@ -610,7 +660,7 @@ script GameManager extends Component
 		self.canEndPreparation = false
 		self.isStageTransitioning = false
 		self.pendingStageAdvance = false
-		self.currentStage = 10
+		self.currentStage = 1
 		self.hasStagePlayerAnchor = false
 		if self.monsterManager ~= nil and self.monsterManager.ClearAll ~= nil then
 			self.monsterManager:ClearAll()
@@ -623,6 +673,8 @@ script GameManager extends Component
 		end
 		self.playerManager:InitPlayer(classId, self.dataManager)
 		self:ResetLocalPlayerVisualState()
+		self:ForceClearInventoryVisuals()
+		self:RebuildInventoryUIFromGrid()
 		
 		self.playerManager.isInitializingItems = true
 		
@@ -1778,17 +1830,10 @@ script GameManager extends Component
 			self.playerManager:InitPlayer(resetClassId, self.dataManager)
 			self.playerManager.isInitializingItems = false
 		end
+		self:ForceClearInventoryVisuals()
 		self:ResetLocalPlayerVisualState()
 		
-		local inventoryPanel = _EntityService:GetEntityByPath("/ui/UIGroup/InventoryPanel")
-		if inventoryPanel ~= nil and inventoryPanel.InventoryUI ~= nil then
-			if inventoryPanel.InventoryUI.RebuildItemsFromGrid ~= nil then
-				inventoryPanel.InventoryUI:RebuildItemsFromGrid()
-			end
-			if inventoryPanel.InventoryUI.RenderGrid ~= nil then
-				inventoryPanel.InventoryUI:RenderGrid()
-			end
-		end
+		self:RebuildInventoryUIFromGrid()
 		
 		if self.uiMain ~= nil then
 			if self.uiMain.ClearItemDisplayAreaDelayTimer ~= nil then
