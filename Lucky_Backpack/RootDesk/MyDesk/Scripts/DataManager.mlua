@@ -393,6 +393,19 @@ script DataManager extends Component
 				data.modelID = ds:GetCell(i, "ModelID") or ""
 				data.deathDelay = tonumber(ds:GetCell(i, "deathDelay")) or 0.7
 				data.arrowOffsetY = tonumber(ds:GetCell(i, "arrowOffsetY")) or 1.2
+				
+				local attackDelayText = self:GetCellString(ds, i, "attackDelay", "attack_delay")
+				if attackDelayText == "" then
+					attackDelayText = self:GetCellString(ds, i, "atkDelay", "atk_delay")
+				end
+				if attackDelayText == "" then
+					attackDelayText = self:GetCellString(ds, i, "공격딜레이", "공격 딜레이")
+				end
+				data.attackDelay = tonumber(attackDelayText) or 1.0
+				if data.attackDelay < 0 then
+					data.attackDelay = 0
+				end
+				
 				self.MonsterTable[id] = data
 			end
 		end

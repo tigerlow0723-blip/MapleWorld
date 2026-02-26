@@ -26,6 +26,10 @@ script BattleManager extends Component
 	property table playerDotEffects = {}
 
 	property integer deferredTargetInitTimerId = 0
+	
+	property number defaultNormalMonsterAttackDelay = 1.0
+	
+	property number normalMonsterImpactSpacing = 0.3
 
 	method void RefreshUI()
 		if self.gameManager ~= nil and self.gameManager.uiMain ~= nil then
@@ -940,10 +944,309 @@ script BattleManager extends Component
 			end
 			
 			self.playerManager:TickBuffs()
-			self.monsterTurnIndex = 0
-			self:ExecuteNextMonsterAction()
+			if self.monsterManager ~= nil and self.monsterManager.isBossBattle == true then
+				self.monsterTurnIndex = 0
+				self:ExecuteNextMonsterAction()
+			else
+				self:ExecuteNormalMonsterTurn()
+			end
 		end)
 	end
+	
+	method table BuildNormalMonsterActionSnapshot(integer monsterIndex)
+		if self.monsterManager == nil or self.monsterManager.monsterList == nil then
+			return nil
+		end
+		
+		local monster = self.monsterManager.monsterList[monsterIndex]
+		if monster == nil then
+			return nil
+		end
+		
+		local action = {}
+		action.monsterIndex = monsterIndex
+		action.monsterId = monster.id or ""
+		action.monsterName = monster.name or ""
+		action.status = self.monsterManager.lastStatus or "none"
+		action.damage = self.monsterManager.lastDamage or 0
+		action.dotDmg = self.monsterManager.lastDotDmg or 0
+		action.dotTurn = self.monsterManager.lastDotTurn or 0
+		action.hitCount = self.monsterManager.lastHitCount or 1
+		
+		local delay = tonumber(monster.attackDelay)
+		if delay == nil then
+			delay = tonumber(self.defaultNormalMonsterAttackDelay) or 1.0
+		end
+		if delay < 0 then
+			delay = 0
+		end
+		action.impactDelay = delay
+		
+		return action
+	end
+	
+	method void PlayNormalMonsterAttackSFX(table action)
+		local gameSystem = _EntityService:GetEntityByPath("/maps/map01/GameSystem")
+		if gameSystem == nil or gameSystem.SoundManager == nil then
+			return
+		end
+		
+		local monsterId = ""
+		if action ~= nil and action.monsterId ~= nil then
+			monsterId = tostring(action.monsterId)
+		end
+		
+		if monsterId ~= "" and gameSystem.SoundManager.PlaySFXByTitle ~= nil then
+			gameSystem.SoundManager:PlaySFXByTitle("monster_atk_" .. monsterId, 3001)
+		else
+			gameSystem.SoundManager:PlaySFX(3001)
+		end
+	end
+	
+	method void RestoreNormalMonsterIdleState(table action)
+		if action == nil then
+			return
+		end
+		if self.monsterManager == nil or self.monsterManager.monsterList == nil then
+			return
+		end
+		
+		local idx = tonumber(action.monsterIndex) or 0
+		if idx <= 0 then
+			return
+		end
+		
+		local monster = self.monsterManager.monsterList[idx]
+		if monster == nil or monster.alive ~= true then
+			return
+		end
+		
+		local animTargetId = monster.animEntityId
+		if animTargetId == nil or animTargetId == "" then
+			animTargetId = monster.entityId
+		end
+		if animTargetId == nil or animTargetId == "" then
+			return
+		end
+		
+		self.monsterManager:PlayEntityState(animTargetId, "STAND", 0)
+	end
+	
+	method void ApplyMonsterActionSnapshot(table action, any onDone)
+		if action == nil then
+			if onDone ~= nil then
+				onDone()
+			end
+			return
+		end
+		
+		self:PlayNormalMonsterAttackSFX(action)
+		
+		local rawStatusName = action.status
+		local statusName = nil
+		local effectValue = action.damage or 0
+		
+		if rawStatusName ~= nil then
+			statusName = tostring(rawStatusName)
+			statusName = string.gsub(statusName, "^%s+", "")
+			statusName = string.gsub(statusName, "%s+$", "")
+		end
+		
+		if statusName == nil or statusName == "" then
+			statusName = "none"
+		elseif statusName == "독" then
+			statusName = "poison"
+		elseif statusName == "없음" then
+			statusName = "none"
+		else
+			statusName = string.lower(statusName)
+		end
+		
+		if statusName == "hp_dmg" then
+			local maxHP = self.playerManager.maxHP or self.playerManager.hp
+			local dmg = math.floor(maxHP * (effectValue / 100.0))
+			self.playerManager:TakeDamage(dmg)
+		elseif statusName == "poison" then
+			local dotTurnVal = action.dotTurn or 1
+			if dotTurnVal <= 0 then
+				dotTurnVal = 1
+			end
+			
+			local dot = {}
+			dot.status = "poison"
+			dot.remainTurn = dotTurnVal
+			
+			local dmgPerTurn = math.floor(action.dotDmg or 0)
+			if dmgPerTurn > 0 then
+				dot.dmg = dmgPerTurn
+				self.playerDotEffects[#self.playerDotEffects + 1] = dot
+				log("[BattleManager] Monster poison applied: " .. tostring(dmgPerTurn) .. " x " .. tostring(dotTurnVal) .. " turns")
+			end
+		elseif statusName == "multi" then
+			local hitCount = action.hitCount or 1
+			if hitCount <= 0 then hitCount = 1 end
+			local oneHitDamage = action.damage or 0
+			local hitIndex = 0
+			
+			local hitFunc = nil
+			hitFunc = function()
+				hitIndex += 1
+				self.playerManager:TakeDamage(oneHitDamage)
+				self:RefreshUI()
+				
+				if self.playerManager.isDead == true then
+					self:EndBattle("Defeat")
+					return
+				end
+				
+				if hitIndex < hitCount then
+					self.monsterTurnTimerId = _TimerService:SetTimerOnce(hitFunc, 0.12)
+				else
+					self:RestoreNormalMonsterIdleState(action)
+					if onDone ~= nil then
+						onDone()
+					end
+				end
+			end
+			
+			hitFunc()
+			return
+		elseif statusName == "shield" or statusName == "heal" then
+			log("[BattleManager] Boss utility skill used: " .. tostring(statusName) .. " (No damage to player)")
+		elseif statusName == "none" or statusName == nil then
+			self.playerManager:TakeDamage(effectValue)
+		else
+			log_warning("[BattleManager] Unknown monster status: " .. tostring(action.status) .. ", fallback to normal damage")
+			self.playerManager:TakeDamage(effectValue)
+		end
+		
+		self:RestoreNormalMonsterIdleState(action)
+		
+		self:RefreshUI()
+		if self.playerManager.isDead == true then
+			self:EndBattle("Defeat")
+			return
+		end
+		
+		if onDone ~= nil then
+			onDone()
+		end
+	end
+	
+	method void ExecuteNormalMonsterTurn()
+		if self.monsterManager == nil or self.monsterManager.monsterList == nil then
+			self:OnMonsterTurnEnd()
+			return
+		end
+		
+		local monsterList = self.monsterManager.monsterList
+		local actions = {}
+		
+		for i = 1, #monsterList do
+			local monster = monsterList[i]
+			if monster ~= nil and monster.alive == true and monster.isBoss ~= true then
+				self.monsterManager:MonsterAction(i)
+				if self.monsterManager.lastActionValid == true then
+					local snapshot = self:BuildNormalMonsterActionSnapshot(i)
+					if snapshot ~= nil then
+						actions[#actions + 1] = snapshot
+					end
+				end
+			end
+		end
+		
+		if #actions == 0 then
+			self:OnMonsterTurnEnd()
+			return
+		end
+		
+		table.sort(actions, function(a, b)
+			local aDelay = tonumber(a.impactDelay) or 0
+			local bDelay = tonumber(b.impactDelay) or 0
+			if aDelay == bDelay then
+				return (a.monsterIndex or 0) < (b.monsterIndex or 0)
+			end
+			return aDelay < bDelay
+		end)
+		
+		-- When impact timings are equal/close, spread incoming hits with a short cadence.
+		local minSpacing = tonumber(self.normalMonsterImpactSpacing) or 0.3
+		if minSpacing < 0 then
+			minSpacing = 0
+		end
+		
+		local prevImpact = nil
+		for i = 1, #actions do
+			local impactAt = tonumber(actions[i].impactDelay) or 0
+			if impactAt < 0 then
+				impactAt = 0
+			end
+			
+			if prevImpact ~= nil and (impactAt - prevImpact) < minSpacing then
+				impactAt = prevImpact + minSpacing
+			end
+			
+			actions[i].impactAt = impactAt
+			prevImpact = impactAt
+		end
+		
+		local actionCursor = 1
+		local runNextAction = nil
+		runNextAction = function()
+			self.monsterTurnTimerId = 0
+			
+			if self.battleState ~= "Battle" then
+				return
+			end
+			if self.playerManager == nil then
+				return
+			end
+			if self.playerManager.isDead == true then
+				self:EndBattle("Defeat")
+				return
+			end
+			
+			if actionCursor > #actions then
+				self:OnMonsterTurnEnd()
+				return
+			end
+			
+			local currentAction = actions[actionCursor]
+			local currentImpactAt = currentAction.impactAt or 0
+			actionCursor += 1
+			
+			self:ApplyMonsterActionSnapshot(currentAction, function()
+				if self.battleState ~= "Battle" then
+					return
+				end
+				if self.playerManager ~= nil and self.playerManager.isDead == true then
+					self:EndBattle("Defeat")
+					return
+				end
+				
+				if actionCursor > #actions then
+					self:OnMonsterTurnEnd()
+					return
+				end
+				
+				local nextImpactAt = actions[actionCursor].impactAt or currentImpactAt
+				local wait = nextImpactAt - currentImpactAt
+				if wait <= 0 then
+					runNextAction()
+				else
+					self.monsterTurnTimerId = _TimerService:SetTimerOnce(runNextAction, wait)
+				end
+			end)
+		end
+		
+		local firstDelay = actions[1].impactAt or 0
+		if firstDelay <= 0 then
+			runNextAction()
+		else
+			self.monsterTurnTimerId = _TimerService:SetTimerOnce(runNextAction, firstDelay)
+		end
+	end
+	
 	method void ExecuteNextMonsterAction()
 		self.monsterTurnIndex += 1
 		
