@@ -54,5 +54,5 @@
 
 ---
 
-## 향후 작업 (Next Step)
-이제 기초 공사(아키텍처 모듈화 및 직렬화 안정성)가 가장 완벽한 형태로 다져졌습니다. 추후 새로운 아이템을 추가하거나(synergy_scroll), 전투 규칙(Block/Status)을 추가할 때 기존 코드 충돌 없이 빠르고 독립적으로 개발할 수 있는 구조가 되었습니다.
+## 완료 확인 (Status: ✅ Done)
+본 명세서에서 기술한 이벤트 기반 아키텍처, 직렬화 키 수정, 드롭 필터링, 시각적 픽스 모두 구현 및 검증 완료되었습니다. 이후 synergy_scroll, 방어구 시너지, 보스 전투 패턴 등이 해당 아키텍처 위에서 성공적으로 구현되었습니다. (각각 `weapon-synergy-scroll-spec.md`, `armor-synergy-spec.md`, `boss-battle-spec.md` 참조)

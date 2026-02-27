@@ -31,7 +31,7 @@
 2. **`EnterBattle()` 메서드 변경**
    - 기존의 즉시 `self.battleManager:StartBattle(self.currentStage)`를 호출하는 로직을 제거한다.
    - 몬스터 매니저에게 몬스터 예비 로드가 필요하다면 데이터를 확보하되 화면엔 렌더하지 않아야 하므로, 그냥 **`StartBattle` 호출을 보류**한다.
-   - 향후 전투 진입 시점을 알려주는 기능으로 용도를 바꿀 것.
+   - ✅ `TriggerBattleStart()`로 용도가 변경되어, 정비 단계에서 플레이어가 전투 시작 버튼을 눌러야만 전투가 시작되도록 구현 완료.
 
 3. **신규 메서드: `TriggerBattleStart()`**
    - **파라미터**: 없음
