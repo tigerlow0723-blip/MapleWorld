@@ -40,9 +40,9 @@
               "FootholdsByLayer": {
                 "1": [
                   {
-                    "Length": 1.28999949,
+                    "Length": 1.29,
                     "NextFootholdId": 2,
-                    "PreviousFootholdId": 20,
+                    "PreviousFootholdId": 28,
                     "groupID": 1,
                     "layer": 1,
                     "sortingLayerName": "MapLayer0",
@@ -58,11 +58,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 1,
                     "StartPoint": {
-                      "x": -7.13999939,
+                      "x": -12.54,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -5.85,
+                      "x": -11.25,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -89,11 +89,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 2,
                     "StartPoint": {
-                      "x": -5.84999943,
+                      "x": -11.25,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -4.95,
+                      "x": -10.35,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -120,11 +120,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 3,
                     "StartPoint": {
-                      "x": -4.95,
+                      "x": -10.35,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -4.05,
+                      "x": -9.450001,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -133,7 +133,7 @@
                     }
                   },
                   {
-                    "Length": 0.900000334,
+                    "Length": 0.8999996,
                     "NextFootholdId": 5,
                     "PreviousFootholdId": 3,
                     "groupID": 1,
@@ -151,11 +151,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 4,
                     "StartPoint": {
-                      "x": -4.05,
+                      "x": -9.45,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -3.14999986,
+                      "x": -8.55,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -164,7 +164,7 @@
                     }
                   },
                   {
-                    "Length": 0.9000001,
+                    "Length": 0.9000006,
                     "NextFootholdId": 6,
                     "PreviousFootholdId": 4,
                     "groupID": 1,
@@ -182,11 +182,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 5,
                     "StartPoint": {
-                      "x": -3.14999986,
+                      "x": -8.550001,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -2.24999976,
+                      "x": -7.65000057,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -195,7 +195,7 @@
                     }
                   },
                   {
-                    "Length": 0.899999738,
+                    "Length": 0.8999996,
                     "NextFootholdId": 7,
                     "PreviousFootholdId": 5,
                     "groupID": 1,
@@ -213,11 +213,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 6,
                     "StartPoint": {
-                      "x": -2.24999976,
+                      "x": -7.64999962,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -1.35,
+                      "x": -6.75,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -226,7 +226,7 @@
                     }
                   },
                   {
-                    "Length": 0.9000001,
+                    "Length": 0.8999996,
                     "NextFootholdId": 8,
                     "PreviousFootholdId": 6,
                     "groupID": 1,
@@ -244,11 +244,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 7,
                     "StartPoint": {
-                      "x": -1.35,
+                      "x": -6.74999952,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": -0.449999958,
+                      "x": -5.85,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -257,7 +257,7 @@
                     }
                   },
                   {
-                    "Length": 0.9,
+                    "Length": 0.8999996,
                     "NextFootholdId": 9,
                     "PreviousFootholdId": 7,
                     "groupID": 1,
@@ -275,11 +275,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 8,
                     "StartPoint": {
-                      "x": -0.45,
+                      "x": -5.84999943,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 0.449999958,
+                      "x": -4.95,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -288,7 +288,7 @@
                     }
                   },
                   {
-                    "Length": 0.9,
+                    "Length": 0.8999996,
                     "NextFootholdId": 10,
                     "PreviousFootholdId": 8,
                     "groupID": 1,
@@ -306,11 +306,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 9,
                     "StartPoint": {
-                      "x": 0.450000018,
+                      "x": -4.95,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 1.35,
+                      "x": -4.05,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -319,7 +319,7 @@
                     }
                   },
                   {
-                    "Length": 0.9000002,
+                    "Length": 0.900000334,
                     "NextFootholdId": 11,
                     "PreviousFootholdId": 9,
                     "groupID": 1,
@@ -337,11 +337,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 10,
                     "StartPoint": {
-                      "x": 1.34999979,
+                      "x": -4.05,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 2.25,
+                      "x": -3.14999986,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -368,11 +368,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 11,
                     "StartPoint": {
-                      "x": 2.25,
+                      "x": -3.14999986,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 3.15,
+                      "x": -2.24999976,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -381,7 +381,7 @@
                     }
                   },
                   {
-                    "Length": 0.899999857,
+                    "Length": 0.899999738,
                     "NextFootholdId": 13,
                     "PreviousFootholdId": 11,
                     "groupID": 1,
@@ -399,11 +399,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 12,
                     "StartPoint": {
-                      "x": 3.14999986,
+                      "x": -2.24999976,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 4.04999971,
+                      "x": -1.35,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -412,7 +412,7 @@
                     }
                   },
                   {
-                    "Length": 0.8999996,
+                    "Length": 0.9000001,
                     "NextFootholdId": 14,
                     "PreviousFootholdId": 12,
                     "groupID": 1,
@@ -430,11 +430,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 13,
                     "StartPoint": {
-                      "x": 4.05,
+                      "x": -1.35,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 4.95,
+                      "x": -0.449999958,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -443,7 +443,7 @@
                     }
                   },
                   {
-                    "Length": 0.8999996,
+                    "Length": 0.9,
                     "NextFootholdId": 15,
                     "PreviousFootholdId": 13,
                     "groupID": 1,
@@ -461,11 +461,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 14,
                     "StartPoint": {
-                      "x": 4.95000029,
+                      "x": -0.45,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 5.85,
+                      "x": 0.449999958,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -474,7 +474,7 @@
                     }
                   },
                   {
-                    "Length": 0.8999996,
+                    "Length": 0.9,
                     "NextFootholdId": 16,
                     "PreviousFootholdId": 14,
                     "groupID": 1,
@@ -492,11 +492,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 15,
                     "StartPoint": {
-                      "x": 5.85,
+                      "x": 0.450000018,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 6.74999952,
+                      "x": 1.35,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -505,7 +505,7 @@
                     }
                   },
                   {
-                    "Length": 0.8999996,
+                    "Length": 0.9000002,
                     "NextFootholdId": 17,
                     "PreviousFootholdId": 15,
                     "groupID": 1,
@@ -523,11 +523,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 16,
                     "StartPoint": {
-                      "x": 6.75,
+                      "x": 1.34999979,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 7.64999962,
+                      "x": 2.25,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -536,7 +536,7 @@
                     }
                   },
                   {
-                    "Length": 0.899999142,
+                    "Length": 0.9000001,
                     "NextFootholdId": 18,
                     "PreviousFootholdId": 16,
                     "groupID": 1,
@@ -554,11 +554,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 17,
                     "StartPoint": {
-                      "x": 7.65,
+                      "x": 2.25,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 8.549999,
+                      "x": 3.15,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -567,7 +567,7 @@
                     }
                   },
                   {
-                    "Length": 0.8999996,
+                    "Length": 0.899999857,
                     "NextFootholdId": 19,
                     "PreviousFootholdId": 17,
                     "groupID": 1,
@@ -585,11 +585,11 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 18,
                     "StartPoint": {
-                      "x": 8.549999,
+                      "x": 3.14999986,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 9.449999,
+                      "x": 4.04999971,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -598,8 +598,8 @@
                     }
                   },
                   {
-                    "Length": 1.29,
-                    "NextFootholdId": 21,
+                    "Length": 0.8999996,
+                    "NextFootholdId": 20,
                     "PreviousFootholdId": 18,
                     "groupID": 1,
                     "layer": 1,
@@ -616,11 +616,259 @@
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
                     "Id": 19,
                     "StartPoint": {
+                      "x": 4.05,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 4.95,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 21,
+                    "PreviousFootholdId": 19,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 20,
+                    "StartPoint": {
+                      "x": 4.95000029,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 5.85,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 22,
+                    "PreviousFootholdId": 20,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 21,
+                    "StartPoint": {
+                      "x": 5.85,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 6.74999952,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 23,
+                    "PreviousFootholdId": 21,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 22,
+                    "StartPoint": {
+                      "x": 6.75,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 7.64999962,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.899999142,
+                    "NextFootholdId": 24,
+                    "PreviousFootholdId": 22,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 23,
+                    "StartPoint": {
+                      "x": 7.65,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 8.549999,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 25,
+                    "PreviousFootholdId": 23,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 24,
+                    "StartPoint": {
+                      "x": 8.549999,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 9.449999,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 26,
+                    "PreviousFootholdId": 24,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 25,
+                    "StartPoint": {
                       "x": 9.45,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 10.74,
+                      "x": 10.3499994,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 0.8999996,
+                    "NextFootholdId": 27,
+                    "PreviousFootholdId": 25,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 26,
+                    "StartPoint": {
+                      "x": 10.3499994,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 11.249999,
+                      "y": -1.19999993
+                    },
+                    "Variance": {
+                      "x": 1.0,
+                      "y": 0.0
+                    }
+                  },
+                  {
+                    "Length": 1.29000092,
+                    "NextFootholdId": 29,
+                    "PreviousFootholdId": 26,
+                    "groupID": 1,
+                    "layer": 1,
+                    "sortingLayerName": "MapLayer0",
+                    "attribute": {
+                      "walk": 1.0,
+                      "force": 0.0,
+                      "drag": 1.0,
+                      "isBlockVertical": false,
+                      "isDynamic": false,
+                      "isCustomFoothold": false,
+                      "inertiaOption": 0
+                    },
+                    "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
+                    "Id": 27,
+                    "StartPoint": {
+                      "x": 11.249999,
+                      "y": -1.19999993
+                    },
+                    "EndPoint": {
+                      "x": 12.54,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -645,13 +893,13 @@
                       "inertiaOption": 0
                     },
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
-                    "Id": 20,
+                    "Id": 28,
                     "StartPoint": {
-                      "x": -7.13999939,
+                      "x": -12.54,
                       "y": -2.10000014
                     },
                     "EndPoint": {
-                      "x": -7.13999939,
+                      "x": -12.54,
                       "y": -1.19999993
                     },
                     "Variance": {
@@ -662,7 +910,7 @@
                   {
                     "Length": 0.9000002,
                     "NextFootholdId": 0,
-                    "PreviousFootholdId": 19,
+                    "PreviousFootholdId": 27,
                     "groupID": 1,
                     "layer": 1,
                     "sortingLayerName": "MapLayer0",
@@ -676,13 +924,13 @@
                       "inertiaOption": 0
                     },
                     "OwnerId": "caa84310-2d85-4f79-8479-915809bfeecf",
-                    "Id": 21,
+                    "Id": 29,
                     "StartPoint": {
-                      "x": 10.74,
+                      "x": 12.54,
                       "y": -1.19999993
                     },
                     "EndPoint": {
-                      "x": 10.74,
+                      "x": 12.54,
                       "y": -2.10000014
                     },
                     "Variance": {
@@ -716,7 +964,7 @@
           "@components": [
             {
               "@type": "MOD.Core.BackgroundComponent",
-              "TemplateRUID": "4cd4e0467206480eb7a11fe471a95e1a",
+              "TemplateRUID": "4071221fa8454f32878cd0a38b5bd63f",
               "Type": 1,
               "Enable": true
             },
@@ -753,7 +1001,7 @@
       {
         "id": "a7c4a487-c2e1-48c3-8dde-95f59976d68c",
         "path": "/maps/map01/GameSystem",
-        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,MOD.Core.CameraComponent,script.MiniGameManager,script.UIMain,script.SoundManager",
+        "componentNames": "MOD.Core.UITransformComponent,script.BattleManager,script.DataManager,script.GameManager,script.ItemManager,script.MonsterManager,script.PlayerManager,script.RewardManager,script.MiniGameManager,script.UIMain,script.SoundManager",
         "jsonString": {
           "name": "GameSystem",
           "path": "/maps/map01/GameSystem",
@@ -897,10 +1145,6 @@
               "@type": "script.RewardManager",
               "Enable": true,
               "isMaintenanceMode": false
-            },
-            {
-              "@type": "MOD.Core.CameraComponent",
-              "Enable": true
             },
             {
               "@type": "script.MiniGameManager",
@@ -1214,7 +1458,9 @@
                 "IsRelative": false,
                 "EntityId": "244e51bb-8411-4556-860e-2fd93c7474e2",
                 "Version2": false
-              }
+              },
+              "monsterAtkIconRUID": "0827967a5085489ba91eabcdb08406a3",
+              "monsterAtkIconOffsetX": -22.0
             },
             {
               "@type": "script.SoundManager",
@@ -2033,7 +2279,7 @@
                   "tileIndex": 0
                 },
                 {
-                  "type": 8,
+                  "type": 0,
                   "position": {
                     "x": -15,
                     "y": -6
@@ -2041,7 +2287,7 @@
                   "tileIndex": 0
                 },
                 {
-                  "type": 11,
+                  "type": 0,
                   "position": {
                     "x": -15,
                     "y": -5
@@ -2225,7 +2471,7 @@
                   "tileIndex": -1
                 },
                 {
-                  "type": 8,
+                  "type": 0,
                   "position": {
                     "x": 23,
                     "y": -6
@@ -2241,9 +2487,393 @@
                   "tileIndex": 1
                 },
                 {
-                  "type": 11,
+                  "type": 0,
                   "position": {
                     "x": 23,
+                    "y": -5
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -16,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -17,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -16,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -17,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -17,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -16,
+                    "y": -7
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -18,
+                    "y": -6
+                  },
+                  "tileIndex": 5
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -19,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -18,
+                    "y": -7
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -19,
+                    "y": -6
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -19,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -18,
+                    "y": -5
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -20,
+                    "y": -6
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -21,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -20,
+                    "y": -7
+                  },
+                  "tileIndex": 2
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -21,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -21,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -20,
+                    "y": -5
+                  },
+                  "tileIndex": 2
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -22,
+                    "y": -6
+                  },
+                  "tileIndex": 3
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -23,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -22,
+                    "y": -7
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -23,
+                    "y": -6
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -23,
+                    "y": -5
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -22,
+                    "y": -5
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -24,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -25,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -24,
+                    "y": -7
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -25,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -25,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -24,
+                    "y": -5
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": -26,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": -27,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": -26,
+                    "y": -7
+                  },
+                  "tileIndex": 2
+                },
+                {
+                  "type": 8,
+                  "position": {
+                    "x": -27,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 11,
+                  "position": {
+                    "x": -27,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": -26,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 24,
+                    "y": -5
+                  },
+                  "tileIndex": 2
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 25,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": 24,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 25,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 25,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": 24,
+                    "y": -7
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 5,
+                  "position": {
+                    "x": 26,
+                    "y": -6
+                  },
+                  "tileIndex": 3
+                },
+                {
+                  "type": 7,
+                  "position": {
+                    "x": 26,
+                    "y": -7
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 0,
+                  "position": {
+                    "x": 27,
+                    "y": -7
+                  },
+                  "tileIndex": -1
+                },
+                {
+                  "type": 8,
+                  "position": {
+                    "x": 27,
+                    "y": -6
+                  },
+                  "tileIndex": 0
+                },
+                {
+                  "type": 9,
+                  "position": {
+                    "x": 26,
+                    "y": -5
+                  },
+                  "tileIndex": 1
+                },
+                {
+                  "type": 11,
+                  "position": {
+                    "x": 27,
                     "y": -5
                   },
                   "tileIndex": 0

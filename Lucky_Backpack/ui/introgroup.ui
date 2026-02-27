@@ -21,7 +21,7 @@
           "name": "introgroup",
           "path": "/ui/introgroup",
           "nameEditable": true,
-          "enable": false,
+          "enable": true,
           "visible": true,
           "localize": true,
           "displayOrder": 5,
@@ -134,11 +134,11 @@
               },
               "MobileOnly": false,
               "OffsetMax": {
-                "x": 1050.0,
+                "x": 960.0,
                 "y": 540.0
               },
               "OffsetMin": {
-                "x": -1050.0,
+                "x": -960.0,
                 "y": -540.0
               },
               "Pivot": {
@@ -146,7 +146,7 @@
                 "y": 0.5
               },
               "RectSize": {
-                "x": 2100.0,
+                "x": 1920.0,
                 "y": 1080.0
               },
               "UIMode": 1,
@@ -230,11 +230,11 @@
               "MobileOnly": false,
               "OffsetMax": {
                 "x": 943.4684,
-                "y": 524.111938
+                "y": 415.1119
               },
               "OffsetMin": {
                 "x": 868.4684,
-                "y": 449.1119
+                "y": 340.1119
               },
               "Pivot": {
                 "x": 0.5,
@@ -248,11 +248,11 @@
               "UIVersion": 2,
               "anchoredPosition": {
                 "x": 905.9684,
-                "y": 486.6119
+                "y": 377.6119
               },
               "Position": {
                 "x": 905.9684,
-                "y": 486.6119,
+                "y": 377.6119,
                 "z": 0.0
               },
               "QuaternionRotation": {

@@ -824,7 +824,7 @@ script ScrollInventoryUI extends Component
 			return
 		end
 		if weaponTarget.next_upgrade_id <= 0 or weaponTarget.grade == "Legendary" then
-			log_error("[Upgrade] Weapon cannot be upgraded.")
+			log("[Upgrade] Upgrade skipped: weapon is already max tier or has no next upgrade.")
 			return
 		end
 		
@@ -846,7 +846,7 @@ script ScrollInventoryUI extends Component
 		end
 		
 		if successChance <= 0 then
-			log_error("[Upgrade] Unsupported grade for this scroll. Grade=" .. tostring(weaponTarget.grade))
+			log("[Upgrade] Upgrade skipped: unsupported grade for this scroll. Grade=" .. tostring(weaponTarget.grade))
 			return
 		end
 		

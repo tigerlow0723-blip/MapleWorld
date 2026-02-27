@@ -37,6 +37,98 @@ script GameManager extends Component
 
 	property any soundManager = nil
 
+	property string mainGroupPath = "/ui/maingroup"
+
+	property Entity mainGroupEntity = nil
+
+	property boolean coverResponsiveEnabled = true
+
+	property number coverReferenceWidth = 1920
+
+	property number coverReferenceHeight = 1080
+
+	property number coverCheckInterval = 0.2
+
+	property number coverCheckElapsed = 0
+
+	property integer coverLastScreenWidth = 0
+
+	property integer coverLastScreenHeight = 0
+
+	property number coverLastAppliedScale = 1
+
+	property boolean coverScaleGroupRoot = false
+
+	property boolean coverResizeFullScreenPanels = true
+
+	property boolean coverResizeMenuButtons = true
+
+	property table coverButtonBaseByPath = {}
+
+	property boolean keepPlayerScreenPositionOnResize = true
+
+	property boolean useDefaultPlayerCameraAnchor = false
+
+	property number playerScreenAnchorX = 0.21
+
+	property number playerScreenAnchorY = 0.655
+
+	property boolean fixedAspectModeEnabled = true
+
+	property number fixedAspectWidth = 16
+
+	property number fixedAspectHeight = 9
+
+	property boolean fixedAspectUseBlackBars = true
+
+	property boolean fixedAspectForceConfineOff = true
+
+	property boolean fixedAspectKeepDefaultZoom = true
+
+	property boolean forcePlayerCameraConfine = true
+
+	property boolean playerCameraConfineValue = true
+
+	property integer playerCameraLastScreenWidth = 0
+
+	property integer playerCameraLastScreenHeight = 0
+
+	property boolean hasPlayerCameraDefaultAnchor = false
+
+	property number defaultPlayerCameraScreenAnchorX = 0.5
+
+	property number defaultPlayerCameraScreenAnchorY = 0.655
+
+	property boolean hasPlayerCameraDefaultConfine = false
+
+	property boolean defaultPlayerCameraConfineValue = true
+
+	property boolean hasDefaultPlayerCameraZoomRatio = false
+
+	property number defaultPlayerCameraZoomRatio = 120
+
+	property table fixedAspectBarEntities = {}
+
+	property boolean fixedAspectBarsInitialized = false
+
+	property boolean titleUIForceMode = false
+
+	property boolean titleUIShowMainGroup = true
+
+	property boolean titleUIShowIntroGroup = false
+
+	property boolean titleUIEnforceOnUpdate = false
+
+	property string mainScreenPath = "/ui/maingroup/mainscreen"
+
+	property Entity mainScreenEntity = nil
+
+	property string explanationScreenPath = "/ui/maingroup/explanation_screen"
+
+	property Entity explanationScreenEntity = nil
+
+	property table coverBaseRectByPath = {}
+
 	property string introGroupPath = "/ui/introgroup"
 
 	property Entity introGroupEntity = nil
@@ -137,6 +229,29 @@ script GameManager extends Component
 		
 		--
 		if self:IsClient() then
+			if self.coverResponsiveEnabled == nil then
+				self.coverResponsiveEnabled = true
+			end
+			if self.coverResizeFullScreenPanels == nil then
+				self.coverResizeFullScreenPanels = true
+			end
+			if self.coverResizeMenuButtons == nil then
+				self.coverResizeMenuButtons = true
+			end
+			if self.keepPlayerScreenPositionOnResize == nil then
+				self.keepPlayerScreenPositionOnResize = true
+			end
+			if self.useDefaultPlayerCameraAnchor == nil then
+				self.useDefaultPlayerCameraAnchor = true
+			end
+			if self.fixedAspectModeEnabled == true then
+				-- ScreenOffset works reliably only when ConfineCameraArea is disabled.
+				self.fixedAspectForceConfineOff = true
+			end
+			if self.coverScaleGroupRoot == nil then
+				self.coverScaleGroupRoot = false
+			end
+			
 			self:ReseedClientRandom("OnBeginPlay")
 			local player = _UserService.LocalPlayer
 			if player ~= nil then
@@ -154,6 +269,14 @@ script GameManager extends Component
 					sprite.FlipX = true
 				end
 			end
+			
+			self.coverCheckElapsed = self.coverCheckInterval or 0.2
+			self:ApplyPlayerCameraAnchorIfNeeded(true, "begin_play")
+			self:ApplyResponsiveUICoverIfNeeded(true, "begin_play")
+			_TimerService:SetTimerOnce(function()
+				self:ApplyPlayerCameraAnchorIfNeeded(true, "begin_play_deferred")
+				self:ApplyResponsiveUICoverIfNeeded(true, "begin_play_deferred")
+			end, 0.2)
 		end
 		
 		--
@@ -228,6 +351,73 @@ script GameManager extends Component
 		end
 		initFunc()
 		log("[GameManager] Init complete. Intro/title flow started immediately.")
+	end
+
+	method void OnUpdate(number delta)
+		if self:IsClient() ~= true then
+			return
+		end
+		
+		if self.titleUIEnforceOnUpdate == true then
+			self:EnforceTitleUIVisibilityNow("update")
+		end
+		
+		local needUICover = (self.coverResponsiveEnabled == true)
+		local needCameraAnchor = (self.keepPlayerScreenPositionOnResize == true)
+		if needUICover ~= true and needCameraAnchor ~= true then
+			return
+		end
+		
+		local currentScreenWidth = tonumber(_UILogic.ScreenWidth) or 0
+		local currentScreenHeight = tonumber(_UILogic.ScreenHeight) or 0
+		if currentScreenWidth > 0 and currentScreenHeight > 0 then
+			local isResolutionChanged = false
+			if needUICover == true then
+				if self.coverLastScreenWidth ~= currentScreenWidth or self.coverLastScreenHeight ~= currentScreenHeight then
+					isResolutionChanged = true
+				end
+			end
+			if needCameraAnchor == true then
+				if self.playerCameraLastScreenWidth ~= currentScreenWidth or self.playerCameraLastScreenHeight ~= currentScreenHeight then
+					isResolutionChanged = true
+				end
+			end
+			
+			if isResolutionChanged == true then
+				self.coverCheckElapsed = 0
+				if needCameraAnchor == true then
+					self:ApplyPlayerCameraAnchorIfNeeded(true, "resolution_changed")
+				end
+				if needUICover == true then
+					self:ApplyResponsiveUICoverIfNeeded(true, "resolution_changed")
+				end
+				return
+			end
+		end
+		
+		local interval = tonumber(self.coverCheckInterval) or 0.2
+		if interval <= 0 then
+			interval = 0.2
+		end
+		
+		local elapsed = tonumber(self.coverCheckElapsed) or 0
+		local dt = tonumber(delta) or 0
+		if dt < 0 then
+			dt = 0
+		end
+		elapsed += dt
+		if elapsed < interval then
+			self.coverCheckElapsed = elapsed
+			return
+		end
+		
+		self.coverCheckElapsed = 0
+		if needCameraAnchor == true then
+			self:ApplyPlayerCameraAnchorIfNeeded(false, "screen_poll")
+		end
+		if needUICover == true then
+			self:ApplyResponsiveUICoverIfNeeded(false, "screen_poll")
+		end
 	end
 
 	@ExecSpace("ClientOnly")
@@ -365,9 +555,827 @@ script GameManager extends Component
 		end
 	end
 
+	method Entity ResolveMainGroup()
+		if self.mainGroupEntity ~= nil then
+			if isvalid(self.mainGroupEntity) then
+				return self.mainGroupEntity
+			end
+			self.mainGroupEntity = nil
+		end
+		
+		if self.mainGroupPath ~= nil and self.mainGroupPath ~= "" then
+			self.mainGroupEntity = _EntityService:GetEntityByPath(self.mainGroupPath)
+		end
+		if self.mainGroupEntity == nil then
+			self.mainGroupEntity = _EntityService:GetEntityByPath("/ui/maingroup")
+		end
+		if self.mainGroupEntity == nil then
+			self.mainGroupEntity = _EntityService:GetEntityByPath("/ui/MainGroup")
+		end
+		if self.mainGroupEntity == nil then
+			self.mainGroupEntity = _EntityService:GetEntityByPath("/ui/mainGroup")
+		end
+		if self.mainGroupEntity == nil then
+			local uiRoot = _EntityService:GetEntityByPath("/ui")
+			if uiRoot ~= nil then
+				self.mainGroupEntity = uiRoot:GetChildByName("maingroup", true)
+				if self.mainGroupEntity == nil then
+					self.mainGroupEntity = uiRoot:GetChildByName("MainGroup", true)
+				end
+				if self.mainGroupEntity == nil then
+					self.mainGroupEntity = uiRoot:GetChildByName("mainGroup", true)
+				end
+			end
+		end
+		
+		return self.mainGroupEntity
+	end
+
+	method Entity ResolveMainScreenEntity()
+		if self.mainScreenEntity ~= nil then
+			if isvalid(self.mainScreenEntity) then
+				return self.mainScreenEntity
+			end
+			self.mainScreenEntity = nil
+		end
+		
+		if self.mainScreenPath ~= nil and self.mainScreenPath ~= "" then
+			self.mainScreenEntity = _EntityService:GetEntityByPath(self.mainScreenPath)
+		end
+		if self.mainScreenEntity == nil then
+			local mainGroup = self:ResolveMainGroup()
+			if mainGroup ~= nil then
+				self.mainScreenEntity = mainGroup:GetChildByName("mainscreen", true)
+				if self.mainScreenEntity == nil then
+					self.mainScreenEntity = mainGroup:GetChildByName("MainScreen", true)
+				end
+			end
+		end
+		
+		return self.mainScreenEntity
+	end
+
+	method Entity ResolveExplanationScreenEntity()
+		if self.explanationScreenEntity ~= nil then
+			if isvalid(self.explanationScreenEntity) then
+				return self.explanationScreenEntity
+			end
+			self.explanationScreenEntity = nil
+		end
+		
+		if self.explanationScreenPath ~= nil and self.explanationScreenPath ~= "" then
+			self.explanationScreenEntity = _EntityService:GetEntityByPath(self.explanationScreenPath)
+		end
+		if self.explanationScreenEntity == nil then
+			local mainGroup = self:ResolveMainGroup()
+			if mainGroup ~= nil then
+				self.explanationScreenEntity = mainGroup:GetChildByName("explanation_screen", true)
+				if self.explanationScreenEntity == nil then
+					self.explanationScreenEntity = mainGroup:GetChildByName("ExplanationScreen", true)
+				end
+			end
+		end
+		
+		return self.explanationScreenEntity
+	end
+
+	method table ResolveCoverBaseRect(Entity uiEntity, number fallbackWidth, number fallbackHeight)
+		local fallbackW = tonumber(fallbackWidth) or 1920
+		local fallbackH = tonumber(fallbackHeight) or 1080
+		if fallbackW <= 0 then
+			fallbackW = 1920
+		end
+		if fallbackH <= 0 then
+			fallbackH = 1080
+		end
+		
+		if uiEntity == nil then
+			return { w = fallbackW, h = fallbackH }
+		end
+		
+		if self.coverBaseRectByPath == nil then
+			self.coverBaseRectByPath = {}
+		end
+		
+		local key = tostring(uiEntity.Path or "")
+		if key == nil or key == "" then
+			key = tostring(uiEntity.Id or "")
+		end
+		
+		local cached = self.coverBaseRectByPath[key]
+		if cached ~= nil and tonumber(cached.w) ~= nil and tonumber(cached.h) ~= nil then
+			return cached
+		end
+		
+		local baseW = fallbackW
+		local baseH = fallbackH
+		local uiTransform = uiEntity.UITransformComponent
+		if uiTransform ~= nil and uiTransform.RectSize ~= nil then
+			local rw = tonumber(uiTransform.RectSize.x) or 0
+			local rh = tonumber(uiTransform.RectSize.y) or 0
+			if rw > 0 then
+				baseW = rw
+			end
+			if rh > 0 then
+				baseH = rh
+			end
+		end
+		
+		cached = { w = baseW, h = baseH }
+		self.coverBaseRectByPath[key] = cached
+		return cached
+	end
+
+	method boolean IsCloseNumber(number a, number b, number epsilon)
+		local aa = tonumber(a) or 0
+		local bb = tonumber(b) or 0
+		local e = tonumber(epsilon) or 0.0001
+		if e < 0 then
+			e = -e
+		end
+		return math.abs(aa - bb) <= e
+	end
+
+	method any ResolveLocalPlayerCameraComponent()
+		if self:IsClient() ~= true then
+			return nil
+		end
+		
+		local localPlayer = _UserService.LocalPlayer
+		if localPlayer == nil then
+			return nil
+		end
+		
+		local cameraComp = localPlayer.CameraComponent
+		if cameraComp == nil and localPlayer.GetComponent ~= nil then
+			cameraComp = localPlayer:GetComponent("MOD.Core.CameraComponent")
+		end
+		return cameraComp
+	end
+
+	method void EnsureDefaultPlayerCameraAnchor(any cameraComp)
+		if cameraComp == nil then
+			return
+		end
+		if self.hasPlayerCameraDefaultAnchor == true and self.hasPlayerCameraDefaultConfine == true then
+			return
+		end
+		
+		local screenOffset = cameraComp.ScreenOffset
+		if screenOffset ~= nil then
+			local sx = tonumber(screenOffset.x)
+			local sy = tonumber(screenOffset.y)
+			if sx ~= nil and sy ~= nil then
+				self.defaultPlayerCameraScreenAnchorX = sx
+				self.defaultPlayerCameraScreenAnchorY = sy
+				self.hasPlayerCameraDefaultAnchor = true
+			end
+		end
+		
+		if cameraComp.ConfineCameraArea ~= nil then
+			self.defaultPlayerCameraConfineValue = (cameraComp.ConfineCameraArea == true)
+			self.hasPlayerCameraDefaultConfine = true
+		end
+	end
+
+	method void EnsureDefaultPlayerCameraZoom(any cameraComp)
+		if cameraComp == nil then
+			return
+		end
+		if self.hasDefaultPlayerCameraZoomRatio == true then
+			return
+		end
+		
+		local zoom = tonumber(cameraComp.ZoomRatio)
+		if zoom ~= nil and zoom > 0 then
+			self.defaultPlayerCameraZoomRatio = zoom
+			self.hasDefaultPlayerCameraZoomRatio = true
+		end
+	end
+
+	method table BuildFixedAspectViewport(integer screenWidth, integer screenHeight)
+		local sw = tonumber(screenWidth) or 0
+		local sh = tonumber(screenHeight) or 0
+		if sw <= 0 or sh <= 0 then
+			return nil
+		end
+		
+		local targetW = tonumber(self.fixedAspectWidth) or 16
+		local targetH = tonumber(self.fixedAspectHeight) or 9
+		if targetW <= 0 then targetW = 16 end
+		if targetH <= 0 then targetH = 9 end
+		local targetAspect = targetW / targetH
+		local screenAspect = sw / sh
+		
+		local activeMinX = 0
+		local activeMinY = 0
+		local activeMaxX = 1
+		local activeMaxY = 1
+		
+		if screenAspect > targetAspect then
+			local activeWidth = targetAspect / screenAspect
+			local sideInset = (1 - activeWidth) * 0.5
+			activeMinX = sideInset
+			activeMaxX = 1 - sideInset
+		elseif screenAspect < targetAspect then
+			local activeHeight = screenAspect / targetAspect
+			local topBottomInset = (1 - activeHeight) * 0.5
+			activeMinY = topBottomInset
+			activeMaxY = 1 - topBottomInset
+		end
+		
+		local width = activeMaxX - activeMinX
+		local height = activeMaxY - activeMinY
+		if width <= 0 then width = 1 end
+		if height <= 0 then height = 1 end
+		
+		return {
+			minX = activeMinX,
+			minY = activeMinY,
+			maxX = activeMaxX,
+			maxY = activeMaxY,
+			width = width,
+			height = height
+		}
+	end
+
+	method void InitializeFixedAspectBarsOnce()
+		if self.fixedAspectUseBlackBars ~= true then
+			return
+		end
+		if self.fixedAspectBarsInitialized == true then
+			return
+		end
+		
+		if self.fixedAspectBarEntities == nil then
+			self.fixedAspectBarEntities = {}
+		end
+		
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup == nil then
+			return
+		end
+		
+		-- Disable any leftover bars from previous runs before creating/reusing canonical bars.
+		local groupChildren = uiGroup.Children
+		if groupChildren ~= nil then
+			for i = 1, #groupChildren do
+				local child = groupChildren[i]
+				if child ~= nil then
+					local childName = tostring(child.Name or "")
+					if string.sub(childName, 1, 15) == "__fixed_aspect_" then
+						child:SetEnable(false)
+						child:SetVisible(false)
+					end
+				end
+			end
+		end
+		
+		local template = self:ResolveStageFadeEntity()
+		if template == nil then
+			template = _EntityService:GetEntityByPath("/ui/UIGroup/stageFade")
+		end
+		
+		local keys = { "top", "bottom", "left", "right" }
+		local readyCount = 0
+		for i = 1, #keys do
+			local key = keys[i]
+			local entityName = "__fixed_aspect_" .. tostring(key)
+			local bar = self.fixedAspectBarEntities[key]
+			if bar == nil then
+				bar = uiGroup:GetChildByName(entityName, true)
+			end
+			if bar == nil and template ~= nil then
+				bar = template:Clone(entityName)
+			end
+			
+			if bar ~= nil then
+				self.fixedAspectBarEntities[key] = bar
+				
+				local uiTransform = bar.UITransformComponent
+				if uiTransform ~= nil then
+					pcall(function() uiTransform.AnchorsMin = Vector2(0, 0) end)
+					pcall(function() uiTransform.AnchorsMax = Vector2(1, 1) end)
+					pcall(function() uiTransform.OffsetMin = Vector2(0, 0) end)
+					pcall(function() uiTransform.OffsetMax = Vector2(0, 0) end)
+					pcall(function() uiTransform.anchoredPosition = Vector2(0, 0) end)
+				end
+				
+				local spriteGUI = bar.SpriteGUIRendererComponent
+				if spriteGUI ~= nil then
+					pcall(function() spriteGUI.OverrideSorting = true end)
+					pcall(function() spriteGUI.SortingLayer = "UI" end)
+					pcall(function() spriteGUI.OrderInLayer = 32760 end)
+					pcall(function() spriteGUI.Color = Color(0, 0, 0, 1) end)
+					pcall(function() spriteGUI.RaycastTarget = false end)
+				end
+				
+				bar:SetEnable(false)
+				bar:SetVisible(false)
+				readyCount += 1
+			end
+		end
+		
+		if readyCount >= #keys then
+			self.fixedAspectBarsInitialized = true
+		end
+	end
+
+	method Entity EnsureFixedAspectBarEntity(string keyName)
+		if keyName == nil or keyName == "" then
+			return nil
+		end
+		
+		if self.fixedAspectBarEntities == nil then
+			self.fixedAspectBarEntities = {}
+		end
+		
+		local existing = self.fixedAspectBarEntities[keyName]
+		if existing ~= nil then
+			return existing
+		end
+		
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup ~= nil then
+			local entityName = "__fixed_aspect_" .. tostring(keyName)
+			existing = uiGroup:GetChildByName(entityName, true)
+			if existing ~= nil then
+				self.fixedAspectBarEntities[keyName] = existing
+				return existing
+			end
+		end
+		
+		return nil
+	end
+
+	method void SetFixedAspectBarRect(string keyName, number minX, number minY, number maxX, number maxY)
+		local bar = self:EnsureFixedAspectBarEntity(keyName)
+		if bar == nil then
+			return
+		end
+		
+		local width = (tonumber(maxX) or 0) - (tonumber(minX) or 0)
+		local height = (tonumber(maxY) or 0) - (tonumber(minY) or 0)
+		local show = (width > 0.0001 and height > 0.0001 and self.fixedAspectUseBlackBars == true)
+		
+		bar:SetEnable(show)
+		bar:SetVisible(show)
+		if show ~= true then
+			return
+		end
+		
+		local uiTransform = bar.UITransformComponent
+		if uiTransform == nil then
+			return
+		end
+		
+		uiTransform.AnchorsMin = Vector2(minX, minY)
+		uiTransform.AnchorsMax = Vector2(maxX, maxY)
+		uiTransform.OffsetMin = Vector2(0, 0)
+		uiTransform.OffsetMax = Vector2(0, 0)
+		uiTransform.anchoredPosition = Vector2(0, 0)
+		uiTransform.Pivot = Vector2(0.5, 0.5)
+	end
+
+	method void UpdateFixedAspectBars(table viewport)
+		if self.fixedAspectUseBlackBars ~= true then
+			local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+			if uiGroup ~= nil then
+				local cleanupNames = { "__fixed_aspect_top", "__fixed_aspect_bottom", "__fixed_aspect_left", "__fixed_aspect_right" }
+				for i = 1, #cleanupNames do
+					local n = cleanupNames[i]
+					local child = uiGroup:GetChildByName(n, true)
+					if child ~= nil then
+						child:SetEnable(false)
+						child:SetVisible(false)
+					end
+				end
+			end
+			
+			if self.fixedAspectBarEntities ~= nil then
+				for _, bar in pairs(self.fixedAspectBarEntities) do
+					if bar ~= nil then
+						bar:SetEnable(false)
+						bar:SetVisible(false)
+					end
+				end
+			end
+			return
+		end
+		if viewport == nil then
+			return
+		end
+		self:InitializeFixedAspectBarsOnce()
+		
+		self:SetFixedAspectBarRect("top", 0, viewport.maxY, 1, 1)
+		self:SetFixedAspectBarRect("bottom", 0, 0, 1, viewport.minY)
+		self:SetFixedAspectBarRect("left", 0, 0, viewport.minX, 1)
+		self:SetFixedAspectBarRect("right", viewport.maxX, 0, 1, 1)
+	end
+
+	method void ApplyPlayerCameraAnchorIfNeeded(boolean force, string reason)
+		if self:IsClient() ~= true then
+			return
+		end
+		if self.keepPlayerScreenPositionOnResize ~= true then
+			return
+		end
+		
+		local screenWidth = tonumber(_UILogic.ScreenWidth) or 0
+		local screenHeight = tonumber(_UILogic.ScreenHeight) or 0
+		if screenWidth <= 0 or screenHeight <= 0 then
+			return
+		end
+		
+		local isResolutionChanged = false
+		if self.playerCameraLastScreenWidth ~= screenWidth or self.playerCameraLastScreenHeight ~= screenHeight then
+			isResolutionChanged = true
+		end
+		
+		local cameraComp = self:ResolveLocalPlayerCameraComponent()
+		if cameraComp == nil then
+			return
+		end
+		self:EnsureDefaultPlayerCameraAnchor(cameraComp)
+		self:EnsureDefaultPlayerCameraZoom(cameraComp)
+		
+		local targetX = tonumber(self.playerScreenAnchorX) or 0.5
+		local targetY = tonumber(self.playerScreenAnchorY) or 0.655
+		if self.useDefaultPlayerCameraAnchor == true and self.hasPlayerCameraDefaultAnchor == true then
+			targetX = tonumber(self.defaultPlayerCameraScreenAnchorX) or targetX
+			targetY = tonumber(self.defaultPlayerCameraScreenAnchorY) or targetY
+		end
+		if targetX < 0 then targetX = 0 end
+		if targetX > 1 then targetX = 1 end
+		if targetY < 0 then targetY = 0 end
+		if targetY > 1 then targetY = 1 end
+		
+		local appliedX = targetX
+		local appliedY = targetY
+		local viewport = nil
+		if self.fixedAspectModeEnabled == true then
+			viewport = self:BuildFixedAspectViewport(screenWidth, screenHeight)
+			if viewport ~= nil then
+				appliedX = viewport.minX + (targetX * viewport.width)
+				appliedY = viewport.minY + (targetY * viewport.height)
+			end
+		end
+		
+		cameraComp.ScreenOffset = Vector2(appliedX, appliedY)
+		if self.fixedAspectModeEnabled == true and self.fixedAspectForceConfineOff == true then
+			cameraComp.ConfineCameraArea = false
+		elseif self.useDefaultPlayerCameraAnchor == true and self.hasPlayerCameraDefaultConfine == true then
+			cameraComp.ConfineCameraArea = (self.defaultPlayerCameraConfineValue == true)
+		elseif self.forcePlayerCameraConfine == true then
+			cameraComp.ConfineCameraArea = (self.playerCameraConfineValue == true)
+		end
+		
+		if self.fixedAspectModeEnabled == true and self.fixedAspectKeepDefaultZoom == true and self.hasDefaultPlayerCameraZoomRatio == true then
+			cameraComp.ZoomRatio = self.defaultPlayerCameraZoomRatio
+		end
+		self:UpdateFixedAspectBars(viewport)
+		
+		self.playerCameraLastScreenWidth = screenWidth
+		self.playerCameraLastScreenHeight = screenHeight
+		
+		if force == true or isResolutionChanged == true then
+			log("[GameManager][Camera] Screen anchor applied reason=" .. tostring(reason)
+				.. " screen=" .. tostring(screenWidth) .. "x" .. tostring(screenHeight)
+				.. " anchor=(" .. tostring(appliedX) .. "," .. tostring(appliedY) .. ")"
+				.. " confine=" .. tostring(cameraComp.ConfineCameraArea))
+		end
+	end
+
+	method table ResolveResponsiveButtonBase(Entity buttonEntity)
+		if buttonEntity == nil then
+			return nil
+		end
+		
+		local uiTransform = buttonEntity.UITransformComponent
+		if uiTransform == nil then
+			return nil
+		end
+		
+		if self.coverButtonBaseByPath == nil then
+			self.coverButtonBaseByPath = {}
+		end
+		
+		local key = tostring(buttonEntity.Path or "")
+		if key == nil or key == "" then
+			key = tostring(buttonEntity.Id or "")
+		end
+		
+		local cached = self.coverButtonBaseByPath[key]
+		if cached ~= nil then
+			return cached
+		end
+		
+		local anchorsMin = uiTransform.AnchorsMin or Vector2(0.5, 0.5)
+		local anchorsMax = uiTransform.AnchorsMax or Vector2(0.5, 0.5)
+		local pivot = uiTransform.Pivot or Vector2(0.5, 0.5)
+		local anchored = uiTransform.anchoredPosition or Vector2(0, 0)
+		local rect = uiTransform.RectSize or Vector2(100, 100)
+		local offsetMin = uiTransform.OffsetMin or Vector2(0, 0)
+		local offsetMax = uiTransform.OffsetMax or Vector2(0, 0)
+		
+		cached = {
+			anchorMinX = tonumber(anchorsMin.x) or 0.5,
+			anchorMinY = tonumber(anchorsMin.y) or 0.5,
+			anchorMaxX = tonumber(anchorsMax.x) or 0.5,
+			anchorMaxY = tonumber(anchorsMax.y) or 0.5,
+			pivotX = tonumber(pivot.x) or 0.5,
+			pivotY = tonumber(pivot.y) or 0.5,
+			anchoredX = tonumber(anchored.x) or 0,
+			anchoredY = tonumber(anchored.y) or 0,
+			rectW = tonumber(rect.x) or 100,
+			rectH = tonumber(rect.y) or 100,
+			offsetMinX = tonumber(offsetMin.x) or 0,
+			offsetMinY = tonumber(offsetMin.y) or 0,
+			offsetMaxX = tonumber(offsetMax.x) or 0,
+			offsetMaxY = tonumber(offsetMax.y) or 0
+		}
+		
+		self.coverButtonBaseByPath[key] = cached
+		return cached
+	end
+
+	method void ApplyResponsiveButtonEntity(Entity buttonEntity, number scaleX, number scaleY, number uniformScale)
+		if buttonEntity == nil then
+			return
+		end
+		
+		local uiTransform = buttonEntity.UITransformComponent
+		if uiTransform == nil then
+			return
+		end
+		
+		local base = self:ResolveResponsiveButtonBase(buttonEntity)
+		if base == nil then
+			return
+		end
+		
+		local sx = tonumber(scaleX) or 1
+		local sy = tonumber(scaleY) or 1
+		local us = tonumber(uniformScale) or 1
+		if sx <= 0 then sx = 1 end
+		if sy <= 0 then sy = 1 end
+		if us <= 0 then us = 1 end
+		
+		uiTransform.UIScale = Vector3(1, 1, 1)
+		uiTransform.Scale = Vector3(1, 1, 1)
+		
+		local fixedAnchorX = self:IsCloseNumber(base.anchorMinX, base.anchorMaxX, 0.0001)
+		local fixedAnchorY = self:IsCloseNumber(base.anchorMinY, base.anchorMaxY, 0.0001)
+		
+		if fixedAnchorX and fixedAnchorY then
+			local newX = base.anchoredX * sx
+			local newY = base.anchoredY * sy
+			local newW = base.rectW * us
+			local newH = base.rectH * us
+			if newW < 2 then
+				newW = 2
+			end
+			if newH < 2 then
+				newH = 2
+			end
+			
+			local pivotX = base.pivotX
+			local pivotY = base.pivotY
+			local minX = newX - (newW * pivotX)
+			local minY = newY - (newH * pivotY)
+			local maxX = newX + (newW * (1 - pivotX))
+			local maxY = newY + (newH * (1 - pivotY))
+			
+			uiTransform.anchoredPosition = Vector2(newX, newY)
+			uiTransform.RectSize = Vector2(newW, newH)
+			uiTransform.OffsetMin = Vector2(minX, minY)
+			uiTransform.OffsetMax = Vector2(maxX, maxY)
+		else
+			uiTransform.anchoredPosition = Vector2(base.anchoredX * sx, base.anchoredY * sy)
+			uiTransform.OffsetMin = Vector2(base.offsetMinX * sx, base.offsetMinY * sy)
+			uiTransform.OffsetMax = Vector2(base.offsetMaxX * sx, base.offsetMaxY * sy)
+		end
+	end
+
+	method void ApplyResponsiveButtonsInRoot(Entity rootEntity, number scaleX, number scaleY)
+		if self.coverResizeMenuButtons ~= true then
+			return
+		end
+		if rootEntity == nil then
+			return
+		end
+		
+		local sx = tonumber(scaleX) or 1
+		local sy = tonumber(scaleY) or 1
+		if sx <= 0 then sx = 1 end
+		if sy <= 0 then sy = 1 end
+		
+		local uniformScale = sx
+		if sy > uniformScale then
+			uniformScale = sy
+		end
+		
+		local applyRecursive = nil
+		applyRecursive = function(current)
+			if current == nil then
+				return
+			end
+			
+			if current.ButtonComponent ~= nil then
+				self:ApplyResponsiveButtonEntity(current, sx, sy, uniformScale)
+			end
+			
+			local children = current.Children
+			if children ~= nil then
+				for i = 1, #children do
+					local child = children[i]
+					if child ~= nil then
+						applyRecursive(child)
+					end
+				end
+			end
+		end
+		
+		applyRecursive(rootEntity)
+	end
+
+	method void ApplyUICoverRect(Entity uiEntity, integer screenWidth, integer screenHeight, number fallbackWidth, number fallbackHeight)
+		if uiEntity == nil then
+			return
+		end
+		
+		local uiTransform = uiEntity.UITransformComponent
+		if uiTransform == nil then
+			return
+		end
+		
+		local sw = tonumber(screenWidth) or 0
+		local sh = tonumber(screenHeight) or 0
+		if sw <= 0 or sh <= 0 then
+			return
+		end
+		
+		local baseRect = self:ResolveCoverBaseRect(uiEntity, fallbackWidth, fallbackHeight)
+		local baseW = tonumber(baseRect.w) or 1920
+		local baseH = tonumber(baseRect.h) or 1080
+		if baseW <= 0 then
+			baseW = 1920
+		end
+		if baseH <= 0 then
+			baseH = 1080
+		end
+		
+		local screenAspect = sw / sh
+		local baseAspect = baseW / baseH
+		local targetW = baseW
+		local targetH = baseH
+		
+		if screenAspect > baseAspect then
+			targetW = baseH * screenAspect
+			targetH = baseH
+		else
+			targetW = baseW
+			targetH = baseW / screenAspect
+		end
+		
+		local halfW = targetW * 0.5
+		local halfH = targetH * 0.5
+		
+		uiTransform.AlignmentOption = 0
+		uiTransform.AnchorsMin = Vector2(0.5, 0.5)
+		uiTransform.AnchorsMax = Vector2(0.5, 0.5)
+		uiTransform.Pivot = Vector2(0.5, 0.5)
+		uiTransform.anchoredPosition = Vector2(0, 0)
+		uiTransform.RectSize = Vector2(targetW, targetH)
+		uiTransform.OffsetMin = Vector2(-halfW, -halfH)
+		uiTransform.OffsetMax = Vector2(halfW, halfH)
+		uiTransform.UIScale = Vector3(1, 1, 1)
+		uiTransform.Scale = Vector3(1, 1, 1)
+		
+		local scaleX = targetW / baseW
+		local scaleY = targetH / baseH
+		self:ApplyResponsiveButtonsInRoot(uiEntity, scaleX, scaleY)
+	end
+
+	method number CalculateUICoverScale(number baseWidth, number baseHeight, integer screenWidth, integer screenHeight)
+		local refW = tonumber(baseWidth) or 1920
+		local refH = tonumber(baseHeight) or 1080
+		if refW <= 0 then
+			refW = 1920
+		end
+		if refH <= 0 then
+			refH = 1080
+		end
+		
+		local sw = tonumber(screenWidth) or 0
+		local sh = tonumber(screenHeight) or 0
+		if sw <= 0 or sh <= 0 then
+			return 1
+		end
+		
+		local scaleX = sw / refW
+		local scaleY = sh / refH
+		local coverScale = scaleX
+		if scaleY > coverScale then
+			coverScale = scaleY
+		end
+		if coverScale <= 0 then
+			coverScale = 1
+		end
+		
+		return coverScale
+	end
+
+	method void ApplyUICoverToGroup(Entity groupEntity, number baseWidth, number baseHeight, number coverScale)
+		if groupEntity == nil then
+			return
+		end
+		
+		local uiTransform = groupEntity.UITransformComponent
+		if uiTransform == nil then
+			return
+		end
+		
+		local refW = tonumber(baseWidth) or 1920
+		local refH = tonumber(baseHeight) or 1080
+		if refW <= 0 then
+			refW = 1920
+		end
+		if refH <= 0 then
+			refH = 1080
+		end
+		
+		local halfW = refW * 0.5
+		local halfH = refH * 0.5
+		local appliedScale = tonumber(coverScale) or 1
+		if appliedScale <= 0 then
+			appliedScale = 1
+		end
+		
+		uiTransform.AnchorsMin = Vector2(0.5, 0.5)
+		uiTransform.AnchorsMax = Vector2(0.5, 0.5)
+		uiTransform.Pivot = Vector2(0.5, 0.5)
+		uiTransform.anchoredPosition = Vector2(0, 0)
+		uiTransform.RectSize = Vector2(refW, refH)
+		uiTransform.OffsetMin = Vector2(-halfW, -halfH)
+		uiTransform.OffsetMax = Vector2(halfW, halfH)
+		uiTransform.UIScale = Vector3(appliedScale, appliedScale, 1)
+		uiTransform.Scale = Vector3(appliedScale, appliedScale, 1)
+	end
+
+	method void ApplyResponsiveUICoverIfNeeded(boolean force, string reason)
+		if self:IsClient() ~= true then
+			return
+		end
+		if self.coverResponsiveEnabled ~= true then
+			return
+		end
+		
+		local screenWidth = tonumber(_UILogic.ScreenWidth) or 0
+		local screenHeight = tonumber(_UILogic.ScreenHeight) or 0
+		if screenWidth <= 0 or screenHeight <= 0 then
+			return
+		end
+		
+		local changed = false
+		if self.coverLastScreenWidth ~= screenWidth or self.coverLastScreenHeight ~= screenHeight then
+			changed = true
+		end
+		if force ~= true and changed ~= true then
+			return
+		end
+		
+		local refW = tonumber(self.coverReferenceWidth) or 1920
+		local refH = tonumber(self.coverReferenceHeight) or 1080
+		local coverScale = self:CalculateUICoverScale(refW, refH, screenWidth, screenHeight)
+		
+		if self.coverScaleGroupRoot == true then
+			self:ApplyUICoverToGroup(self:ResolveMainGroup(), refW, refH, coverScale)
+			self:ApplyUICoverToGroup(self:ResolveIntroGroup(), refW, refH, coverScale)
+		end
+		
+		if self.coverResizeFullScreenPanels == true then
+			self:ApplyUICoverRect(self:ResolveMainScreenEntity(), screenWidth, screenHeight, refW, refH)
+			self:ApplyUICoverRect(self:ResolveExplanationScreenEntity(), screenWidth, screenHeight, refW, refH)
+			self:ApplyUICoverRect(self:ResolveIntroVideoPlayerEntity(), screenWidth, screenHeight, refW, refH)
+		end
+		
+		self.coverLastScreenWidth = screenWidth
+		self.coverLastScreenHeight = screenHeight
+		self.coverLastAppliedScale = coverScale
+		
+		log("[GameManager][UI] Cover applied reason=" .. tostring(reason)
+			.. " screen=" .. tostring(screenWidth) .. "x" .. tostring(screenHeight)
+			.. " base=" .. tostring(refW) .. "x" .. tostring(refH)
+			.. " scale=" .. tostring(coverScale))
+	end
+
 	method Entity ResolveIntroGroup()
 		if self.introGroupEntity ~= nil then
-			return self.introGroupEntity
+			if isvalid(self.introGroupEntity) then
+				return self.introGroupEntity
+			end
+			self.introGroupEntity = nil
 		end
 		
 		if self.introGroupPath ~= nil and self.introGroupPath ~= "" then
@@ -375,6 +1383,12 @@ script GameManager extends Component
 		end
 		if self.introGroupEntity == nil then
 			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/introgroup")
+		end
+		if self.introGroupEntity == nil then
+			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/IntroGroup")
+		end
+		if self.introGroupEntity == nil then
+			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/introGroup")
 		end
 		if self.introGroupEntity == nil then
 			self.introGroupEntity = _EntityService:GetEntityByPath("/ui/UIGroup/IntroGroup")
@@ -388,6 +1402,9 @@ script GameManager extends Component
 				self.introGroupEntity = uiRoot:GetChildByName("IntroGroup", true)
 				if self.introGroupEntity == nil then
 					self.introGroupEntity = uiRoot:GetChildByName("introgroup", true)
+				end
+				if self.introGroupEntity == nil then
+					self.introGroupEntity = uiRoot:GetChildByName("introGroup", true)
 				end
 			end
 		end
@@ -427,7 +1444,10 @@ script GameManager extends Component
 
 	method Entity ResolveIntroVideoPlayerEntity()
 		if self.introVideoPlayerEntity ~= nil then
-			return self.introVideoPlayerEntity
+			if isvalid(self.introVideoPlayerEntity) then
+				return self.introVideoPlayerEntity
+			end
+			self.introVideoPlayerEntity = nil
 		end
 		
 		if self.introVideoPlayerPath ~= nil and self.introVideoPlayerPath ~= "" then
@@ -442,6 +1462,9 @@ script GameManager extends Component
 				end
 				if self.introVideoPlayerEntity == nil then
 					self.introVideoPlayerEntity = introEntity:GetChildByName("VideoPlayer", true)
+				end
+				if self.introVideoPlayerEntity == nil then
+					self.introVideoPlayerEntity = introEntity:GetChildByName("youtubeplayergui", true)
 				end
 			end
 		end
@@ -506,13 +1529,119 @@ script GameManager extends Component
 		self.introSkipButtonBound = true
 	end
 
-	method void ShowMainMenuTitle()
-		if self.gameState == "Title" then
+	method boolean IsTitleUIStateActive()
+		if self.titleUIForceMode == true then
+			return true
+		end
+		local state = tostring(self.gameState or "")
+		return (state == "Init" or state == "Title")
+	end
+
+	method void EnforceTitleUIVisibilityNow(string reason)
+		if self:IsClient() ~= true then
 			return
 		end
+		if self:IsTitleUIStateActive() ~= true then
+			return
+		end
+		
+		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+		if uiGroup ~= nil then
+			uiGroup:SetEnable(true)
+			uiGroup:SetVisible(true)
+			
+			local children = uiGroup.Children
+			if children ~= nil then
+				for i = 1, #children do
+					local child = children[i]
+					if child ~= nil then
+						local childName = string.lower(tostring(child.Name or ""))
+						local keepVisible = false
+						if string.sub(childName, 1, 15) == "__fixed_aspect_" then
+							keepVisible = true
+						elseif childName == "stagefade" then
+							keepVisible = true
+						end
+						
+						if keepVisible ~= true then
+							child:SetEnable(false)
+							child:SetVisible(false)
+						end
+					end
+				end
+			end
+		end
+		
+		local mainVisible = (self.titleUIShowMainGroup == true)
+		local introVisible = (self.titleUIShowIntroGroup == true)
+		
+		local mainGroup = self:ResolveMainGroup()
+		if mainGroup ~= nil and isvalid(mainGroup) then
+			mainGroup:SetEnable(mainVisible)
+			mainGroup:SetVisible(mainVisible)
+		end
+		
+		local introGroup = self:ResolveIntroGroup()
+		if introGroup ~= nil and isvalid(introGroup) then
+			introGroup:SetEnable(introVisible)
+			introGroup:SetVisible(introVisible)
+		end
+	end
+
+	method void ApplyTitleRootVisibility(boolean showMain, boolean showIntro, string reason)
+		local mainVisible = (showMain == true)
+		local introVisible = (showIntro == true)
+		self.titleUIForceMode = true
+		self.titleUIShowMainGroup = mainVisible
+		self.titleUIShowIntroGroup = introVisible
+		
+		local mainGroup = self:ResolveMainGroup()
+		if mainGroup ~= nil and isvalid(mainGroup) then
+			mainGroup:SetEnable(mainVisible)
+			mainGroup:SetVisible(mainVisible)
+		elseif mainVisible == true then
+			log_warning("[GameManager][TitleUI] MainGroup not found reason=" .. tostring(reason))
+		end
+		
+		local introGroup = self:ResolveIntroGroup()
+		if introGroup ~= nil and isvalid(introGroup) then
+			introGroup:SetEnable(introVisible)
+			introGroup:SetVisible(introVisible)
+		elseif introVisible == true then
+			log_warning("[GameManager][TitleUI] IntroGroup not found reason=" .. tostring(reason))
+		end
+		
+		local mainScreen = self:ResolveMainScreenEntity()
+		if mainScreen ~= nil and isvalid(mainScreen) then
+			mainScreen:SetEnable(mainVisible)
+			mainScreen:SetVisible(mainVisible)
+		end
+		
+		local explanation = self:ResolveExplanationScreenEntity()
+		if explanation ~= nil and isvalid(explanation) then
+			explanation:SetEnable(false)
+			explanation:SetVisible(false)
+		end
+		
+		if self.titleUIEnforceOnUpdate == true then
+			self:EnforceTitleUIVisibilityNow(reason)
+		else
+			local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
+			if uiGroup ~= nil then
+				uiGroup:SetEnable(false)
+				uiGroup:SetVisible(false)
+			end
+		end
+	end
+
+	method void ShowMainMenuTitle()
+		self:ApplyTitleRootVisibility(true, false, "show_main_menu_title")
 		self.gameState = "Title"
 		if self.uiMain ~= nil and self.uiMain.ShowMainMenu ~= nil then
 			self.uiMain:ShowMainMenu()
+		end
+		if self.titleUIEnforceOnUpdate == true then
+			self:EnforceTitleUIVisibilityNow("show_main_menu_title_post")
 		end
 		if self.soundManager ~= nil then
 			self.soundManager:PlayBGM(1001)
@@ -540,6 +1669,7 @@ script GameManager extends Component
 			introEntity:SetVisible(false)
 		end
 		
+		self:ApplyTitleRootVisibility(true, false, "end_intro")
 		self:ShowMainMenuTitle()
 		_TimerService:SetTimerOnce(function()
 			self:StopIntroVideo()
@@ -550,26 +1680,20 @@ script GameManager extends Component
 		if self:IsClient() ~= true then
 			return
 		end
+		self:ApplyResponsiveUICoverIfNeeded(true, "show_intro_then_main_menu")
 		
 		local shouldPlayIntro = self.playIntroBeforeMainMenu == true
 		local introEntity = self:ResolveIntroGroup()
 		
 		if shouldPlayIntro ~= true or introEntity == nil then
+			if shouldPlayIntro == true and introEntity == nil then
+				log_warning("[GameManager][TitleUI] IntroGroup resolve failed. Falling back to main menu.")
+			end
 			self:EndIntroAndShowMainMenu("skip_intro_config")
 			return
 		end
 		
-		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
-		if uiGroup ~= nil then
-			uiGroup:SetEnable(false)
-			uiGroup:SetVisible(true)
-		end
-		
-		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
-		if mainGroup ~= nil then
-			mainGroup:SetEnable(true)
-			mainGroup:SetVisible(true)
-		end
+		self:ApplyTitleRootVisibility(true, true, "show_intro_then_main_menu")
 		
 		if self.uiMain ~= nil then
 			if self.uiMain.uiMainMenu ~= nil then
@@ -729,6 +1853,9 @@ script GameManager extends Component
 		if self:IsClient() then
 			self:ReseedClientRandom("StartGame")
 		end
+		self.titleUIForceMode = false
+		self.titleUIShowMainGroup = false
+		self.titleUIShowIntroGroup = false
 		self.gameState = "Playing"
 		self.gamePhase = "Preparation"
 		self.canEndPreparation = false
@@ -1640,10 +2767,28 @@ script GameManager extends Component
 			_TimerService:SetTimerOnce(nextFunc, uiDelay + 2.0)
 		else
 			self.gamePhase = "MiniGame"
-			self.miniGameManager:StartMiniGamePhase()
 			if self.uiMain ~= nil then
 				self.uiMain:UpdateUI()
 			end
+			
+			local introDuration = (self.stageIntroPlayerWalkDuration or 1) + (self.stageEntryCinematicDelay or 0.05)
+			if introDuration < 0 then
+				introDuration = 0
+			end
+			
+			_TimerService:SetTimerOnce(function()
+				if self.currentStage ~= 5 or self.gamePhase ~= "MiniGame" or self.miniGameManager == nil then
+					return
+				end
+				
+				self.miniGameManager:StartMiniGamePhase()
+				if self.miniGameManager.EnterSubPlay ~= nil then
+					self.miniGameManager:EnterSubPlay()
+				end
+				if self.uiMain ~= nil then
+					self.uiMain:UpdateUI()
+				end
+			end, introDuration)
 		end
 	end
 

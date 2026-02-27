@@ -266,6 +266,9 @@ script BattleManager extends Component
 		
 		--
 		self.currentTurn = "Player"
+		if self.monsterManager ~= nil and self.monsterManager.PlanAllMonsterActions ~= nil then
+			self.monsterManager:PlanAllMonsterActions()
+		end
 		log("[BattleManager] >>> Player Turn Start <<<")
 	end
 
@@ -1548,6 +1551,9 @@ script BattleManager extends Component
 		self:ResetWeaponAttackCounts()
 		self:ResetArmorActivationCounts()
 		self.monsterManager:TickMonsterDebuffs()
+		if self.monsterManager ~= nil and self.monsterManager.PlanAllMonsterActions ~= nil then
+			self.monsterManager:PlanAllMonsterActions()
+		end
 		self:RefreshUI()
 	end
 
