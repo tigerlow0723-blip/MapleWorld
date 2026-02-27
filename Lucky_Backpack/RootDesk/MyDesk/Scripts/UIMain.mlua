@@ -193,6 +193,24 @@ script UIMain extends Component
 
 	property table monsterSliders = {}
 
+	property table monsterAtkTexts = {}
+
+	property table monsterAtkIcons = {}
+
+	property string monsterAtkIconRUID = ""
+
+	property number monsterAtkOffsetY = 0
+
+	property number monsterAtkIconOffsetX = -22
+
+	property number monsterAtkTextOffsetX = 16
+
+	property number monsterAtkIconSize = 40
+
+	property number monsterAtkBelowTargetWorldOffset = 0.35
+
+	property string monsterAtkFallbackPrefix = "⚔ ATK"
+
 	property integer lastBossPhase = 0
 
 	method void InitializeUI(any gameMgr, any battleMgr, any playerMgr)
@@ -460,19 +478,44 @@ script UIMain extends Component
 				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
 				log("[UIMain] === Explanation button CLICKED! ===")
 				
-				-- Hide Main_screen directly by path
-				local mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/mainscreen")
+				local mainScreen = self.uiMainMenu
+				if mainScreen == nil then
+					mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/mainscreen")
+				end
+				if mainScreen == nil then
+					local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+					if mainGroup ~= nil then
+						mainScreen = mainGroup:GetChildByName("mainscreen", true)
+					end
+				end
+				
 				if mainScreen ~= nil then
 					mainScreen:SetEnable(false)
+					mainScreen:SetVisible(false)
+					self.uiMainMenu = mainScreen
 					log("[UIMain] Main_screen hidden")
 				else
 					log("[UIMain] WARNING: Main_screen not found by path")
 				end
 				
-				-- Show explanation_screen directly by path
-				local tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				local tutScreen = self.uiTutorial
+				if tutScreen == nil then
+					tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				end
+				if tutScreen == nil then
+					local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+					if mainGroup ~= nil then
+						tutScreen = mainGroup:GetChildByName("explanation_screen", true)
+						if tutScreen == nil then
+							tutScreen = mainGroup:GetChildByName("ExplanationScreen", true)
+						end
+					end
+				end
+				
 				if tutScreen ~= nil then
 					tutScreen:SetEnable(true)
+					tutScreen:SetVisible(true)
+					self.uiTutorial = tutScreen
 					self.currentTutorialPage = 1
 					self:UpdateTutorialImage()
 					log("[UIMain] explanation_screen shown")
@@ -508,13 +551,41 @@ script UIMain extends Component
 		if self.btnCloseTutorial ~= nil then
 			self.btnCloseTutorial:ConnectEvent("ButtonClickEvent", function()
 				if self.gameManager and self.gameManager.soundManager then self.gameManager.soundManager:PlaySFX(5004) end
-				local tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				local tutScreen = self.uiTutorial
+				if tutScreen == nil then
+					tutScreen = _EntityService:GetEntityByPath("/ui/maingroup/explanation_screen")
+				end
+				if tutScreen == nil then
+					local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+					if mainGroup ~= nil then
+						tutScreen = mainGroup:GetChildByName("explanation_screen", true)
+						if tutScreen == nil then
+							tutScreen = mainGroup:GetChildByName("ExplanationScreen", true)
+						end
+					end
+				end
+				
 				if tutScreen ~= nil then
 					tutScreen:SetEnable(false)
+					tutScreen:SetVisible(false)
+					self.uiTutorial = tutScreen
 				end
-				local mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/mainscreen")
+				
+				local mainScreen = self.uiMainMenu
+				if mainScreen == nil then
+					mainScreen = _EntityService:GetEntityByPath("/ui/maingroup/mainscreen")
+				end
+				if mainScreen == nil then
+					local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
+					if mainGroup ~= nil then
+						mainScreen = mainGroup:GetChildByName("mainscreen", true)
+					end
+				end
+				
 				if mainScreen ~= nil then
 					mainScreen:SetEnable(true)
+					mainScreen:SetVisible(true)
+					self.uiMainMenu = mainScreen
 				end
 			end)
 		end
@@ -817,39 +888,46 @@ script UIMain extends Component
 	method void ShowMainMenu()
 		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
 		if mainGroup ~= nil then
-			mainGroup.Enable = true
+			mainGroup:SetEnable(true)
+			mainGroup:SetVisible(true)
 		end
 		
 		if self.uiMainMenu ~= nil then
-			self.uiMainMenu.Enable = true
+			self.uiMainMenu:SetEnable(true)
+			self.uiMainMenu:SetVisible(true)
 		end
 		if self.uiTutorial ~= nil then
-			self.uiTutorial.Enable = false
+			self.uiTutorial:SetEnable(false)
+			self.uiTutorial:SetVisible(false)
 		end
-		-- Hide standard game UI
+		-- Hide gameplay UI root while title menu is active.
 		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
 		if uiGroup ~= nil then
-			uiGroup.Enable = false
+			uiGroup:SetEnable(false)
+			uiGroup:SetVisible(false)
 		end
 	end
 
 	method void HideMainMenu()
 		if self.uiMainMenu ~= nil then
-			self.uiMainMenu.Enable = false
+			self.uiMainMenu:SetEnable(false)
+			self.uiMainMenu:SetVisible(false)
 		end
 		if self.uiTutorial ~= nil then
-			self.uiTutorial.Enable = false
+			self.uiTutorial:SetEnable(false)
+			self.uiTutorial:SetVisible(false)
 		end
 		
 		local mainGroup = _EntityService:GetEntityByPath("/ui/maingroup")
 		if mainGroup ~= nil then
-			mainGroup.Enable = false
+			mainGroup:SetEnable(false)
+			mainGroup:SetVisible(false)
 		end
 		
 		local uiGroup = _EntityService:GetEntityByPath("/ui/UIGroup")
 		if uiGroup ~= nil then
-			uiGroup.Enable = true
-			uiGroup.Visible = true
+			uiGroup:SetEnable(true)
+			uiGroup:SetVisible(true)
 		end
 	end
 
@@ -1876,8 +1954,184 @@ script UIMain extends Component
 									end
 								end
 								if txtComp ~= nil then
-									local displayHP = math.ceil(math.max(0, monster.currentHP))
+									local displayHP = math.ceil(math.max(0, tonumber(monster.currentHP) or 0))
 									txtComp.Text = tostring(displayHP)
+								end
+								
+								local mAtkText = self.monsterAtkTexts[i]
+								if mAtkText == nil or not _EntityService:IsValid(mAtkText) then
+									local atkTemplate = nil
+									if self.sliderHP ~= nil then
+										atkTemplate = self.sliderHP:GetChildByName("UIText")
+									end
+									if atkTemplate ~= nil and self.sliderHP ~= nil then
+										mAtkText = _SpawnService:SpawnByEntity(atkTemplate, "MonsterAtkText_"..i, Vector3.zero, self.sliderHP.Parent)
+										if mAtkText ~= nil then
+											self.monsterAtkTexts[i] = mAtkText
+											local atkCanvas = mAtkText.CanvasGroupComponent
+											if atkCanvas == nil then
+												atkCanvas = mAtkText:AddComponent("CanvasGroupComponent")
+											end
+											if atkCanvas ~= nil then
+												atkCanvas.Interactable = false
+											end
+											local atkUI = mAtkText.UITransformComponent
+											if atkUI ~= nil then
+												atkUI.RectSize = Vector2(130, 24)
+											end
+											local atkSprite = mAtkText.SpriteGUIRendererComponent
+											if atkSprite ~= nil then
+												atkSprite.Enable = false
+											end
+										end
+									end
+								end
+								
+								local hasAtkIcon = false
+								local atkIconRuid = tostring(self.monsterAtkIconRUID or "")
+								atkIconRuid = string.gsub(atkIconRuid, "^%s+", "")
+								atkIconRuid = string.gsub(atkIconRuid, "%s+$", "")
+								if atkIconRuid ~= "" and string.upper(atkIconRuid) ~= "NONE" then
+									hasAtkIcon = true
+								end
+								
+								local mAtkIcon = self.monsterAtkIcons[i]
+								if hasAtkIcon then
+									if mAtkIcon == nil or not _EntityService:IsValid(mAtkIcon) then
+										local atkIconTemplate = nil
+										if self.sliderHP ~= nil then
+											atkIconTemplate = self.sliderHP
+										end
+										if atkIconTemplate ~= nil and self.sliderHP ~= nil then
+											mAtkIcon = _SpawnService:SpawnByEntity(atkIconTemplate, "MonsterAtkIcon_"..i, Vector3.zero, self.sliderHP.Parent)
+											if mAtkIcon ~= nil then
+												self.monsterAtkIcons[i] = mAtkIcon
+												local iconCanvas = mAtkIcon.CanvasGroupComponent
+												if iconCanvas == nil then
+													iconCanvas = mAtkIcon:AddComponent("CanvasGroupComponent")
+												end
+												if iconCanvas ~= nil then
+													iconCanvas.Interactable = false
+												end
+												local iconUI = mAtkIcon.UITransformComponent
+												if iconUI ~= nil then
+													local iconSize = tonumber(self.monsterAtkIconSize) or 18
+													if iconSize < 1 then
+														iconSize = 18
+													end
+													iconUI.RectSize = Vector2(iconSize, iconSize)
+												end
+												local iconSlider = mAtkIcon.SliderComponent
+												if iconSlider ~= nil then
+													iconSlider.Enable = false
+												end
+												local iconTextComps = mAtkIcon:GetChildComponentsByTypeName("TextComponent", true)
+												if iconTextComps ~= nil then
+													for t = 1, #iconTextComps do
+														local tc = iconTextComps[t]
+														if tc ~= nil then
+															tc.Text = ""
+														end
+													end
+												end
+											end
+										end
+									end
+									
+									if mAtkIcon ~= nil and _EntityService:IsValid(mAtkIcon) then
+										local iconSprite = mAtkIcon.SpriteGUIRendererComponent
+										if iconSprite ~= nil then
+											pcall(function() iconSprite.Type = 1 end)
+											iconSprite.Color = Color(1, 1, 1, 1)
+											if tostring(iconSprite.ImageRUID or "") ~= atkIconRuid then
+												iconSprite.ImageRUID = atkIconRuid
+											end
+											iconSprite.Enable = true
+											mAtkIcon.Enable = true
+										else
+											mAtkIcon.Enable = false
+										end
+									end
+								else
+									if mAtkIcon ~= nil and _EntityService:IsValid(mAtkIcon) then
+										local iconSprite = mAtkIcon.SpriteGUIRendererComponent
+										if iconSprite ~= nil then
+											iconSprite.Enable = false
+										end
+										mAtkIcon.Enable = false
+									end
+								end
+								
+								if mAtkText ~= nil then
+									mAtkText.Enable = true
+									local atkTextComp = mAtkText.TextComponent
+									if atkTextComp ~= nil then
+										atkTextComp.FontColor = Color(1, 0, 0, 1)
+										local displayATK = math.ceil(math.max(0, tonumber(monster.atk) or 0))
+										local displayATKText = tostring(displayATK)
+
+										local plannedResolved = false
+										local turnKey = ""
+										if self.battleManager ~= nil then
+											turnKey = string.lower(tostring(self.battleManager.currentTurn or ""))
+											turnKey = string.gsub(turnKey, "^%s+", "")
+											turnKey = string.gsub(turnKey, "%s+$", "")
+										end
+										
+										if turnKey == "player" and monster.plannedActionReady == true then
+											local plannedStatus = string.lower(tostring(monster.plannedStatus or ""))
+											plannedStatus = string.gsub(plannedStatus, "^%s+", "")
+											plannedStatus = string.gsub(plannedStatus, "%s+$", "")
+											
+											local plannedHitCount = math.floor(tonumber(monster.plannedHitCount) or 1)
+											if plannedStatus == "multi" and plannedHitCount > 1 then
+												displayATKText = tostring(displayATK) .. "x" .. tostring(plannedHitCount)
+											else
+												displayATKText = tostring(displayATK)
+											end
+											plannedResolved = true
+										end
+										
+										if plannedResolved ~= true then
+											local patternKey = string.lower(tostring(monster.patternId or ""))
+											patternKey = string.gsub(patternKey, "^%s+", "")
+											patternKey = string.gsub(patternKey, "%s+$", "")
+											
+											local statusKey = string.lower(tostring(monster.status or ""))
+											statusKey = string.gsub(statusKey, "^%s+", "")
+											statusKey = string.gsub(statusKey, "%s+$", "")
+											
+											local isMultiPattern = (patternKey == "multi" or statusKey == "multi")
+											local multiHitCount = math.floor(tonumber(monster.atkCount) or 0)
+											if isMultiPattern and multiHitCount > 1 then
+												local patternProb = tonumber(monster.patternProb) or 0
+												if patternProb < 0 then
+													patternProb = 0
+												elseif patternProb > 100 then
+													patternProb = 100
+												end
+												
+												if patternProb >= 100 then
+													displayATKText = tostring(displayATK) .. "x" .. tostring(multiHitCount)
+												elseif patternProb > 0 then
+													local probText = tostring(math.floor(patternProb + 0.5))
+													displayATKText = tostring(displayATK) .. "x" .. tostring(multiHitCount) .. "(" .. probText .. "%)"
+												end
+											end
+										end
+										
+										if hasAtkIcon then
+											atkTextComp.Text = displayATKText
+										else
+											local fallbackPrefix = tostring(self.monsterAtkFallbackPrefix or "")
+											fallbackPrefix = string.gsub(fallbackPrefix, "^%s+", "")
+											fallbackPrefix = string.gsub(fallbackPrefix, "%s+$", "")
+											if fallbackPrefix == "" then
+												fallbackPrefix = "ATK"
+											end
+											atkTextComp.Text = fallbackPrefix .. " " .. displayATKText
+										end
+									end
 								end
 								
 								local uiTrans = mSlider.UITransformComponent
@@ -1889,7 +2143,38 @@ script UIMain extends Component
 										if mSlider.Parent ~= nil then parentUI = mSlider.Parent.UITransformComponent end
 										if parentUI ~= nil then
 											local screenPos = _UILogic:WorldToScreenPosition(Vector2(mPos.x, mPos.y - 0.5))
-											uiTrans.anchoredPosition = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+											local sliderLocalPos = _UILogic:ScreenToLocalUIPosition(screenPos, parentUI)
+											uiTrans.anchoredPosition = sliderLocalPos
+											
+											local arrowOffset = tonumber(monster.arrowOffsetY) or 1.2
+											local belowTargetOffset = tonumber(self.monsterAtkBelowTargetWorldOffset) or 0.25
+											if belowTargetOffset < 0 then
+												belowTargetOffset = -belowTargetOffset
+											end
+											local targetWorldY = mPos.y + arrowOffset
+											local atkWorldY = targetWorldY - belowTargetOffset
+											local atkScreenPos = _UILogic:WorldToScreenPosition(Vector2(mPos.x, atkWorldY))
+											local atkLocalPos = _UILogic:ScreenToLocalUIPosition(atkScreenPos, parentUI)
+											local atkOffsetY = tonumber(self.monsterAtkOffsetY) or 0
+											
+											if mAtkText ~= nil and _EntityService:IsValid(mAtkText) then
+												local atkUI = mAtkText.UITransformComponent
+												if atkUI ~= nil then
+													local textOffsetX = 0
+													if hasAtkIcon then
+														textOffsetX = tonumber(self.monsterAtkTextOffsetX) or 0
+													end
+													atkUI.anchoredPosition = Vector2(atkLocalPos.x + textOffsetX, atkLocalPos.y + atkOffsetY)
+												end
+											end
+											
+											if hasAtkIcon and mAtkIcon ~= nil and _EntityService:IsValid(mAtkIcon) then
+												local iconUI = mAtkIcon.UITransformComponent
+												if iconUI ~= nil then
+													local iconOffsetX = tonumber(self.monsterAtkIconOffsetX) or -14
+													iconUI.anchoredPosition = Vector2(atkLocalPos.x + iconOffsetX, atkLocalPos.y + atkOffsetY)
+												end
+											end
 										end
 									end
 								end
@@ -1902,6 +2187,20 @@ script UIMain extends Component
 							mSlider:Destroy()
 						end
 						self.monsterSliders[i] = nil
+						
+						local mAtkText = self.monsterAtkTexts[i]
+						if mAtkText ~= nil and _EntityService:IsValid(mAtkText) then
+							mAtkText.Enable = false
+							mAtkText:Destroy()
+						end
+						self.monsterAtkTexts[i] = nil
+						
+						local mAtkIcon = self.monsterAtkIcons[i]
+						if mAtkIcon ~= nil and _EntityService:IsValid(mAtkIcon) then
+							mAtkIcon.Enable = false
+							mAtkIcon:Destroy()
+						end
+						self.monsterAtkIcons[i] = nil
 					end
 				end
 			end
@@ -1914,6 +2213,20 @@ script UIMain extends Component
 						mSlider:Destroy()
 					end
 					self.monsterSliders[i] = nil
+					
+					local mAtkText = self.monsterAtkTexts[i]
+					if mAtkText ~= nil and _EntityService:IsValid(mAtkText) then
+						mAtkText.Enable = false
+						mAtkText:Destroy()
+					end
+					self.monsterAtkTexts[i] = nil
+					
+					local mAtkIcon = self.monsterAtkIcons[i]
+					if mAtkIcon ~= nil and _EntityService:IsValid(mAtkIcon) then
+						mAtkIcon.Enable = false
+						mAtkIcon:Destroy()
+					end
+					self.monsterAtkIcons[i] = nil
 				end
 			end
 		end
