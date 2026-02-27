@@ -159,6 +159,10 @@ script MonsterManager extends Component
 			monster.dotEffects = {}
 			monster.incomingDmgUp = 0
 			monster.incomingDmgUpTurn = 0
+			monster.plannedActionReady = false
+			monster.plannedUseSkill = false
+			monster.plannedStatus = "none"
+			monster.plannedHitCount = 1
 		
 			self.monsterList[#self.monsterList + 1] = monster
 			
@@ -226,6 +230,10 @@ script MonsterManager extends Component
 		boss.incomingDmgUpTurn = 0
 		boss.shieldActive = false
 		boss.modelID = boss.modelPhase1
+		boss.plannedActionReady = false
+		boss.plannedUseSkill = false
+		boss.plannedStatus = "none"
+		boss.plannedHitCount = 1
 		
 		self.monsterList[#self.monsterList + 1] = boss
 		
@@ -441,6 +449,99 @@ script MonsterManager extends Component
 		end
 	end
 	
+	method table ResolveMonsterSkillOutcome(table monster)
+		local outcome = {}
+		outcome.status = "none"
+		outcome.hitCount = 1
+		outcome.dotDmg = monster.dotDmg or 0
+		outcome.dotTurn = monster.dotTurn or 0
+		
+		local patternKey = string.lower(monster.patternId or "")
+		patternKey = string.gsub(patternKey, "^%s+", "")
+		patternKey = string.gsub(patternKey, "%s+$", "")
+		
+		if patternKey == "poison" then
+			outcome.status = "poison"
+		elseif patternKey == "multi" then
+			outcome.status = "multi"
+			outcome.hitCount = math.floor(tonumber(monster.atkCount) or 2)
+			if outcome.hitCount <= 0 then
+				outcome.hitCount = 2
+			end
+		else
+			local statusKey = string.lower(monster.status or "")
+			statusKey = string.gsub(statusKey, "^%s+", "")
+			statusKey = string.gsub(statusKey, "%s+$", "")
+			if statusKey == "multi" then
+				outcome.status = "multi"
+				outcome.hitCount = math.floor(tonumber(monster.atkCount) or 2)
+				if outcome.hitCount <= 0 then
+					outcome.hitCount = 2
+				end
+			elseif statusKey == "poison" then
+				outcome.status = "poison"
+			elseif statusKey ~= "" then
+				outcome.status = monster.status
+			end
+		end
+		
+		return outcome
+	end
+
+	method void ClearPlannedMonsterAction(integer index)
+		local monster = self.monsterList[index]
+		if monster == nil then
+			return
+		end
+		
+		monster.plannedActionReady = false
+		monster.plannedUseSkill = false
+		monster.plannedStatus = "none"
+		monster.plannedHitCount = 1
+	end
+
+	method void PlanMonsterAction(integer index)
+		local monster = self.monsterList[index]
+		if monster == nil or monster.alive ~= true or monster.isBoss == true then
+			self:ClearPlannedMonsterAction(index)
+			return
+		end
+		
+		local patternProb = tonumber(monster.patternProb) or 0
+		if patternProb < 0 then patternProb = 0 end
+		if patternProb > 100 then patternProb = 100 end
+		
+		local roll = math.random(1, 100)
+		local useSkill = (roll <= patternProb)
+		
+		monster.plannedActionReady = true
+		monster.plannedUseSkill = useSkill
+		
+		if useSkill == true then
+			local outcome = self:ResolveMonsterSkillOutcome(monster)
+			monster.plannedStatus = outcome.status or "none"
+			monster.plannedHitCount = tonumber(outcome.hitCount) or 1
+		else
+			monster.plannedStatus = "none"
+			monster.plannedHitCount = 1
+		end
+	end
+
+	method void PlanAllMonsterActions()
+		if self.monsterList == nil then
+			return
+		end
+		
+		for i = 1, #self.monsterList do
+			local monster = self.monsterList[i]
+			if monster ~= nil and monster.alive == true and monster.isBoss ~= true then
+				self:PlanMonsterAction(i)
+			else
+				self:ClearPlannedMonsterAction(i)
+			end
+		end
+	end
+
 	method void MonsterBasicAttack(integer index)
 		local monster = self.monsterList[index]
 		if monster == nil or monster.alive == false then
@@ -474,40 +575,17 @@ script MonsterManager extends Component
 			return
 		end
 		
+		local outcome = self:ResolveMonsterSkillOutcome(monster)
+		
 		self.lastActionValid = true
 		self.lastDamage = monster.atk or 0
-		self.lastHitCount = 1
-		self.lastDotDmg = monster.dotDmg
-		self.lastDotTurn = monster.dotTurn
-		
-		local patternKey = string.lower(monster.patternId or "")
-		patternKey = string.gsub(patternKey, "^%s+", "")
-		patternKey = string.gsub(patternKey, "%s+$", "")
-		
-		if patternKey == "poison" then
-			self.lastStatus = "poison"
-		elseif patternKey == "multi" then
-			self.lastStatus = "multi"
-			self.lastHitCount = monster.atkCount or 2
-			if self.lastHitCount <= 0 then
-				self.lastHitCount = 2
-			end
-		else
-			local statusKey = string.lower(monster.status or "")
-			statusKey = string.gsub(statusKey, "^%s+", "")
-			statusKey = string.gsub(statusKey, "%s+$", "")
-			if statusKey == "multi" then
-				self.lastStatus = "multi"
-				self.lastHitCount = monster.atkCount or 2
-				if self.lastHitCount <= 0 then
-					self.lastHitCount = 2
-				end
-			elseif statusKey == "poison" then
-				self.lastStatus = "poison"
-		else
-			self.lastStatus = monster.status
+		self.lastHitCount = tonumber(outcome.hitCount) or 1
+		if self.lastHitCount <= 0 then
+			self.lastHitCount = 1
 		end
-		end
+		self.lastStatus = outcome.status or "none"
+		self.lastDotDmg = outcome.dotDmg or 0
+		self.lastDotTurn = outcome.dotTurn or 0
 		
 		local animTargetId = monster.animEntityId
 		if animTargetId == nil then animTargetId = monster.entityId end
@@ -537,23 +615,27 @@ script MonsterManager extends Component
 			return
 		end
 		
-		local patternKey = string.lower(monster.patternId or "")
-		patternKey = string.gsub(patternKey, "^%s+", "")
-		patternKey = string.gsub(patternKey, "%s+$", "")
-		if patternKey == "multi" then
-			self:MonsterSkillAttack(index)
-			return
+		local useSkill = false
+		local hasPlannedAction = (monster.plannedActionReady == true)
+		if hasPlannedAction == true then
+			useSkill = (monster.plannedUseSkill == true)
+		else
+			local patternProb = tonumber(monster.patternProb) or 0
+			if patternProb < 0 then patternProb = 0 end
+			if patternProb > 100 then patternProb = 100 end
+			
+			local roll = math.random(1, 100)
+			useSkill = (roll <= patternProb)
 		end
 		
-		local patternProb = monster.patternProb or 0
-		if patternProb < 0 then patternProb = 0 end
-		if patternProb > 100 then patternProb = 100 end
-		
-		local roll = math.random(1, 100)
-		if roll <= patternProb then
+		if useSkill == true then
 			self:MonsterSkillAttack(index)
 		else
 			self:MonsterBasicAttack(index)
+		end
+		
+		if hasPlannedAction == true then
+			self:ClearPlannedMonsterAction(index)
 		end
 	end
 
